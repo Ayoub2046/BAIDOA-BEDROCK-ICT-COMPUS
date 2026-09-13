@@ -221,9 +221,27 @@
   }
 
   // ─── Floating Download Pill ────────────────────────────────────────────────
+  // Don't show on admin/teacher/staff pages — they don't need it
+  var ADMIN_PATHS = [
+    '/HTML/admin', '/HTML/teacher-dashboard', '/HTML/teacher.html',
+    '/HTML/student.html', '/HTML/user.html', '/HTML/admin-login',
+    '/HTML/classmanagment', '/HTML/attendance', '/HTML/exam',
+    '/HTML/results-approval', '/HTML/clearance', '/HTML/fee-',
+    '/HTML/recycle-bin', '/HTML/seceurity', '/HTML/content',
+    '/HTML/report', '/HTML/communications', '/HTML/timetable',
+    '/HTML/gallery-admin', '/HTML/library.html', '/HTML/resulty',
+    '/HTML/Admin Profile', '/HTML/Admin Settings'
+  ];
+
+  function isAdminPage() {
+    var p = window.location.pathname;
+    return ADMIN_PATHS.some(function(a) { return p.includes(a); });
+  }
+
   function createFloatingBtn() {
     if (floatingBtn || document.getElementById('bedrock-pwa-floating-btn')) return;
     if (isInstalled()) return;
+    if (isAdminPage()) return;
 
     floatingBtn = document.createElement('div');
     floatingBtn.id = 'bedrock-pwa-floating-btn';
@@ -450,10 +468,10 @@
     if (isInstalled()) return; // Already installed, show nothing
 
     injectStyles();
-    createFloatingBtn();
+    createFloatingBtn(); // Skips on admin pages automatically
 
-    // Show modal automatically on FIRST visit (not prompted this session)
-    if (!wasPromptedThisSession()) {
+    // Show modal automatically on FIRST visit per session — only on public pages
+    if (!wasPromptedThisSession() && !isAdminPage()) {
       // Small delay so page content loads first
       window.setTimeout(function () {
         if (!isInstalled()) showInstallModal();
