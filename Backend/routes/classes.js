@@ -72,7 +72,9 @@ router.get('/:id/students', async (req, res) => {
             JOIN students s ON cs.student_id = s.id
             LEFT JOIN users u ON u.id = s.parentid
             JOIN classes c ON c.id = cs.class_id
-            WHERE cs.class_id = $1 AND s.deleted_at IS NULL
+            WHERE cs.class_id = $1
+              AND s.deleted_at IS NULL
+              AND cs.deleted_at IS NULL
             ORDER BY s.name
         `, [req.params.id]);
         res.json(rows);
@@ -81,7 +83,7 @@ router.get('/:id/students', async (req, res) => {
     }
 });
 
-// GET students NOT yet assigned to a class (for the assign dropdown)
+// GET students NOT yet assigned to any class (for the assign dropdown)
 router.get('/:id/unassigned-students', async (req, res) => {
     try {
         const { rows } = await query(`
@@ -89,7 +91,8 @@ router.get('/:id/unassigned-students', async (req, res) => {
             FROM students s
             WHERE s.deleted_at IS NULL
               AND s.id NOT IN (
-                SELECT student_id FROM class_students WHERE class_id = $1
+                SELECT student_id FROM class_students
+                WHERE class_id = $1 AND deleted_at IS NULL
               )
             ORDER BY s.name
         `, [req.params.id]);
@@ -107,15 +110,25 @@ router.post('/:id/students', async (req, res) => {
     }
     try {
         for (const studentId of studentIds) {
+            // Insert or restore soft-deleted assignment
             await query(
-                `INSERT INTO class_students (class_id, student_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+                `INSERT INTO class_students (class_id, student_id, assigned_at, deleted_at)
+                 VALUES ($1, $2, NOW(), NULL)
+                 ON CONFLICT (class_id, student_id) DO UPDATE
+                   SET assigned_at = NOW(), deleted_at = NULL`,
+                [req.params.id, studentId]
+            );
+            // Also update students.classid for fast lookups
+            await query(
+                `UPDATE students SET classid = $1 WHERE id = $2 AND deleted_at IS NULL`,
                 [req.params.id, studentId]
             );
         }
         // Update the student count in classes table
         await query(`
             UPDATE classes SET students = (
-                SELECT COUNT(*) FROM class_students WHERE class_id = $1
+                SELECT COUNT(*) FROM class_students
+                WHERE class_id = $1 AND deleted_at IS NULL
             ) WHERE id = $1
         `, [req.params.id]);
         res.status(201).json({ message: 'Students assigned successfully' });
@@ -124,17 +137,30 @@ router.post('/:id/students', async (req, res) => {
     }
 });
 
-// DELETE remove a student from a class
+// DELETE remove a student from a class (soft delete)
 router.delete('/:id/students/:studentId', async (req, res) => {
     try {
+        // Soft-delete the class_students record
         await query(
-            `DELETE FROM class_students WHERE class_id = $1 AND student_id = $2`,
+            `UPDATE class_students SET deleted_at = NOW()
+             WHERE class_id = $1 AND student_id = $2 AND deleted_at IS NULL`,
             [req.params.id, req.params.studentId]
+        );
+        // Clear classid on student if they have no other active class assignment
+        await query(
+            `UPDATE students SET classid = NULL
+             WHERE id = $1
+               AND NOT EXISTS (
+                 SELECT 1 FROM class_students
+                 WHERE student_id = $1 AND deleted_at IS NULL
+               )`,
+            [req.params.studentId]
         );
         // Update the student count in classes table
         await query(`
             UPDATE classes SET students = (
-                SELECT COUNT(*) FROM class_students WHERE class_id = $1
+                SELECT COUNT(*) FROM class_students
+                WHERE class_id = $1 AND deleted_at IS NULL
             ) WHERE id = $1
         `, [req.params.id]);
         res.json({ message: 'Student removed from class' });
@@ -144,15 +170,28 @@ router.delete('/:id/students/:studentId', async (req, res) => {
 });
 
 // --- CSV Template for Class Assignment ---
-router.get('/assign-template/download', (req, res) => {
-    const csv = stringify([
-        ['StudentID', 'ClassName'],
-        ['ELP250001', 'Grade 12-A'],
-        ['ELP250002', 'Grade 11-B']
-    ]);
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="class-assignment-template.csv"');
-    res.send(csv);
+router.get('/assign-template/download', async (req, res) => {
+    try {
+        const { rows: classes } = await query(`SELECT name FROM classes ORDER BY name LIMIT 5`);
+        const { rows: students } = await query(`SELECT id, name FROM students WHERE deleted_at IS NULL ORDER BY id LIMIT 3`);
+        const header = ['StudentID', 'ClassName'];
+        const examples = students.map((s, i) => [
+            'BB' + String(260000 + s.id).padStart(6, '0'),
+            classes[i % classes.length]?.name || 'BC01-4PM'
+        ]);
+        if (examples.length === 0) {
+            examples.push(['BB260001', 'BC01-4PM'], ['BB260002', 'BC01-4PM']);
+        }
+        const csv = stringify([header, ...examples]);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="class-assignment-template.csv"');
+        res.send(csv);
+    } catch (err) {
+        const csv = stringify([['StudentID', 'ClassName'], ['BB260001', 'BC01-4PM'], ['BB260002', 'BC01-4PM']]);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="class-assignment-template.csv"');
+        res.send(csv);
+    }
 });
 
 // --- CSV Upload for Bulk Class Assignment ---
