@@ -1,20 +1,18 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-pwa-v7';
+const CACHE_NAME = 'bedrock-pwa-v9';
 const PRECACHE_ASSETS = [
   '/',
   '/HTML/index.html',
   '/HTML/portal_login.html',
-  '/HTML/Student Results.html',
+  '/HTML/Student%20Results.html',
   '/HTML/student-library.html',
   '/css/style.css',
   '/JS/pwa.js',
   '/manifest.json',
-  '/images/BEDRCOK LOGO.JPG',
   '/images/icons/icon-192.png',
   '/images/icons/icon-512.png',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'
+  '/images/icons/icon-maskable.png',
+  '/images/icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
