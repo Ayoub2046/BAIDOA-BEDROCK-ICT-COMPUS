@@ -248,43 +248,47 @@
 
         /* ========== PROFESSIONAL FOOTER ========== */
         .lib-footer {
-            background: linear-gradient(135deg, #0a2e09, #0f510e);
-            color: rgba(255,255,255,0.85);
-            padding: 2.5rem 0 0;
-            margin-top: 2rem;
+            background: linear-gradient(135deg, var(--primary-darker, #092d52) 0%, var(--primary-dark, #0d4f8c) 100%);
+            color: rgba(255,255,255,0.9);
+            padding: 3rem 0 0;
+            margin-top: 2.5rem;
+            border-top: 3px solid var(--accent, #f5a623);
         }
         .lib-footer .footer-brand img {
-            width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);
-            margin-right: 0.8rem;
+            width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid var(--accent, #f5a623);
+            margin-right: 0.8rem; background: #fff; object-fit: cover;
         }
-        .lib-footer .footer-brand .fb-name { color: #fff; font-weight: 700; font-size: 1.1rem; margin: 0; }
-        .lib-footer .footer-brand .fb-tag { font-size: 0.72rem; opacity: 0.75; margin: 0; }
+        .lib-footer .footer-brand .fb-name { color: #fff; font-weight: 800; font-size: 1.15rem; margin: 0; }
+        .lib-footer .footer-brand .fb-tag { font-size: 0.76rem; color: var(--accent, #f5a623); margin: 0; font-weight: 600; }
         .lib-footer h6 {
-            color: #fff; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+            color: #fff; font-weight: 700; font-size: 0.88rem; text-transform: uppercase;
             letter-spacing: 1px; margin-bottom: 1rem; position: relative; padding-bottom: 0.5rem;
         }
         .lib-footer h6::after {
-            content: ''; position: absolute; left: 0; bottom: 0; width: 32px; height: 3px;
-            background: var(--primary); border-radius: 3px;
+            content: ''; position: absolute; left: 0; bottom: 0; width: 36px; height: 3px;
+            background: var(--accent, #f5a623); border-radius: 3px;
         }
         .lib-footer .footer-links { list-style: none; padding: 0; margin: 0; }
-        .lib-footer .footer-links li { margin-bottom: 0.5rem; }
-        .lib-footer .footer-links a { color: rgba(255,255,255,0.8); font-size: 0.82rem; transition: all 0.2s; text-decoration: none; }
-        .lib-footer .footer-links a:hover { color: var(--primary); padding-left: 4px; }
-        .lib-footer .footer-contact p { font-size: 0.82rem; margin-bottom: 0.5rem; color: rgba(255,255,255,0.8); }
-        .lib-footer .footer-contact i { width: 22px; color: var(--primary); }
-        .lib-footer .footer-social { display: flex; gap: 0.6rem; margin-top: 1rem; }
+        .lib-footer .footer-links li { margin-bottom: 0.55rem; }
+        .lib-footer .footer-links a { color: rgba(255,255,255,0.82); font-size: 0.84rem; transition: all 0.2s; text-decoration: none; }
+        .lib-footer .footer-links a:hover { color: var(--accent, #f5a623); padding-left: 5px; }
+        .lib-footer .footer-contact p { font-size: 0.84rem; margin-bottom: 0.55rem; color: rgba(255,255,255,0.82); }
+        .lib-footer .footer-contact i { width: 22px; color: var(--accent, #f5a623); }
+        .lib-footer .footer-social { display: flex; gap: 0.7rem; margin-top: 1rem; }
         .lib-footer .footer-social a {
-            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1);
+            width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.1);
             display: flex; align-items: center; justify-content: center; color: #fff;
-            font-size: 0.9rem; transition: all 0.2s;
+            font-size: 0.95rem; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.15);
         }
-        .lib-footer .footer-social a:hover { background: var(--primary); color: #0a2e09; transform: translateY(-2px); }
+        .lib-footer .footer-social a:hover {
+            background: var(--accent, #f5a623); color: var(--primary-darker, #092d52);
+            transform: translateY(-2px); border-color: var(--accent, #f5a623);
+        }
         .lib-footer .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.15); margin-top: 2rem; padding: 1rem 0;
-            font-size: 0.75rem; color: rgba(255,255,255,0.6); text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.15); margin-top: 2rem; padding: 1.2rem 0;
+            font-size: 0.78rem; color: rgba(255,255,255,0.7); text-align: center;
         }
-        .lib-footer .footer-bottom .heart { color: var(--primary); }
+        .lib-footer .footer-bottom .heart { color: var(--accent, #f5a623); }
 
         /* ========== RESPONSIVE ========== */
         @media (max-width: 768px) {

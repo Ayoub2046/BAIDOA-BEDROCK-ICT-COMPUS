@@ -6,11 +6,20 @@
   "start_url": "/HTML/index.html",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
-  "background_color": "#0d4f8c",
+  "background_color": "#092d52",
   "theme_color": "#0d4f8c",
   "lang": "en",
-  "categories": ["education", "productivity"],
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/images/icons/icon-192.png",

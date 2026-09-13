@@ -882,14 +882,15 @@
            ================================================================= */
 
         .report-card-header {
-            background: linear-gradient(135deg, #0f510e 0%, #1dd91d 100%);
+            background: linear-gradient(135deg, #092d52 0%, #0d4f8c 60%, #1a7fd4 100%);
             border-radius: 18px;
             padding: 1.5rem 1.8rem;
             margin-bottom: 1.2rem;
             color: #fff;
-            box-shadow: 0 8px 30px rgba(15,81,14,0.25);
+            box-shadow: 0 8px 30px rgba(9,45,82,0.3);
             position: relative;
             overflow: hidden;
+            border-bottom: 3px solid var(--accent, #f5a623);
         }
         .report-card-header::after {
             content: '';
@@ -1229,14 +1230,15 @@
            ================================================================= */
 
         .tt-hero {
-            background: linear-gradient(135deg, #0f510e 0%, #1b9e1b 50%, #1dd91d 100%);
+            background: linear-gradient(135deg, #092d52 0%, #0d4f8c 60%, #1a7fd4 100%);
             border-radius: 18px;
             padding: 1.4rem 1.6rem 1rem;
             margin-bottom: 1rem;
             color: #fff;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 30px rgba(15,81,14,0.2);
+            box-shadow: 0 8px 30px rgba(9,45,82,0.25);
+            border-bottom: 3px solid var(--accent, #f5a623);
         }
         .tt-hero-bg {
             position: absolute;
@@ -1301,10 +1303,10 @@
             border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e8f5e8;
+            border: 1px solid #d0e4f7;
         }
         .tt-pgrid .tt-p-header {
-            background: linear-gradient(135deg, #0f510e, #1b9e1b);
+            background: linear-gradient(135deg, #092d52, #0d4f8c);
             color: #fff;
             padding: 0.7rem 0.5rem;
             font-weight: 800;
@@ -1460,17 +1462,20 @@
         }
 
         /* =========================================
-            TOP 3 CLASS LEADERS - OLYMPIC PODIUM & CHIPS
+            TOP 3 CLASS LEADERS - OLYMPIC PODIUM & CHIPS (RESPONSIVE)
         ========================================= */
         .class-leaders-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f7fdf7 100%);
-            border: 1px solid #dcf2dc;
-            border-radius: 22px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            border: 1.5px solid #d0e4f7;
+            border-radius: 20px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(15, 81, 14, 0.08);
+            box-shadow: 0 10px 30px rgba(13, 79, 140, 0.08);
             position: relative;
             overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .class-leaders-card::before {
             content: '';
@@ -1480,7 +1485,7 @@
             width: 180px;
             height: 180px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(29, 217, 29, 0.12), transparent 70%);
+            background: radial-gradient(circle, rgba(26, 127, 212, 0.12), transparent 70%);
             pointer-events: none;
         }
         .leaders-header {
@@ -1495,7 +1500,7 @@
             margin: 0;
             font-size: 1.15rem;
             font-weight: 800;
-            color: var(--primary-dark, #0f510e);
+            color: var(--primary-dark, #0d4f8c);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1506,20 +1511,23 @@
             color: #64748b;
         }
 
-        /* Podium Grid */
+        /* Podium Grid — Fully Responsive without blowout */
         .podium-grid {
             display: grid;
-            grid-template-columns: 1fr 1.1fr 1fr;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
             align-items: end;
-            padding: 1rem 0.5rem 0;
+            padding: 1rem 0.25rem 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Individual Podium Card */
         .podium-card {
             background: #fff;
             border-radius: 18px;
-            padding: 1.2rem 0.8rem 1rem;
+            padding: 1.2rem 0.6rem 1rem;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -1528,6 +1536,10 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid transparent;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         .podium-card:hover {
             transform: translateY(-4px);
@@ -1537,15 +1549,15 @@
         /* 1st Place - Gold Champion */
         .podium-card.rank-1 {
             border-color: #f1c40f;
-            background: linear-gradient(180deg, #fffcf0 0%, #ffffff 100%);
-            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.22);
+            background: linear-gradient(180deg, #fffdf2 0%, #ffffff 100%);
+            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.25);
             padding-top: 1.5rem;
             z-index: 2;
         }
         .podium-card.rank-1 .crown-icon {
             position: absolute;
             top: -16px;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             color: #f39c12;
             animation: crownFloat 2.5s ease-in-out infinite;
         }
@@ -1568,19 +1580,11 @@
             box-shadow: 0 4px 18px rgba(217, 119, 6, 0.15);
         }
 
-        /* Avatar with medal ring - strictly constrained to prevent huge logo display */
+        /* Avatar with medal ring */
         .podium-avatar-wrap {
             position: relative;
             margin-bottom: 0.6rem;
-            width: 64px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .podium-card.rank-1 .podium-avatar-wrap {
-            width: 76px;
-            height: 76px;
+            flex-shrink: 0;
         }
         .podium-avatar {
             width: 64px !important;
@@ -1596,10 +1600,10 @@
             margin: 0 auto !important;
         }
         .podium-card.rank-1 .podium-avatar {
-            width: 76px !important;
-            height: 76px !important;
-            max-width: 76px !important;
-            max-height: 76px !important;
+            width: 74px !important;
+            height: 74px !important;
+            max-width: 74px !important;
+            max-height: 74px !important;
             border-color: #f1c40f !important;
             box-shadow: 0 6px 16px rgba(241, 196, 15, 0.35) !important;
         }
@@ -1608,112 +1612,118 @@
 
         .podium-rank-badge {
             position: absolute;
-            bottom: -4px;
+            bottom: -5px;
             right: -4px;
             width: 26px;
             height: 26px;
             border-radius: 50%;
-            background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            font-size: 0.85rem;
+            color: #fff;
+            font-weight: 800;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             border: 2px solid #fff;
         }
         .podium-card.rank-1 .podium-rank-badge {
+            background: linear-gradient(135deg, #f1c40f, #d4ac0d);
             width: 30px;
             height: 30px;
-            font-size: 1.1rem;
-            background: linear-gradient(135deg, #f1c40f, #d4ac0d);
+            font-size: 0.95rem;
         }
         .podium-card.rank-2 .podium-rank-badge { background: linear-gradient(135deg, #94a3b8, #64748b); }
         .podium-card.rank-3 .podium-rank-badge { background: linear-gradient(135deg, #d97706, #b45309); }
 
         .podium-student-name {
-            font-weight: 800;
             font-size: 0.9rem;
+            font-weight: 700;
             color: #1e293b;
-            margin-bottom: 2px;
+            margin: 0 0 2px;
+            width: 100%;
             max-width: 100%;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
         }
-        .podium-card.rank-1 .podium-student-name { font-size: 1.05rem; color: #0f172a; }
+        .podium-card.rank-1 .podium-student-name { font-size: 1rem; font-weight: 800; color: #0f172a; }
 
         .podium-id-tag {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: #64748b;
             font-weight: 600;
+            margin-bottom: 0.4rem;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             background: #f1f5f9;
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-bottom: 6px;
+            padding: 1px 6px;
+            border-radius: 12px;
         }
 
         .podium-score-pill {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 4px 10px;
-            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 3px;
+            padding: 3px 8px;
+            border-radius: 16px;
             font-weight: 700;
-            color: #0f510e;
-            margin-bottom: 8px;
-            white-space: nowrap;
+            font-size: 0.8rem;
+            max-width: 100%;
+            line-height: 1.25;
+            text-align: center;
+            word-break: break-word;
         }
         .podium-card.rank-1 .podium-score-pill {
             background: #fef9c3;
-            border-color: #fde047;
             color: #854d0e;
-            font-weight: 800;
+            font-size: 0.88rem;
+            padding: 3px 10px;
         }
         .podium-card.rank-2 .podium-score-pill { background: #f1f5f9; color: #334155; }
         .podium-card.rank-3 .podium-score-pill { background: #ffedd5; color: #9a3412; }
 
-        .podium-you-badge {
-            background: linear-gradient(135deg, #0f510e, #1dd91d);
-            color: #fff;
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-bottom: 6px;
-            letter-spacing: 0.3px;
-            animation: pulseGlow 2s infinite;
-        }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(29, 217, 29, 0.4); }
-            50% { box-shadow: 0 0 0 6px rgba(29, 217, 29, 0); }
-        }
-
         .podium-pedestal {
             width: 100%;
-            margin-top: auto;
-            border-radius: 10px;
-            font-weight: 900;
-            font-size: 0.85rem;
+            border-radius: 10px 10px 6px 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            letter-spacing: 1px;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-top: 0.6rem;
+            letter-spacing: 0.5px;
         }
         .podium-card.rank-1 .podium-pedestal {
-            height: 52px;
-            background: linear-gradient(180deg, #fef08a, #facc15);
-            color: #713f12;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+            height: 56px;
+            background: linear-gradient(180deg, #f1c40f, #d4ac0d);
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
         }
         .podium-card.rank-2 .podium-pedestal {
-            height: 40px;
-            background: linear-gradient(180deg, #e2e8f0, #cbd5e1);
-            color: #334155;
+            height: 44px;
+            background: linear-gradient(180deg, #94a3b8, #64748b);
         }
         .podium-card.rank-3 .podium-pedestal {
-            height: 30px;
-            background: linear-gradient(180deg, #fed7aa, #fdba74);
-            color: #7c2d12;
+            height: 34px;
+            background: linear-gradient(180deg, #d97706, #b45309);
+        }
+
+        .podium-you-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-top: 3px;
+            animation: pulseYou 2s infinite;
         }
 
         /* Exam Pills Scroll & Chips */
@@ -1740,15 +1750,15 @@
             white-space: nowrap;
         }
         .exam-chip-btn:hover {
-            border-color: var(--primary, #1dd91d);
-            color: var(--primary-dark, #0f510e);
-            background: #f0fdf4;
+            border-color: var(--primary, #1a7fd4);
+            color: var(--primary-dark, #0d4f8c);
+            background: #f0f7ff;
         }
         .exam-chip-btn.active {
-            background: var(--primary-dark, #0f510e);
-            border-color: var(--primary-dark, #0f510e);
+            background: var(--primary-dark, #0d4f8c);
+            border-color: var(--primary-dark, #0d4f8c);
             color: #fff;
-            box-shadow: 0 4px 12px rgba(15, 81, 14, 0.25);
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.25);
         }
         .exam-chip-btn .chip-badge {
             background: rgba(0,0,0,0.08);
@@ -1761,51 +1771,161 @@
             color: #fff;
         }
 
-        @media (max-width: 600px) {
-            .podium-grid {
+        /* Multi-tier Mobile Responsive Rules */
+        @media (max-width: 768px) {
+            .class-leaders-card { padding: 1.2rem 1rem; }
+            .podium-grid { gap: 8px; }
+            #tab-timetable .section-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+
+        @media (max-width: 576px) {
+            .class-leaders-card {
+                padding: 0.9rem 0.5rem;
+                border-radius: 16px;
+            }
+            .leaders-header {
+                flex-direction: column;
+                align-items: flex-start;
                 gap: 6px;
+                margin-bottom: 0.8rem;
+            }
+            .leaders-title-group h4 { font-size: 0.95rem; }
+            .leaders-title-group p { font-size: 0.72rem; }
+            .podium-grid {
+                gap: 5px;
                 padding: 0.5rem 0 0;
             }
             .podium-card {
-                padding: 0.8rem 0.4rem 0.6rem;
+                padding: 0.7rem 0.25rem 0.5rem;
                 border-radius: 14px;
             }
-            .podium-avatar-wrap,
-            .podium-avatar { width: 50px !important; height: 50px !important; max-width: 50px !important; max-height: 50px !important; }
-            .podium-card.rank-1 .podium-avatar-wrap,
-            .podium-card.rank-1 .podium-avatar { width: 60px !important; height: 60px !important; max-width: 60px !important; max-height: 60px !important; }
-            .podium-student-name { font-size: 0.75rem; }
-            .podium-card.rank-1 .podium-student-name { font-size: 0.82rem; }
-            .podium-score-pill { font-size: 0.68rem; padding: 2px 6px; }
-            .podium-card.rank-1 .podium-pedestal { height: 44px; }
-            .podium-card.rank-2 .podium-pedestal { height: 34px; }
-            .podium-card.rank-3 .podium-pedestal { height: 26px; }
+            .podium-avatar-wrap {
+                width: 48px;
+                height: 48px;
+                margin-bottom: 0.35rem;
+            }
+            .podium-avatar {
+                width: 48px !important;
+                height: 48px !important;
+                max-width: 48px !important;
+                max-height: 48px !important;
+            }
+            .podium-card.rank-1 .podium-avatar-wrap {
+                width: 56px;
+                height: 56px;
+            }
+            .podium-card.rank-1 .podium-avatar {
+                width: 56px !important;
+                height: 56px !important;
+                max-width: 56px !important;
+                max-height: 56px !important;
+            }
+            .podium-card.rank-1 .crown-icon {
+                top: -13px;
+                font-size: 1.25rem;
+            }
+            .podium-rank-badge {
+                width: 22px;
+                height: 22px;
+                font-size: 0.75rem;
+                bottom: -3px;
+                right: -3px;
+            }
+            .podium-card.rank-1 .podium-rank-badge {
+                width: 26px;
+                height: 26px;
+                font-size: 0.88rem;
+            }
+            .podium-student-name {
+                font-size: 0.74rem;
+                margin-bottom: 1px;
+            }
+            .podium-card.rank-1 .podium-student-name {
+                font-size: 0.82rem;
+            }
+            .podium-id-tag {
+                font-size: 0.62rem;
+                padding: 1px 4px;
+                margin-bottom: 3px;
+            }
+            .podium-score-pill {
+                font-size: 0.68rem;
+                padding: 2px 4px;
+                border-radius: 8px;
+                gap: 2px;
+            }
+            .podium-card.rank-1 .podium-score-pill {
+                font-size: 0.74rem;
+                padding: 2px 6px;
+            }
+            .podium-you-badge {
+                font-size: 0.55rem;
+                padding: 1px 4px;
+            }
+            .podium-pedestal {
+                font-size: 0.85rem;
+                margin-top: 0.4rem;
+                border-radius: 8px 8px 4px 4px;
+            }
+            .podium-card.rank-1 .podium-pedestal { height: 42px; }
+            .podium-card.rank-2 .podium-pedestal { height: 32px; }
+            .podium-card.rank-3 .podium-pedestal { height: 24px; }
+        }
+
+        @media (max-width: 450px) {
+            .class-leaders-card { padding: 0.75rem 0.4rem; }
+            .podium-grid { gap: 4px; }
+            .podium-card { padding: 0.6rem 0.2rem 0.4rem; border-radius: 12px; }
+            .podium-avatar-wrap { width: 42px; height: 42px; }
+            .podium-avatar { width: 42px !important; height: 42px !important; max-width: 42px !important; max-height: 42px !important; }
+            .podium-card.rank-1 .podium-avatar-wrap { width: 50px; height: 50px; }
+            .podium-card.rank-1 .podium-avatar { width: 50px !important; height: 50px !important; max-width: 50px !important; max-height: 50px !important; }
+            .podium-student-name { font-size: 0.7rem; }
+            .podium-card.rank-1 .podium-student-name { font-size: 0.78rem; }
+            .podium-score-pill { font-size: 0.62rem; padding: 2px 3px; }
+            .podium-pedestal { font-size: 0.75rem; }
+            .podium-card.rank-1 .podium-pedestal { height: 36px; }
+            .podium-card.rank-2 .podium-pedestal { height: 28px; }
+            .podium-card.rank-3 .podium-pedestal { height: 22px; }
+        }
+
+        @media (max-width: 360px) {
+            .podium-grid { gap: 3px; }
+            .podium-card { padding: 0.5rem 0.15rem 0.35rem; }
+            .podium-avatar-wrap { width: 36px; height: 36px; }
+            .podium-avatar { width: 36px !important; height: 36px !important; max-width: 36px !important; max-height: 36px !important; }
+            .podium-card.rank-1 .podium-avatar-wrap { width: 42px; height: 42px; }
+            .podium-card.rank-1 .podium-avatar { width: 42px !important; height: 42px !important; max-width: 42px !important; max-height: 42px !important; }
+            .podium-student-name { font-size: 0.65rem; }
+            .podium-card.rank-1 .podium-student-name { font-size: 0.7rem; }
+            .podium-score-pill { font-size: 0.58rem; padding: 1px 3px; }
+            .podium-id-tag { display: none; }
         }
 
         body[data-theme="dark"] .class-leaders-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-color: #334155;
+            background: linear-gradient(135deg, #18243a 0%, #0f1623 100%);
+            border-color: #243352;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        body[data-theme="dark"] .leaders-title-group h4 { color: #86efac; }
+        body[data-theme="dark"] .leaders-title-group h4 { color: #4a9fe0; }
         body[data-theme="dark"] .podium-card {
-            background: #1e293b;
-            border-color: #334155;
+            background: #18243a;
+            border-color: #243352;
         }
         body[data-theme="dark"] .podium-card.rank-1 {
-            background: linear-gradient(180deg, #2d2a17 0%, #1e293b 100%);
+            background: linear-gradient(180deg, #2d2612 0%, #18243a 100%);
             border-color: #f1c40f;
         }
         body[data-theme="dark"] .podium-student-name { color: #f1f5f9; }
-        body[data-theme="dark"] .podium-id-tag { background: #334155; color: #94a3b8; }
+        body[data-theme="dark"] .podium-id-tag { background: #243352; color: #94a3b8; }
         body[data-theme="dark"] .exam-chip-btn {
-            background: #1e293b;
-            border-color: #334155;
+            background: #18243a;
+            border-color: #243352;
             color: #cbd5e1;
         }
         body[data-theme="dark"] .exam-chip-btn.active {
-            background: var(--primary, #1dd91d);
-            color: #000;
+            background: var(--primary, #1a7fd4);
+            color: #fff;
         }
     </style>
 </head>
@@ -3205,7 +3325,7 @@
                             '</div>' +
                             '<div class="podium-student-name" title="' + item.name + '">' + item.name + '</div>' +
                             '<div class="podium-id-tag">' + (item.bbId || item.elpId) + '</div>' +
-                            '<div class="podium-score-pill"><i class="fas fa-star text-warning me-1"></i>' + item.totalScore + ' pts (' + item.percentage + '%)</div>' +
+                            '<div class="podium-score-pill"><span class="score-pts"><i class="fas fa-star text-warning me-1"></i>' + item.totalScore + ' pts</span> <span class="score-pct">(' + item.percentage + '%)</span></div>' +
                             youHtml +
                             '<div class="podium-pedestal">' + baseText + '</div>' +
                             '</div>';

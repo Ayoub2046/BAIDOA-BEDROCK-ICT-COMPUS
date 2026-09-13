@@ -1,5 +1,5 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-pwa-v5';
+const CACHE_NAME = 'bedrock-pwa-v7';
 const PRECACHE_ASSETS = [
   '/',
   '/HTML/index.html',
