@@ -43,6 +43,10 @@
     {
       "source": "/goal",
       "destination": "/HTML/index.html"
+    },
+    {
+      "source": "/((?!manifest\\.json|service-worker\\.js|images|css|JS|HTML|uploads|api|favicon\\.ico).*)",
+      "destination": "/api/index.js"
     }
   ]
 }
