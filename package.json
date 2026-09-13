@@ -8,7 +8,7 @@
     "vercel-build": "echo 'Build complete'"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
