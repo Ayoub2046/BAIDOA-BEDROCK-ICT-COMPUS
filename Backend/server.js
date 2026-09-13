@@ -15,29 +15,44 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- 2. Static file serving (local only; Vercel handles static files natively) ---
-if (!process.env.VERCEL) {
-    const projectRoot = path.join(__dirname, '..');
-    app.use(express.static(projectRoot));
-    const uploadsPath = path.join(projectRoot, 'uploads');
-    app.use('/uploads', express.static(uploadsPath));
+// --- 2. Static file serving (works locally and on Vercel serverless) ---
+const projectRoot = path.join(__dirname, '..');
+app.use(express.static(projectRoot));
+app.use('/HTML', express.static(path.join(projectRoot, 'HTML')));
+app.use('/css', express.static(path.join(projectRoot, 'css')));
+app.use('/images', express.static(path.join(projectRoot, 'images')));
+app.use('/JS', express.static(path.join(projectRoot, 'JS')));
 
-    // Fallback for any missing file under /uploads/ — serve transparent placeholder
-    app.use('/uploads', (req, res) => {
-        const filePath = path.join(uploadsPath, req.path);
-        if (!fs.existsSync(filePath)) {
-            res.set('Content-Type', 'image/svg+xml');
-            res.send('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect fill="transparent"/></svg>');
-        } else {
-            res.status(404).end();
-        }
-    });
+const uploadsPath = path.join(projectRoot, 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
-    // Local root redirect
-    app.get('/', (req, res) => {
-        res.redirect('/HTML/index.html');
-    });
-}
+// Fallback for any missing file under /uploads/ — serve transparent placeholder
+app.use('/uploads', (req, res) => {
+    const filePath = path.join(uploadsPath, req.path);
+    if (!fs.existsSync(filePath)) {
+        res.set('Content-Type', 'image/svg+xml');
+        res.send('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect fill="transparent"/></svg>');
+    } else {
+        res.status(404).end();
+    }
+});
+
+// Root redirects
+app.get('/', (req, res) => {
+    res.redirect('/HTML/index.html');
+});
+app.get('/index.html', (req, res) => {
+    res.redirect('/HTML/index.html');
+});
+app.get('/api', (req, res) => {
+    res.redirect('/HTML/index.html');
+});
+app.get('/api/', (req, res) => {
+    res.redirect('/HTML/index.html');
+});
+app.get('/favicon.ico', (req, res) => {
+    res.redirect('/images/BEDRCOK LOGO.JPG');
+});
 // --- 2. API Routes ---
 app.use('/api/students', require('./routes/students.js'));
 app.use('/api/auth', require('./routes/auth.js'));
@@ -415,7 +430,16 @@ setInterval(async () => {
     }
 }, 60000);
 
-// --- 5. Start the Server (local only, not on Vercel) ---
+// --- 5. Graceful Navigation Fallback ---
+app.use((req, res) => {
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'Endpoint not found' });
+    }
+    // Redirect any unknown web route (like /goal or mistyped URLs) to home page
+    res.redirect('/HTML/index.html');
+});
+
+// --- 6. Start the Server (local only, not on Vercel) ---
 if (!process.env.VERCEL) {
     app.get('/', (req, res) => {
         res.redirect('/HTML/index.html');

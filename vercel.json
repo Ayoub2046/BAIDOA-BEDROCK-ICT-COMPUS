@@ -14,8 +14,16 @@
       "destination": "/HTML/index.html"
     },
     {
-      "source": "/:page.html",
-      "destination": "/HTML/:page.html"
+      "source": "/favicon.ico",
+      "destination": "/images/BEDRCOK LOGO.JPG"
+    },
+    {
+      "source": "/goal",
+      "destination": "/HTML/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }
