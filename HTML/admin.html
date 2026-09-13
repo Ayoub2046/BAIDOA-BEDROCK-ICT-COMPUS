@@ -621,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="flex-grow-1 min-w-0">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <span class="fw-semibold dir-name">${s.name}</span>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal px-2">ELP${250000 + s.id}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal px-2">BB${260000 + s.id}</span>
                             <span class="badge bg-primary bg-opacity-10 text-primary fw-normal px-2">${s.grade || '-'}</span>
                         </div>
                         <div class="d-flex align-items-center gap-3 mt-1 small text-muted">
@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', () => {
         const term = searchInput.value.toLowerCase().trim();
         if (!term) { renderDirectory(allStudents); return; }
-        renderDirectory(allStudents.filter(s => s.name.toLowerCase().includes(term) || `elp${250000 + s.id}`.includes(term)));
+        renderDirectory(allStudents.filter(s => s.name.toLowerCase().includes(term) || `bb${260000 + s.id}`.includes(term) || `elp${250000 + s.id}`.includes(term)));
     });
 
     document.getElementById('refresh-btn').addEventListener('click', loadDashboard);

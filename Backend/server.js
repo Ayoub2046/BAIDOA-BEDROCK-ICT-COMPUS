@@ -186,6 +186,7 @@ const { query } = require('./database');
             await query(`ALTER TABLE results ADD COLUMN IF NOT EXISTS submitted_by TEXT`);
             await query(`ALTER TABLE results ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP DEFAULT NOW()`);
             await query(`ALTER TABLE results ADD COLUMN IF NOT EXISTS release_at TIMESTAMP DEFAULT NULL`);
+            await query(`ALTER TABLE results ADD COLUMN IF NOT EXISTS edit_allowed BOOLEAN DEFAULT false`);
             console.log('results table columns ready.');
         } catch (alterErr) {
             if (!alterErr.message.includes('already exists')) {

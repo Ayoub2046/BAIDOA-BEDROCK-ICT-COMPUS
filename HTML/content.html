@@ -3,6 +3,7 @@
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0d4f8c">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
@@ -209,14 +210,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Announcement Picture / Photo (Optional)</label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <input type="file" accept="image/*" class="form-control form-control-sm" id="ann-imageUrl-file">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <input type="file" accept="image/*" class="form-control form-control-sm" id="ann-imageUrl-file" style="max-width:300px;">
                                         <input type="hidden" id="ann-imageUrl">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="ann-imageUrl"><i class="fas fa-upload me-1"></i>Upload Photo</button>
+                                        <span id="ann-upload-status" class="text-muted small"></span>
                                     </div>
                                     <div id="ann-imageUrl-preview" class="mt-2" style="display:none;">
                                         <img src="" class="img-thumbnail" style="max-height:140px; border-radius:8px;">
-                                        <button type="button" class="btn btn-sm btn-link text-danger remove-image-btn p-0 ms-2" data-target="ann-imageUrl"><i class="fas fa-times me-1"></i>Remove Picture</button>
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="ann-remove-image-btn"><i class="fas fa-times me-1"></i>Remove Picture</button>
                                     </div>
                                 </div>
                                 <div class="d-flex gap-2">
@@ -342,19 +343,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
         const formData = new FormData();
         formData.append('image', file);
-        try {
-            const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            document.getElementById(hiddenId).value = data.url;
-            const preview = document.getElementById(previewId);
-            if (preview) {
-                preview.style.display = 'block';
-                preview.querySelector('img').src = data.url;
-            }
-        } catch (err) {
-            alertMsg('save-alert-pages', 'Upload failed: ' + err.message, 'danger', true);
+        const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        document.getElementById(hiddenId).value = data.url;
+        const preview = document.getElementById(previewId);
+        if (preview) {
+            preview.style.display = 'block';
+            preview.querySelector('img').src = data.url;
         }
+        return data.url;
     }
 
     document.querySelectorAll('.upload-image-btn').forEach(btn => {
@@ -368,9 +366,35 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[type="file"][accept="image/*"]').forEach(input => {
         input.addEventListener('change', () => {
             const id = input.id.replace('-file', '');
-            uploadImage(input.id, id, id + '-preview');
+            // Special handling for announcement image: show status
+            if (id === 'ann-imageUrl') {
+                const statusEl = document.getElementById('ann-upload-status');
+                if (statusEl) statusEl.innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span>Uploading...';
+                uploadImage(input.id, id, id + '-preview').then(() => {
+                    if (statusEl) statusEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Image uploaded!</span>';
+                    setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 4000);
+                }).catch(err => {
+                    if (statusEl) statusEl.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>' + (err.message || 'Upload failed') + '</span>';
+                });
+            } else {
+                uploadImage(input.id, id, id + '-preview');
+            }
         });
     });
+
+    // Announcement remove image btn (dedicated, since we removed the generic remove-image-btn from ann form)
+    const annRemoveBtn = document.getElementById('ann-remove-image-btn');
+    if (annRemoveBtn) {
+        annRemoveBtn.addEventListener('click', () => {
+            document.getElementById('ann-imageUrl').value = '';
+            const preview = document.getElementById('ann-imageUrl-preview');
+            if (preview) { preview.style.display = 'none'; preview.querySelector('img').src = ''; }
+            const fileInput = document.getElementById('ann-imageUrl-file');
+            if (fileInput) fileInput.value = '';
+            const statusEl = document.getElementById('ann-upload-status');
+            if (statusEl) statusEl.innerHTML = '';
+        });
+    }
 
     document.querySelectorAll('.remove-image-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -459,9 +483,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         try { renderGallery(JSON.parse(saved[key])); } catch {}
                     } else {
                         const preview = document.getElementById(key + '-preview');
-                        if (preview && saved[key]) {
-                            preview.style.display = 'block';
-                            preview.querySelector('img').src = saved[key];
+                        if (preview && saved[key] && saved[key].trim()) {
+                            const img = preview.querySelector('img');
+                            if (img) {
+                                img.onerror = () => { preview.style.display = 'none'; };
+                                img.src = saved[key];
+                                preview.style.display = 'block';
+                            }
                         }
                     }
                 }
@@ -770,6 +798,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (annForm) {
         annForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = document.getElementById('ann-submit-btn');
+            const fileInput = document.getElementById('ann-imageUrl-file');
+            if (!document.getElementById('ann-imageUrl').value && fileInput && fileInput.files[0]) {
+                const statusEl = document.getElementById('ann-upload-status');
+                if (statusEl) statusEl.innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span>Uploading image...';
+                if (submitBtn) submitBtn.disabled = true;
+                try {
+                    await uploadImage('ann-imageUrl-file', 'ann-imageUrl', 'ann-imageUrl-preview');
+                } catch (uErr) {
+                    if (statusEl) statusEl.innerHTML = '<span class="text-danger">Image upload failed: ' + uErr.message + '</span>';
+                    if (submitBtn) submitBtn.disabled = false;
+                    return;
+                }
+                if (submitBtn) submitBtn.disabled = false;
+            }
             const payload = {
                 title: document.getElementById('ann-title').value.trim(),
                 message: document.getElementById('ann-message').value.trim(),

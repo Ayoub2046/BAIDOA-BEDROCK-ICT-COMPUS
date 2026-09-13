@@ -3046,22 +3046,60 @@
             ];
             var BAR_CLASSES = ['q', 'q', 's', 's', 'm', 'f'];
 
-            // Override EXAM_DEFS + dropdown + interactive chips from the exams the student's class is assigned
+            // Override EXAM_DEFS + dropdown + interactive chips from the exams created by admin AND having published approved results
             function setupExamDefs(data) {
                 var exams = (data && data.exams) || [];
-                if (!exams || exams.length === 0) return;
-                var defs = exams.map(function (e, i) {
-                    return { key: e.exam_key, label: e.name, max: parseFloat(e.max_score) || 100, barClass: BAR_CLASSES[i % BAR_CLASSES.length] };
+                var results = (data && data.results) || {};
+
+                // Find which exam keys have approved published results for this student
+                var publishedKeys = new Set();
+                Object.values(results).forEach(function (sub) {
+                    if (sub && sub.scores) {
+                        Object.keys(sub.scores).forEach(function (k) {
+                            if (sub.scores[k] !== undefined && sub.scores[k] !== null) {
+                                publishedKeys.add(k);
+                            }
+                        });
+                    }
                 });
+
+                // ONLY show exams that admin created AND have published results for the student
+                var defs = [];
+                exams.forEach(function (e, i) {
+                    if (publishedKeys.has(e.exam_key)) {
+                        defs.push({
+                            key: e.exam_key,
+                            label: e.name,
+                            max: parseFloat(e.max_score) || 100,
+                            barClass: BAR_CLASSES[i % BAR_CLASSES.length]
+                        });
+                    }
+                });
+
+                // Fallback: if exams list is empty but published results exist, show from published
+                if (defs.length === 0 && publishedKeys.size > 0) {
+                    var idx = 0;
+                    publishedKeys.forEach(function (k) {
+                        var match = exams.find(function (e) { return e.exam_key === k; });
+                        defs.push({
+                            key: k,
+                            label: match ? match.name : k.toUpperCase(),
+                            max: match ? (parseFloat(match.max_score) || 100) : 100,
+                            barClass: BAR_CLASSES[idx % BAR_CLASSES.length]
+                        });
+                        idx++;
+                    });
+                }
+
                 EXAM_DEFS = defs;
                 var sel = document.getElementById('exam-type-select');
                 var chipsWrap = document.getElementById('exam-chips-container');
-                sel.innerHTML = '<option value="">All Exams (Overall Report)</option>';
+                if (sel) sel.innerHTML = '<option value="">All Exams (Overall Report)</option>';
                 if (chipsWrap) {
                     chipsWrap.innerHTML = '<button type="button" class="exam-chip-btn active" data-exam=""><i class="fas fa-layer-group"></i> All Exams <span class="chip-badge">Overall</span></button>';
                 }
                 defs.forEach(function (d) {
-                    sel.innerHTML += '<option value="' + d.key + '">' + d.label + ' (/' + d.max + ')</option>';
+                    if (sel) sel.innerHTML += '<option value="' + d.key + '">' + d.label + ' (/' + d.max + ')</option>';
                     if (chipsWrap) {
                         chipsWrap.innerHTML += '<button type="button" class="exam-chip-btn" data-exam="' + d.key + '"><i class="fas fa-pen-nib"></i> ' + d.label + ' <span class="chip-badge">/' + d.max + '</span></button>';
                     }
@@ -3073,7 +3111,7 @@
                         btn.addEventListener('click', function () {
                             chipsWrap.querySelectorAll('.exam-chip-btn').forEach(function (b) { b.classList.remove('active'); });
                             btn.classList.add('active');
-                            sel.value = btn.getAttribute('data-exam') || '';
+                            if (sel) sel.value = btn.getAttribute('data-exam') || '';
                             var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
                             var elpId = stored ? (stored.bbId || stored.elpId) : 'BB' + String(260000 + dashboardData.student.id).padStart(6, '0');
                             loadResults(dashboardData, elpId);

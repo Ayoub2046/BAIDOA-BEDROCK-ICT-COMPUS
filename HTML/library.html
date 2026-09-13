@@ -275,7 +275,7 @@
                 checkoutForm.elements.bookId.value = id;
                 document.getElementById('checkout-book-title').textContent = book.title;
                 studentSelect.innerHTML = '<option value="" disabled selected>Select a student...</option>';
-                students.forEach(s => studentSelect.innerHTML += `<option value="${s.id}">ELP${250000 + s.id} - ${s.name}</option>`);
+                students.forEach(s => studentSelect.innerHTML += `<option value="${s.id}">BB${260000 + s.id} - ${s.name}</option>`);
                 checkoutModal.show();
             } else if (button.classList.contains('btn-checkin-book')) {
                 if (confirm('Check this book in?')) {
@@ -316,7 +316,7 @@
             const studentId = parseInt(e.target.elements.studentId.value);
             const book = books.find(b => b.id === bookId);
             const student = students.find(s => s.id === studentId);
-            const updatedBook = { ...book, status: 'Checked Out', checkedOutTo: `ELP${250000 + student.id} - ${student.name}` };
+            const updatedBook = { ...book, status: 'Checked Out', checkedOutTo: `BB${260000 + student.id} - ${student.name}` };
             try {
                 const response = await fetch(`${BOOKS_API_URL}/${bookId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedBook) });
                 if (!response.ok) throw new Error('Checkout failed');

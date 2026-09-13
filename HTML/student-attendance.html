@@ -193,8 +193,9 @@
                     if (!response.ok) throw new Error('Failed to fetch students.');
                     const students = await response.json();
 
-                    // Parse student ID
-                    const studentIdNum = parseInt(studentIdInput.replace(/SA|ELP/i, ''));
+                    // Parse student ID (supports BB260001, ELP250001, or raw ID)
+                    const rawNum = parseInt(studentIdInput.replace(/^(BB|SA|ELP)/i, ''));
+                    const studentIdNum = rawNum >= 260000 ? rawNum - 260000 : (rawNum >= 250000 ? rawNum - 250000 : rawNum);
                     const foundStudent = students.find(s => s.id === studentIdNum);
 
                     if (foundStudent && foundStudent.enrollmentdate === password) {
@@ -220,7 +221,7 @@
             document.getElementById('dashboard-section').classList.remove('d-none');
 
             document.getElementById('student-name').textContent = `Welcome, ${student.name}!`;
-            document.getElementById('student-info').textContent = `Student ID: ELP${String(250000 + student.id).slice(-6)} | Grade: ${student.grade || 'N/A'}`;
+            document.getElementById('student-info').textContent = `Student ID: BB${String(260000 + student.id).slice(-6)} | Grade: ${student.grade || 'N/A'}`;
 
             await loadStats(student.id);
             await loadChart(student.id);

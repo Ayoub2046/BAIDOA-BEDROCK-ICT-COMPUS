@@ -380,7 +380,13 @@
                     const img = document.getElementById('feature' + num + '-img-display');
                     const icon = document.getElementById('feature' + num + '-icon-display');
                     if (imgUrl && imgUrl.trim()) {
-                        if (img) img.src = imgUrl;
+                        if (img) {
+                            img.onerror = () => {
+                                if (wrapper) wrapper.style.display = 'none';
+                                if (icon) icon.style.display = 'block';
+                            };
+                            img.src = imgUrl;
+                        }
                         if (wrapper) wrapper.style.display = 'block';
                         if (icon) icon.style.display = 'none';
                     } else {

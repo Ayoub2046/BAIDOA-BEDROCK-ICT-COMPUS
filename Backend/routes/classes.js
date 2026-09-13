@@ -167,10 +167,11 @@ router.post('/assign-csv', upload.single('file'), async (req, res) => {
         for (let i = 0; i < records.length; i++) {
             const row = records[i];
             const rk = Object.keys(row).reduce((acc, k) => { acc[k.toLowerCase().replace(/\(.*\)/g,'').trim()] = row[k]; return acc; }, {});
-            const studentIdRaw = (rk['studentid'] || '').toString().replace('ELP', '').trim();
-            const studentId = parseInt(studentIdRaw) - 250000;
+            const studentIdRaw = (rk['studentid'] || '').toString().replace(/^(BB|ELP)/i, '').trim();
+            const rawNum = parseInt(studentIdRaw);
+            const studentId = rawNum >= 260000 ? rawNum - 260000 : (rawNum >= 250000 ? rawNum - 250000 : rawNum);
             const className = (rk['classname'] || '').trim();
-            if (!studentId || !className) { errors.push(`Row ${i+2}: Invalid StudentID or ClassName`); continue; }
+            if (!studentId || isNaN(studentId) || !className) { errors.push(`Row ${i+2}: Invalid StudentID or ClassName`); continue; }
 
             try {
                 const { rows: classRows } = await query(`SELECT id FROM classes WHERE LOWER(name) = LOWER($1)`, [className]);

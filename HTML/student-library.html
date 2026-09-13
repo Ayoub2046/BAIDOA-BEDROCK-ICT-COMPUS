@@ -579,12 +579,13 @@
         async function handleLogin(e) {
             e.preventDefault();
             const alertBox = document.getElementById('login-alert');
-            const studentIdInput = document.getElementById('inputStudentId').value.toUpperCase().replace('ELP', '');
-            const realDbId = parseInt(studentIdInput) - 250000;
+            const raw = document.getElementById('inputStudentId').value.toUpperCase().replace(/^(BB|ELP)/i, '').trim();
+            const rawNum = parseInt(raw);
+            const realDbId = rawNum >= 260000 ? rawNum - 260000 : (rawNum >= 250000 ? rawNum - 250000 : rawNum);
             const passwordInput = document.getElementById('inputPassword').value;
 
-            if (isNaN(realDbId)) {
-                alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID format.</div>';
+            if (isNaN(realDbId) || realDbId < 1) {
+                alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID format. Use BB260001.</div>';
                 return;
             }
 

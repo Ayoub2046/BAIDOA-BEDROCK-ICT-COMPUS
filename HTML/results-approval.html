@@ -127,6 +127,9 @@
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
+                            <button class="btn btn-warning btn-sm text-dark fw-semibold" id="btn-unlock-selected" disabled>
+                                <i class="fas fa-lock-open me-1"></i>Unlock Selected
+                            </button>
                             <button class="btn btn-info btn-sm text-white" id="btn-hold-selected" disabled>
                                 <i class="fas fa-pause me-1"></i>Hold
                             </button>
@@ -143,7 +146,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover align-middle">
                                 <thead>
                                     <tr>
                                         <th><input type="checkbox" id="select-all"></th>
@@ -156,6 +159,7 @@
                                         <th class="text-center">Total</th>
                                         <th>Submitted By</th>
                                         <th>Status</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="results-table-body">
@@ -189,6 +193,66 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button class="btn btn-info text-white" id="btn-confirm-hold"><i class="fas fa-pause me-1"></i>Hold Results</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Edit Modal (Admin Correction) -->
+    <div class="modal fade" id="directEditModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Correct / Edit Student Results</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-student-id">
+                    <input type="hidden" id="edit-subject">
+                    <div class="mb-2">
+                        <span class="text-muted small">Student:</span> <strong id="edit-student-name"></strong>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small">Subject:</span> <strong id="edit-subject-name" class="text-primary"></strong>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Quiz 1 (Max 5)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-quiz1" min="0" max="5" step="0.5">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Quiz 2 (Max 5)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-quiz2" min="0" max="5" step="0.5">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Semester 1 (Max 5)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-sem1" min="0" max="5" step="0.5">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Semester 2 (Max 5)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-sem2" min="0" max="5" step="0.5">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Midterm (Max 40)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-midterm" min="0" max="40" step="0.5">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">Final Exam (Max 40)</label>
+                            <input type="number" class="form-control form-control-sm" id="edit-score-final" min="0" max="40" step="0.5">
+                        </div>
+                    </div>
+                    <div class="mb-2 mt-2">
+                        <label class="form-label small fw-bold">Approval Status</label>
+                        <select class="form-select form-select-sm" id="edit-approval-status">
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="on_hold">On Hold</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary btn-sm" id="btn-save-direct-edit"><i class="fas fa-save me-1"></i>Save & Apply</button>
                 </div>
             </div>
         </div>
@@ -275,10 +339,12 @@
                             subject: r.subject,
                             approval_status: r.approval_status,
                             submitted_by: r.submitted_by,
+                            edit_allowed: r.edit_allowed === true,
                             scores: {},
                             ids: []
                         };
                     }
+                    if (r.edit_allowed === true) grouped[key].edit_allowed = true;
                     grouped[key].scores[r.exam_type] = parseFloat(r.score);
                     grouped[key].ids.push(r.id);
                 });
@@ -290,10 +356,11 @@
                     const finalScore = g.scores.final || 0;
                     const total = quiz + sem + midterm + finalScore;
                     const ids = g.ids.join(',');
+                    const bbId = 'BB' + String(260000 + g.student_id).slice(-6);
                     return `
                     <tr class="status-${g.approval_status}">
                         <td><input type="checkbox" class="result-checkbox" data-ids="${ids}" data-status="${g.approval_status}"></td>
-                        <td>${g.studentName}<br><small class="text-muted">ELP${String(250000 + g.student_id).slice(-6)}</small></td>
+                        <td>${g.studentName}<br><small class="text-muted fw-semibold">${bbId}</small></td>
                         <td>${g.subject}</td>
                         <td class="text-center">${quiz}/10</td>
                         <td class="text-center">${sem}/10</td>
@@ -301,7 +368,18 @@
                         <td class="text-center">${finalScore}/40</td>
                         <td class="text-center fw-bold ${total >= 60 ? 'text-success' : total >= 40 ? 'text-warning' : 'text-danger'}">${total}/100</td>
                         <td>${g.submitted_by || 'N/A'}</td>
-                        <td><span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span></td>
+                        <td>
+                            <span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span>
+                            ${g.edit_allowed ? '<br><span class="badge bg-warning text-dark mt-1" style="font-size:10px;"><i class="fas fa-lock-open me-1"></i>Unlocked</span>' : ''}
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm ${g.edit_allowed ? 'btn-warning text-dark' : 'btn-outline-secondary'} btn-toggle-unlock me-1" data-ids="${ids}" data-unlocked="${g.edit_allowed}" title="${g.edit_allowed ? 'Currently unlocked for teacher. Click to lock.' : 'Unlock for teacher to resubmit.'}">
+                                <i class="fas ${g.edit_allowed ? 'fa-lock-open' : 'fa-lock'}"></i> ${g.edit_allowed ? 'Unlocked' : 'Unlock'}
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-edit" data-student-id="${g.student_id}" data-student-name="${g.studentName}" data-subject="${g.subject}" data-scores='${JSON.stringify(g.scores)}' data-status="${g.approval_status}" title="Directly correct / edit scores">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </td>
                     </tr>`;
                 }).join('');
 
@@ -339,7 +417,120 @@
                 document.getElementById('btn-reject-selected').disabled = checked.length === 0 || hasRejected;
                 document.getElementById('btn-hold-selected').disabled = checked.length === 0 || hasOnHold || hasRejected;
                 document.getElementById('btn-release-selected').disabled = checked.length === 0 || !hasOnHold;
+                const unlockBtn = document.getElementById('btn-unlock-selected');
+                if (unlockBtn) unlockBtn.disabled = checked.length === 0;
             }
+
+            // Unlock selected for teachers
+            const unlockSelectedBtn = document.getElementById('btn-unlock-selected');
+            if (unlockSelectedBtn) {
+                unlockSelectedBtn.addEventListener('click', async () => {
+                    const checked = document.querySelectorAll('.result-checkbox:checked');
+                    const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
+                    if (ids.length === 0) return;
+                    if (!confirm(`Unlock ${ids.length} result(s) for teachers to re-edit and resubmit?`)) return;
+                    try {
+                        const response = await fetch(`${RESULTS_API}/unlock`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ids, unlock: true })
+                        });
+                        if (!response.ok) throw new Error('Unlock failed');
+                        alert(`${ids.length} result(s) unlocked for teacher re-edit.`);
+                        loadResults();
+                    } catch (err) {
+                        alert(`Error: ${err.message}`);
+                    }
+                });
+            }
+
+            // Row-level Unlock / Lock toggle
+            document.getElementById('results-table-body').addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-toggle-unlock');
+                if (!btn) return;
+                const ids = btn.dataset.ids.split(',').map(Number);
+                const isCurrentlyUnlocked = btn.dataset.unlocked === 'true';
+                const action = isCurrentlyUnlocked ? 'lock' : 'unlock';
+                if (!confirm(`${isCurrentlyUnlocked ? 'Lock' : 'Unlock'} this submission ${isCurrentlyUnlocked ? 'so teacher cannot edit' : 'so teacher can re-edit and resubmit'}?`)) return;
+                try {
+                    const response = await fetch(`${RESULTS_API}/unlock`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids, unlock: !isCurrentlyUnlocked })
+                    });
+                    if (!response.ok) throw new Error('Operation failed');
+                    loadResults();
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                }
+            });
+
+            // Row-level Direct Edit (Admin Correction)
+            let directEditModal = null;
+            try {
+                directEditModal = new bootstrap.Modal(document.getElementById('directEditModal'));
+            } catch (e) {}
+
+            document.getElementById('results-table-body').addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-open-edit');
+                if (!btn) return;
+                const studentId = btn.dataset.studentId;
+                const studentName = btn.dataset.studentName;
+                const subject = btn.dataset.subject;
+                let scores = {};
+                try { scores = JSON.parse(btn.dataset.scores || '{}'); } catch {}
+                const status = btn.dataset.status || 'approved';
+
+                document.getElementById('edit-student-id').value = studentId;
+                document.getElementById('edit-subject').value = subject;
+                document.getElementById('edit-student-name').textContent = `${studentName} (BB${String(260000 + parseInt(studentId)).slice(-6)})`;
+                document.getElementById('edit-subject-name').textContent = subject;
+
+                document.getElementById('edit-score-quiz1').value = scores.quiz1 ?? '';
+                document.getElementById('edit-score-quiz2').value = scores.quiz2 ?? '';
+                document.getElementById('edit-score-sem1').value = scores.sem1 ?? '';
+                document.getElementById('edit-score-sem2').value = scores.sem2 ?? '';
+                document.getElementById('edit-score-midterm').value = scores.midterm ?? '';
+                document.getElementById('edit-score-final').value = scores.final ?? '';
+                document.getElementById('edit-approval-status').value = status;
+
+                if (directEditModal) directEditModal.show();
+            });
+
+            // Save Direct Edit (Admin Correction)
+            document.getElementById('btn-save-direct-edit').addEventListener('click', async () => {
+                const studentId = parseInt(document.getElementById('edit-student-id').value);
+                const subject = document.getElementById('edit-subject').value;
+                const approvalStatus = document.getElementById('edit-approval-status').value;
+
+                const scores = {};
+                const q1 = document.getElementById('edit-score-quiz1').value;
+                if (q1 !== '') scores.quiz1 = parseFloat(q1);
+                const q2 = document.getElementById('edit-score-quiz2').value;
+                if (q2 !== '') scores.quiz2 = parseFloat(q2);
+                const s1 = document.getElementById('edit-score-sem1').value;
+                if (s1 !== '') scores.sem1 = parseFloat(s1);
+                const s2 = document.getElementById('edit-score-sem2').value;
+                if (s2 !== '') scores.sem2 = parseFloat(s2);
+                const mid = document.getElementById('edit-score-midterm').value;
+                if (mid !== '') scores.midterm = parseFloat(mid);
+                const fin = document.getElementById('edit-score-final').value;
+                if (fin !== '') scores.final = parseFloat(fin);
+
+                try {
+                    const res = await fetch(`${RESULTS_API}/admin/direct-update`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, subject, scores, approvalStatus })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Update failed');
+                    if (directEditModal) directEditModal.hide();
+                    loadResults();
+                } catch (err) {
+                    alert(`Error updating scores: ${err.message}`);
+                }
+            });
 
             // Approve selected
             document.getElementById('btn-approve-selected').addEventListener('click', async () => {

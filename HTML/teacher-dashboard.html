@@ -832,7 +832,7 @@
                     <div class="dir-info">
                         <div class="dir-name-row">
                             <span class="dir-name">${s.name}</span>
-                            <span class="dir-id">ELP${String(250000+s.id).slice(-6)}</span>
+                            <span class="dir-id">BB${String(260000+s.id).slice(-6)}</span>
                             <span class="dir-grade">${s.grade || '-'}</span>
                             ${attBadge}
                         </div>
@@ -905,7 +905,7 @@
                     </div>
                     <h6 class="fw-bold mb-2">Results</h6>
                     ${subjHtml}
-                    <div class="mt-3"><small class="text-muted">ID: ELP${String(250000+student.id).slice(-6)} · Grade: ${student.grade||'N/A'}</small></div>
+                    <div class="mt-3"><small class="text-muted">ID: BB${String(260000+student.id).slice(-6)} · Grade: ${student.grade||'N/A'}</small></div>
                 `;
             } catch(e) {
                 console.error('Error loading student modal data:', e);
@@ -940,7 +940,7 @@
                     const st = s.status||'Absent';
                     currentAttendance[s.id]=st;
                     if(st==='Present')pc++;else if(st==='Absent')ac++;else if(st==='On-Leave')lc++;
-                    return `<tr data-student="${s.id}"><td>ELP${String(250000+s.id).slice(-6)}</td><td>${s.name}</td>
+                    return `<tr data-student="${s.id}"><td>BB${String(260000+s.id).slice(-6)}</td><td>${s.name}</td>
                         <td><div class="d-flex gap-1 flex-wrap">
                             <input type="radio" class="btn-check" name="att-${s.id}" id="p-${s.id}" value="Present" autocomplete="off" ${st==='Present'?'checked':''}>
                             <label class="btn btn-outline-success btn-sm" for="p-${s.id}"><i class="fas fa-check"></i> P</label>
@@ -1044,25 +1044,41 @@
                 }
                 const et = examDefs[examType] || { label: examType, max: 100 };
                 $('results-exam-th').textContent = et.label + ' (/' + et.max + ')';
-                $('results-alert').innerHTML = '';
+                const currentSub = ($('results-subject').value || '').trim().toLowerCase();
+                const comboKey = examType.toLowerCase() + '|' + currentSub;
+                const lockInfo = submittedLocks[comboKey];
+                const submitBtn = $('submit-results-btn');
+                if (lockInfo && lockInfo.locked) {
+                    $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-lock me-2"></i><strong>Submission Locked:</strong> Results for ${et.label} (${$('results-subject').value}) have already been submitted and locked. Ask the administrator to unlock if re-editing is required.</div>`;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Locked by Admin';
+                    }
+                } else {
+                    $('results-alert').innerHTML = '';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Results for Approval';
+                    }
+                }
                 $('results-entry-card').classList.remove('d-none');
                 $('live-stats-bar').classList.remove('d-none');
-                $('btn-quick-fill').style.display = '';
-                $('btn-clear-scores').style.display = '';
+                $('btn-quick-fill').style.display = lockInfo && lockInfo.locked ? 'none' : '';
+                $('btn-clear-scores').style.display = lockInfo && lockInfo.locked ? 'none' : '';
                 const tbody = $('results-table-body');
                 currentResultsStudents = {};
                 tbody.innerHTML = students.map((s, idx) => {
                     currentResultsStudents[s.id] = {name: s.name, score: 0, max: et.max};
                     const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                     const bg = AVATAR_GRADIENTS[s.id % AVATAR_GRADIENTS.length];
-                    const elpId = 'ELP' + String(250000 + s.id).slice(-6);
+                    const bbId = 'BB' + String(260000 + s.id).slice(-6);
                     return `<tr data-student="${s.id}">
                         <td style="padding:0.7rem 1rem;">
                             <div class="res-student-row">
                                 <div class="res-avatar" style="background:${bg};">${initials}</div>
                                 <div style="min-width:0;">
                                     <div class="res-name">${s.name}</div>
-                                    <div class="res-id">${elpId}</div>
+                                    <div class="res-id">${bbId}</div>
                                 </div>
                             </div>
                         </td>
@@ -1162,21 +1178,34 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
             try {
-                const r = await fetch('/api/results/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records,teacherId:activeUser.id,teacherName:activeUser.name})});
+                const r = await fetch('/api/results/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ records, teacherId: activeUser.id, teacherName: activeUser.name })
+                });
                 let data = null;
                 try { data = await r.json(); } catch (e) { throw new Error('Server error (HTTP ' + r.status + '). Please try again.'); }
-                if (!r.ok) throw new Error(data.error || 'Failed');
-                submittedExamKeys.add(examType + '|' + subject);
+                if (!r.ok) {
+                    if (r.status === 409 || (data && data.locked)) {
+                        throw new Error(data.error || 'Submission Locked: Results for this exam have already been submitted and locked. Ask administrator to unlock if re-editing is required.');
+                    }
+                    throw new Error((data && data.error) || 'Failed to submit results');
+                }
+                submittedExamKeys.add(examType + '|' + subject.toLowerCase());
                 $('results-alert').innerHTML = `<div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i>${data.message || 'Submitted for approval!'}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-                loadSubmittedResults();
+                await loadSubmittedResults();
                 renderSubmissionStatus();
                 // Reset scores
                 $$('#results-table-body .si').forEach(i => { i.value = 0; i.dispatchEvent(new Event('input')); });
                 $$('#results-table-body .remark-input').forEach(i => i.value = '');
                 Object.keys(currentResultsStudents).forEach(id => { currentResultsStudents[id].score = 0; });
                 updateLiveResultsStats();
-            } catch(e) { $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${e.message}</div>`; }
-            finally { btn.disabled = false; btn.innerHTML = original; }
+            } catch(e) {
+                $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
         });
 
         // CSV Upload trigger
@@ -1207,24 +1236,65 @@
             e.target.value = '';
         });
 
+        let submittedLocks = {}; // Map of (examType + '|' + subject) => { locked: boolean, status: string }
+
         async function loadSubmittedResults() {
             try {
                 const res = await fetch(`/api/results/teacher/${activeUser.id}`);
                 const results = await res.json();
                 const el = $('submitted-results-list');
-                if (results.length===0) { el.innerHTML = '<div class="p-3 text-center text-muted" style="font-size:0.85rem;">No results submitted.</div>'; return; }
-                const badge = {'pending':'bg-warning text-dark','approved':'bg-success','rejected':'bg-danger'};
+                if (!Array.isArray(results) || results.length === 0) {
+                    el.innerHTML = '<div class="p-3 text-center text-muted" style="font-size:0.85rem;">No results submitted yet.</div>';
+                    return;
+                }
+                const badge = { 'pending': 'bg-warning text-dark', 'approved': 'bg-success', 'rejected': 'bg-danger', 'on_hold': 'bg-info text-white' };
                 const grouped = {};
+                submittedLocks = {};
                 results.forEach(r => {
-                    submittedExamKeys.add(r.exam_type + '|' + r.subject);
-                    const k=r.student_id+'-'+r.subject+'-'+r.exam_type; if(!grouped[k]) grouped[k]={name:r.studentName,subject:r.subject,exam_type:r.exam_type,status:r.approval_status,score:0}; grouped[k].score=parseFloat(r.score);
+                    const ex = (r.exam_type || '').toLowerCase();
+                    const sub = (r.subject || '').trim().toLowerCase();
+                    const combo = ex + '|' + sub;
+                    submittedExamKeys.add(combo);
+
+                    const isLocked = r.edit_allowed !== true && r.approval_status !== 'rejected';
+                    if (!submittedLocks[combo] || isLocked) {
+                        submittedLocks[combo] = { locked: isLocked, status: r.approval_status };
+                    }
+
+                    const k = r.student_id + '-' + r.subject + '-' + r.exam_type;
+                    if (!grouped[k]) {
+                        grouped[k] = {
+                            name: r.studentName,
+                            student_id: r.student_id,
+                            subject: r.subject,
+                            exam_type: r.exam_type,
+                            status: r.approval_status,
+                            edit_allowed: r.edit_allowed === true,
+                            score: 0
+                        };
+                    }
+                    grouped[k].score = parseFloat(r.score);
                 });
+
                 el.innerHTML = Object.values(grouped).map(g => {
-                    const d = examDefs[g.exam_type] || {label:g.exam_type, max:100};
-                    return `<div class="p-2 border-bottom" style="font-size:0.8rem;"><div class="fw-bold">${g.name}</div><div class="d-flex justify-content-between"><span>${g.subject} · ${d.label} · ${g.score}/${d.max}</span><span class="badge ${badge[g.status]||'bg-secondary'}">${g.status}</span></div></div>`;
+                    const d = examDefs[g.exam_type] || { label: g.exam_type, max: 100 };
+                    const isLocked = !g.edit_allowed && g.status !== 'rejected';
+                    const lockBadge = isLocked
+                        ? '<span class="badge bg-danger ms-1" style="font-size:10px;"><i class="fas fa-lock me-1"></i>Locked</span>'
+                        : '<span class="badge bg-success ms-1" style="font-size:10px;"><i class="fas fa-lock-open me-1"></i>Editable</span>';
+                    return `<div class="p-2 border-bottom" style="font-size:0.8rem;">
+                        <div class="fw-bold">${g.name} <small class="text-muted">(BB${String(260000 + g.student_id).slice(-6)})</small></div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <span>${g.subject} · ${d.label} · <strong>${g.score}/${d.max}</strong></span>
+                            <div>
+                                <span class="badge ${badge[g.status] || 'bg-secondary'}">${g.status}</span>
+                                ${lockBadge}
+                            </div>
+                        </div>
+                    </div>`;
                 }).join('');
                 renderSubmissionStatus();
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error('Error loading submitted results:', e); }
         }
 
         // Show which exams have been submitted vs not submitted for the selected class+subject
@@ -1239,10 +1309,22 @@
             }
             el.innerHTML = keys.map(k => {
                 const d = examDefs[k];
-                const done = subject ? submittedExamKeys.has(k + '|' + subject) : false;
+                const combo = k.toLowerCase() + '|' + subject;
+                const done = subject ? submittedExamKeys.has(combo) : false;
+                const lockInfo = submittedLocks[combo];
+
+                let badgeHtml = '<span class="badge bg-secondary"><i class="fas fa-clock me-1"></i>Not submitted</span>';
+                if (done) {
+                    if (lockInfo && lockInfo.locked) {
+                        badgeHtml = '<span class="badge bg-danger" title="Locked by system. Admin must unlock before changes can be made."><i class="fas fa-lock me-1"></i>Submitted & Locked</span>';
+                    } else {
+                        badgeHtml = '<span class="badge bg-warning text-dark" title="Unlocked: you can re-submit changes."><i class="fas fa-lock-open me-1"></i>Unlocked to Resubmit</span>';
+                    }
+                }
+
                 return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom" style="font-size:0.8rem;">
-                    <span>${d.label}</span>
-                    ${done ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Submitted</span>' : '<span class="badge bg-secondary"><i class="fas fa-clock me-1"></i>Not submitted</span>'}
+                    <span class="fw-semibold">${d.label}</span>
+                    ${badgeHtml}
                 </div>`;
             }).join('');
         }
