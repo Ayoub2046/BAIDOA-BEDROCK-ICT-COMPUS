@@ -1,17 +1,23 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "manifest.json,service-worker.js"
+    }
+  },
   "headers": [
     {
       "source": "/manifest.json",
       "headers": [
-        { "key": "Content-Type", "value": "application/manifest+json" },
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Cache-Control", "value": "public, max-age=86400" }
       ]
     },
     {
       "source": "/service-worker.js",
       "headers": [
-        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Service-Worker-Allowed", "value": "/" }
       ]
@@ -45,8 +51,8 @@
       "destination": "/HTML/index.html"
     },
     {
-      "source": "/((?!manifest\\.json|service-worker\\.js|images|css|JS|HTML|uploads|api|favicon\\.ico).*)",
-      "destination": "/api/index.js"
+      "source": "/:page.html",
+      "destination": "/HTML/:page.html"
     }
   ]
 }

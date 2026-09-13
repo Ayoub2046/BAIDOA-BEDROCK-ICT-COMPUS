@@ -53,6 +53,70 @@ app.get('/api/', (req, res) => {
 app.get('/favicon.ico', (req, res) => {
     res.redirect('/images/BEDRCOK LOGO.JPG');
 });
+
+// Explicit PWA Manifest & Service Worker Routes (guaranteed JSON/JS serving)
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.type('application/manifest+json');
+    const filePath = path.join(projectRoot, 'manifest.json');
+    if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath, {
+            headers: {
+                'Content-Type': 'application/manifest+json; charset=utf-8'
+            }
+        });
+    }
+    try {
+        const directData = require(path.join(projectRoot, 'manifest.json'));
+        return res.send(JSON.stringify(directData));
+    } catch (e) {
+        return res.send(JSON.stringify({
+            name: "Baidoa Bedrock ICT Campus",
+            short_name: "Bedrock ICT",
+            start_url: "/HTML/index.html",
+            id: "/HTML/index.html",
+            scope: "/",
+            display: "standalone",
+            theme_color: "#0d4f8c",
+            background_color: "#092d52",
+            icons: [
+                { src: "/images/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+                { src: "/images/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+                { src: "/images/icons/icon-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+                { src: "/images/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png", purpose: "any" }
+            ]
+        }));
+    }
+});
+
+app.get('/service-worker.js', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.type('application/javascript');
+    const filePath = path.join(projectRoot, 'service-worker.js');
+    if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath, {
+            headers: {
+                'Content-Type': 'application/javascript; charset=utf-8',
+                'Service-Worker-Allowed': '/'
+            }
+        });
+    }
+    try {
+        const altPath = path.resolve(__dirname, '../service-worker.js');
+        if (fs.existsSync(altPath)) {
+            return res.sendFile(altPath, {
+                headers: {
+                    'Content-Type': 'application/javascript; charset=utf-8',
+                    'Service-Worker-Allowed': '/'
+                }
+            });
+        }
+    } catch (e) {}
+    res.status(404).send('// Service worker not found');
+});
 // --- 2. API Routes ---
 app.use('/api/students', require('./routes/students.js'));
 app.use('/api/auth', require('./routes/auth.js'));
@@ -435,7 +499,11 @@ app.use((req, res) => {
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'Endpoint not found' });
     }
-    // Redirect any unknown web route (like /goal or mistyped URLs) to home page
+    // Never redirect static assets (.json, .js, .css, images, etc.) to index.html
+    if (/\.(json|js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|otf)$/i.test(req.path)) {
+        return res.status(404).send('Asset not found');
+    }
+    // Redirect unknown web routes (like /goal or mistyped URLs) to home page
     res.redirect('/HTML/index.html');
 });
 
