@@ -23,6 +23,7 @@ async function ensureTables() {
             max_score NUMERIC(5,2) DEFAULT 100,
             sort_order INTEGER DEFAULT 0,
             active BOOLEAN DEFAULT true,
+            is_locked BOOLEAN DEFAULT false,
             deleted_at TIMESTAMP
         )
     `);
@@ -30,6 +31,7 @@ async function ensureTables() {
     await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS max_score NUMERIC(5,2) DEFAULT 100`);
     await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0`);
     await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true`);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false`);
     await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP`);
     // Make legacy per-class exam columns nullable so the shared exam list can be seeded
     try { await query(`ALTER TABLE exams ALTER COLUMN class_id DROP NOT NULL`); } catch (e) {}
@@ -38,20 +40,21 @@ async function ensureTables() {
         CREATE TABLE IF NOT EXISTS class_exams (
             class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
             exam_id INTEGER REFERENCES exams(id) ON DELETE CASCADE,
+            is_locked BOOLEAN DEFAULT false,
             assigned_at TIMESTAMP DEFAULT NOW(),
             PRIMARY KEY (class_id, exam_id)
         )
     `);
+    await query(`ALTER TABLE class_exams ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false`);
+    // Seed standard 3-part exam structure: Quiz (20), Assignment (20), Final Exam (60)
     await query(`
         INSERT INTO exams (name, exam_key, max_score, sort_order)
         VALUES
-            ('Quiz 1', 'quiz1', 5, 1),
-            ('Quiz 2', 'quiz2', 5, 2),
-            ('Semester 1', 'sem1', 5, 3),
-            ('Semester 2', 'sem2', 5, 4),
-            ('Midterm', 'midterm', 40, 5),
-            ('Final', 'final', 40, 6)
-        ON CONFLICT (exam_key) DO NOTHING
+            ('Quiz', 'quiz', 20, 1),
+            ('Assignment', 'assignment', 20, 2),
+            ('Final Exam', 'final', 60, 3)
+        ON CONFLICT (exam_key) DO UPDATE
+           SET name = EXCLUDED.name, max_score = EXCLUDED.max_score, sort_order = EXCLUDED.sort_order
     `).catch(e => {});
 }
 
@@ -60,7 +63,7 @@ router.get('/', async (req, res) => {
     try {
         await ensureTables();
         const { rows } = await query(
-            `SELECT id, name, exam_key, max_score, sort_order, active
+            `SELECT id, name, exam_key, max_score, sort_order, active, COALESCE(is_locked, false) AS is_locked
              FROM exams WHERE deleted_at IS NULL ORDER BY sort_order ASC, id ASC`
         );
         res.json(rows);
@@ -76,7 +79,9 @@ router.get('/class/:classId', async (req, res) => {
         const classId = parseInt(req.params.classId);
         // Check if specific exams were assigned by admin to this class
         const { rows: assignedExams } = await query(`
-            SELECT e.id, e.name, e.exam_key, e.max_score, e.sort_order, e.active, true AS assigned
+            SELECT e.id, e.name, e.exam_key, e.max_score, e.sort_order, e.active,
+                   COALESCE(ce.is_locked, e.is_locked, false) AS is_locked,
+                   true AS assigned
             FROM class_exams ce
             JOIN exams e ON ce.exam_id = e.id
             WHERE ce.class_id = $1 AND e.deleted_at IS NULL AND e.active = true
@@ -87,9 +92,9 @@ router.get('/class/:classId', async (req, res) => {
             return res.json(assignedExams);
         }
 
-        // Fallback: If admin hasn't restricted exams for this class yet, return all active admin-created exams
+        // Fallback: Return all active admin-created exams
         const { rows: allExams } = await query(`
-            SELECT id, name, exam_key, max_score, sort_order, active, false AS assigned
+            SELECT id, name, exam_key, max_score, sort_order, active, COALESCE(is_locked, false) AS is_locked, false AS assigned
             FROM exams
             WHERE deleted_at IS NULL AND active = true
             ORDER BY sort_order ASC, id ASC
@@ -162,6 +167,48 @@ router.post('/class/:classId/assign', async (req, res) => {
         res.json({ message: 'Exams assigned to class.' });
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// PUT toggle lock on an exam definition globally
+router.put('/:id/lock', async (req, res) => {
+    const { locked } = req.body;
+    try {
+        await ensureTables();
+        const { rows } = await query(
+            `UPDATE exams SET is_locked = COALESCE($1, NOT COALESCE(is_locked, false)) WHERE id = $2 RETURNING id, name, is_locked`,
+            [typeof locked === 'boolean' ? locked : null, req.params.id]
+        );
+        if (!rows[0]) return res.status(404).json({ error: 'Exam not found' });
+        res.json({ message: `Exam "${rows[0].name}" ${rows[0].is_locked ? 'locked' : 'unlocked'}.`, is_locked: rows[0].is_locked });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT toggle lock on an exam for a specific class
+router.put('/class/:classId/exam/:examId/lock', async (req, res) => {
+    const classId = parseInt(req.params.classId);
+    const examId = parseInt(req.params.examId);
+    const { locked } = req.body;
+    try {
+        await ensureTables();
+        // Insert if missing or toggle existing
+        await query(
+            `INSERT INTO class_exams (class_id, exam_id, is_locked)
+             VALUES ($1, $2, COALESCE($3, true))
+             ON CONFLICT (class_id, exam_id) DO UPDATE
+               SET is_locked = COALESCE($3, NOT COALESCE(class_exams.is_locked, false))`,
+            [classId, examId, typeof locked === 'boolean' ? locked : null]
+        );
+        const { rows } = await query(
+            `SELECT is_locked FROM class_exams WHERE class_id = $1 AND exam_id = $2`,
+            [classId, examId]
+        );
+        const isLocked = rows[0] ? rows[0].is_locked : false;
+        res.json({ message: `Exam ${isLocked ? 'locked' : 'unlocked'} for this class.`, is_locked: isLocked });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

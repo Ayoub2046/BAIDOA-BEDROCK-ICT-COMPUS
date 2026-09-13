@@ -25,11 +25,12 @@ router.get('/class/:classId/:date', async (req, res) => {
     const { classId, date } = req.params;
     try {
         const { rows } = await query(`
-            SELECT s.id, s.name, ar.status
-            FROM class_students cs
-            JOIN students s ON cs.student_id = s.id
-            LEFT JOIN attendance_records ar ON s.id = ar.student_id AND ar.date = $2
-            WHERE cs.class_id = $1
+            SELECT DISTINCT s.id, s.name, ar.status
+            FROM students s
+            LEFT JOIN class_students cs ON (cs.student_id = s.id AND cs.deleted_at IS NULL)
+            LEFT JOIN attendance_records ar ON (s.id = ar.student_id AND ar.date = $2 AND ar.deleted_at IS NULL)
+            WHERE (cs.class_id = $1 OR s.classid = $1)
+              AND s.deleted_at IS NULL
             ORDER BY s.name ASC
         `, [classId, date]);
         res.json(rows);

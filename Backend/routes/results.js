@@ -319,10 +319,26 @@ router.post('/batch', async (req, res) => {
     const tName = teacherName || `Teacher-${teacherId}`;
     let client = null;
     try {
-        // Pre-check for locked submissions before opening transaction
+        // Pre-check for locked exams or already submitted locked results before opening transaction
         for (const rec of records) {
             const { studentId, subject, examType } = rec;
             if (!studentId || !subject || !examType) continue;
+
+            // 1. Check if the exam itself is locked globally by admin
+            const { rows: examLock } = await query(
+                `SELECT e.name, COALESCE(e.is_locked, false) AS exam_locked
+                 FROM exams e WHERE e.exam_key = $1 AND e.deleted_at IS NULL LIMIT 1`,
+                [examType]
+            );
+            if (examLock[0] && examLock[0].exam_locked) {
+                return res.status(403).json({
+                    error: `The exam "${examLock[0].name}" is currently locked by the administrator. Scores cannot be submitted or changed.`,
+                    locked: true,
+                    examType
+                });
+            }
+
+            // 2. Check if previous submission is locked
             const { rows: existing } = await query(
                 `SELECT id, approval_status, edit_allowed FROM results
                  WHERE student_id = $1 AND subject = $2 AND exam_type = $3
@@ -332,7 +348,7 @@ router.post('/batch', async (req, res) => {
             );
             if (existing[0] && !existing[0].edit_allowed && existing[0].approval_status !== 'rejected') {
                 return res.status(409).json({
-                    error: `Results for "${subject}" exam already submitted and locked. Ask the admin to unlock for re-edit.`,
+                    error: `Results for "${subject}" (${examType}) were already submitted and locked. Ask the admin to unlock for re-editing.`,
                     locked: true,
                     subject,
                     examType
@@ -343,7 +359,7 @@ router.post('/batch', async (req, res) => {
         client = await pool.connect();
         await client.query('BEGIN');
         for (const rec of records) {
-            const { studentId, subject, examType, score } = rec;
+            const { studentId, subject, examType, score, remarks } = rec;
             if (!studentId || !subject || !examType) {
                 throw new Error('studentId, subject and examType are required for every record.');
             }
@@ -361,13 +377,13 @@ router.post('/batch', async (req, res) => {
                 [studentId, subject, examType, tName]
             );
             await client.query(
-                `INSERT INTO results (student_id, subject, score, exam_type, max_score, approval_status, submitted_by, submitted_at, edit_allowed)
-                 VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW(), false)`,
-                [studentId, subject, parsedScore, examType, maxScore, tName]
+                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false)`,
+                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName]
             );
         }
         await client.query('COMMIT');
-        res.status(201).json({ message: `${records.length} results submitted for approval.` });
+        res.status(201).json({ message: `${records.length} result(s) submitted for approval.` });
     } catch (err) {
         if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
         res.status(400).json({ error: err.message });

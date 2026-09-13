@@ -62,19 +62,18 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// GET students assigned to a class
+// GET students assigned to a class (checks both class_students and students.classid)
 router.get('/:id/students', async (req, res) => {
     try {
         const { rows } = await query(`
-            SELECT s.id, s.name, s.grade, s.enrollmentdate, s.birthdate, s.attendance,
+            SELECT DISTINCT s.id, s.name, s.grade, s.enrollmentdate, s.birthdate, s.attendance,
                    u.name AS parent_name, c.name AS class_name
-            FROM class_students cs
-            JOIN students s ON cs.student_id = s.id
+            FROM students s
+            LEFT JOIN class_students cs ON (cs.student_id = s.id AND cs.deleted_at IS NULL)
+            LEFT JOIN classes c ON (c.id = cs.class_id OR c.id = s.classid)
             LEFT JOIN users u ON u.id = s.parentid
-            JOIN classes c ON c.id = cs.class_id
-            WHERE cs.class_id = $1
+            WHERE (cs.class_id = $1 OR s.classid = $1)
               AND s.deleted_at IS NULL
-              AND cs.deleted_at IS NULL
             ORDER BY s.name
         `, [req.params.id]);
         res.json(rows);
@@ -83,7 +82,7 @@ router.get('/:id/students', async (req, res) => {
     }
 });
 
-// GET students NOT yet assigned to any class (for the assign dropdown)
+// GET students NOT yet assigned to this class (checks both class_students and students.classid)
 router.get('/:id/unassigned-students', async (req, res) => {
     try {
         const { rows } = await query(`
@@ -94,6 +93,7 @@ router.get('/:id/unassigned-students', async (req, res) => {
                 SELECT student_id FROM class_students
                 WHERE class_id = $1 AND deleted_at IS NULL
               )
+              AND (s.classid IS NULL OR s.classid != $1)
             ORDER BY s.name
         `, [req.params.id]);
         res.json(rows);
@@ -172,7 +172,7 @@ router.delete('/:id/students/:studentId', async (req, res) => {
 // --- CSV Template for Class Assignment ---
 router.get('/assign-template/download', async (req, res) => {
     try {
-        const { rows: classes } = await query(`SELECT name FROM classes ORDER BY name LIMIT 5`);
+        const { rows: classes } = await query(`SELECT name FROM classes WHERE deleted_at IS NULL ORDER BY name LIMIT 5`);
         const { rows: students } = await query(`SELECT id, name FROM students WHERE deleted_at IS NULL ORDER BY id LIMIT 3`);
         const header = ['StudentID', 'ClassName'];
         const examples = students.map((s, i) => [
@@ -213,7 +213,7 @@ router.post('/assign-csv', upload.single('file'), async (req, res) => {
             if (!studentId || isNaN(studentId) || !className) { errors.push(`Row ${i+2}: Invalid StudentID or ClassName`); continue; }
 
             try {
-                const { rows: classRows } = await query(`SELECT id FROM classes WHERE LOWER(name) = LOWER($1)`, [className]);
+                const { rows: classRows } = await query(`SELECT id FROM classes WHERE LOWER(name) = LOWER($1) AND deleted_at IS NULL`, [className]);
                 if (classRows.length === 0) { errors.push(`Row ${i+2}: Class "${className}" not found`); continue; }
                 const classId = classRows[0].id;
 

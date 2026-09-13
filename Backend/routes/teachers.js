@@ -65,7 +65,7 @@ router.get('/classes', async (req, res) => {
         if (!teacherRows[0]) return res.status(404).json({ error: 'Teacher not found.' });
         
         const { rows: classes } = await query(
-            `SELECT id, name FROM classes WHERE teacherid = $1 ORDER BY name`, 
+            `SELECT id, name FROM classes WHERE teacherid = $1 AND deleted_at IS NULL ORDER BY name`, 
             [teacherRows[0].id]
         );
         res.json(classes);
