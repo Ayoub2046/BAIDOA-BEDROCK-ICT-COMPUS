@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News & Events | BAIDOA BEDROCK ICT CAMPUS</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Internal CSS for this page */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* --- Classic Navigation Bar Style (Same as before) --- */
+        .navbar-classic {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+        }
+
+        .navbar-classic .navbar-nav .nav-link {
+            color: #555;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-classic .navbar-nav .nav-link.active {
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* [NEW] News Page Specific Styles */
+        .page-header {
+            background-color: #e9ecef;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .featured-news-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+            /* To keep image corners rounded */
+        }
+
+        .featured-news-card .card-body {
+            padding: 2rem;
+        }
+
+        .recent-news-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .recent-news-item img {
+            width: 100px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 1rem;
+        }
+
+        .recent-news-item h6 {
+            margin-bottom: 0.25rem;
+        }
+
+        .recent-news-item a {
+            text-decoration: none;
+            color: #343a40;
+            transition: color 0.2s;
+        }
+
+        .recent-news-item a:hover h6 {
+            color: #0f510e;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Classic Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/HTML/index.html">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Logo"
+                    style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                <span class="fw-bold">Baidoa Bedrock ICT Campus</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/HTML/index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/academics.html">Academics</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/admision.html">Admissions</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/HTML/news.html">News & Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/gallery.html">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-primary"
+                            href="/HTML/Student Results.html">Check Results</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/student-library.html">Student Library</a></li>
+                </ul>
+                <a class="btn btn-primary ms-lg-3" href="/HTML/portal_login.html">Portal Login</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Page Header -->
+    <header class="page-header text-center">
+        <div class="container">
+            <h1 class="display-4">News & Events</h1>
+            <p class="lead">Stay up-to-date with the latest happenings at Springfield Academy.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="row g-5">
+            <!-- Left Column: Featured Story -->
+            <div class="col-lg-8" id="featured-column">
+                <h3 class="mb-4">Featured Story</h3>
+                <div id="featured-news-container">
+                    <div class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Loading...</div>
+                </div>
+            </div>
+
+            <!-- Right Column: Recent News -->
+            <div class="col-lg-4">
+                <h3 class="mb-4">Recent News</h3>
+                <div id="recent-news-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="lib-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand d-flex align-items-center mb-3">
+                        <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo">
+                        <div>
+                            <p class="fb-name">Baidoa Bedrock ICT Campus</p>
+                            <p class="fb-tag">Nurturing Minds, Shaping Futures</p>
+                        </div>
+                    </div>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.75);">
+                        A tradition of excellence in education — nurturing minds and shaping futures.
+                        Explore academics, news, and student portals all in one place.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/index.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Home</a></li>
+                        <li><a href="/HTML/about.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>About Us</a></li>
+                        <li><a href="/HTML/academics.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Academics</a></li>
+                        <li><a href="/HTML/admision.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Admissions</a></li>
+                        <li><a href="/HTML/news.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>News &amp; Events</a></li>
+                        <li><a href="/HTML/contact.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Portals</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Portal Login</a></li>
+                        <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Check Results</a></li>
+                        <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance</a></li>
+                        <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Digital Library</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Contact Us</h6>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-map-marker-alt"></i>123 Education Lane, Mogadishu</p>
+                        <p><i class="fas fa-phone"></i>+252 618972046</p>
+                        <p><i class="fas fa-envelope"></i>info@bbict.edu.so</p>
+                        <p><i class="fas fa-clock"></i>Mon - Fri: 8:00 AM - 4:00 PM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="mb-0">© <span id="year"></span> Baidoa Bedrock ICT Campus. All Rights Reserved. | Developed By <span class="dev">ENG AYUOB ADAN ABDI</span></p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const featuredContainer = document.getElementById('featured-news-container');
+            const recentContainer = document.getElementById('recent-news-container');
+
+            try {
+                const res = await fetch('/api/news');
+                if (!res.ok) throw new Error('Server returned ' + res.status);
+                const articles = await res.json();
+
+                if (articles.length === 0) {
+                    featuredContainer.innerHTML = '<div class="text-center text-muted py-5">No news articles yet.</div>';
+                    return;
+                }
+
+                // Featured = most recent (first in array, ordered by id DESC)
+                const featured = articles[0];
+                const featuredImg = featured.imageurl
+                    ? featured.imageurl
+                    : 'https://via.placeholder.com/800x400.png?text=News';
+                featuredContainer.innerHTML = `
+                    <div class="card featured-news-card">
+                        <img src="${featuredImg}" class="card-img-top" alt="${featured.title}" onerror="this.src='https://via.placeholder.com/800x400.png?text=News'">
+                        <div class="card-body">
+                            <p class="text-muted mb-2"><small>${featured.publishdate || ''}</small></p>
+                            <h4 class="card-title">${featured.title}</h4>
+                            <p class="card-text mt-3">${featured.summary || featured.content ? (featured.summary || featured.content.substring(0, 200) + '...') : ''}</p>
+                        </div>
+                    </div>`;
+
+                // Recent = remaining articles
+                const recent = articles.slice(1);
+                if (recent.length === 0) {
+                    recentContainer.innerHTML = '<p class="text-muted small">No other articles.</p>';
+                } else {
+                    recentContainer.innerHTML = recent.map((a, i) => {
+                        const img = a.imageurl
+                            ? a.imageurl
+                            : 'https://via.placeholder.com/200x150.png?text=News';
+                        return `
+                            <div class="recent-news-item">
+                                <img src="${img}" alt="${a.title}" onerror="this.src='https://via.placeholder.com/200x150.png?text=News'" loading="lazy">
+                                <div>
+                                    <h6>${a.title}</h6>
+                                    <small class="text-muted">${a.publishdate || ''}</small>
+                                </div>
+                            </div>
+                            ${i < recent.length - 1 ? '<hr>' : ''}`;
+                    }).join('');
+                }
+            } catch (err) {
+                featuredContainer.innerHTML = '<div class="text-center text-danger py-5">Failed to load news.</div>';
+                recentContainer.innerHTML = '';
+                console.error(err);
+            }
+        });
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

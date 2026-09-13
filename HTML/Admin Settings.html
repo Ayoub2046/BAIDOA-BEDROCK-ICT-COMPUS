@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <title>Admin Settings</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body[data-theme="dark"] {
+            background: #222;
+            color: #fff;
+        }
+        body[data-theme="dark"] .card,
+        body[data-theme="dark"] .form-control,
+        body[data-theme="dark"] .form-select {
+            background: #333;
+            color: #fff;
+            border-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Settings</h2>
+        <form id="settingsForm">
+            <div class="mb-3">
+                <label for="themeSelect" class="form-label">Theme</label>
+                <select class="form-select" id="themeSelect">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <div id="settingsMsg" class="mt-3"></div>
+        </form>
+    </div>
+    <script>
+        // Load current theme from localStorage
+        window.addEventListener('DOMContentLoaded', function() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            if(profile.theme) {
+                document.getElementById('themeSelect').value = profile.theme;
+                document.body.setAttribute('data-theme', profile.theme);
+            }
+        });
+
+        // Change theme instantly on select
+        document.getElementById('themeSelect').addEventListener('change', function() {
+            document.body.setAttribute('data-theme', this.value);
+        });
+
+        // Save settings and redirect
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const theme = document.getElementById('themeSelect').value;
+            // Get old profile data
+            const oldProfile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            // Save new theme
+            localStorage.setItem('adminProfile', JSON.stringify({
+                ...oldProfile,
+                theme: theme
+            }));
+            // Show message and redirect
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = "Settings Saved! Redirecting...";
+            setTimeout(function() {
+                window.location.href = "admin.html";
+            }, 1200);
+        });
+    </script>
+
+
+<script>
+    // JS/admin.js
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Global Sidebar Toggle Logic for all Admin Pages ---
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggler = document.getElementById('sidebar-toggler');
+
+    // Only run this code if a sidebar and a toggler button exist on the page
+    if (sidebar && sidebarToggler) {
+        sidebarToggler.addEventListener('click', () => {
+            // This adds or removes the 'toggled' class, which our CSS uses to show/hide the menu
+            sidebar.classList.toggle('toggled');
+        });
+    }
+
+    // --- Global Logout Logic ---
+    const logoutLink = document.getElementById('logout-link');
+    const logoutLinkDropdown = document.getElementById('logout-link-dropdown');
+
+    const logout = () => {
+        sessionStorage.removeItem('isAdminLoggedIn');
+        sessionStorage.removeItem('activeUser');
+        window.location.href = 'admin-login.html'; // Redirect to the admin login page
+    };
+
+    if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+    }
+
+    if (logoutLinkDropdown) {
+        logoutLinkDropdown.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+    }
+});
+</script>
+
+    
+
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

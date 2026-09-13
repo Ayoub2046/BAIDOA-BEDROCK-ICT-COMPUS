@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .timetable-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(5, 1fr);
+            gap: 2px;
+        }
+        .timetable-header {
+            background: #0f510e;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .timetable-time {
+            background: #f8f9fa;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .timetable-cell {
+            background: white;
+            padding: 8px;
+            border: 1px solid #eee;
+            min-height: 60px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .timetable-cell:hover {
+            background: #f0f7ff;
+        }
+        .timetable-cell.empty-cell {
+            background: #fafafa;
+        }
+        .timetable-cell .subject {
+            font-weight: 600;
+            color: #0f510e;
+        }
+        .timetable-cell .teacher {
+            color: #666;
+            font-size: 0.85em;
+        }
+        .timetable-cell .room {
+            color: #999;
+            font-size: 0.8em;
+        }
+        .timetable-cell .cell-actions {
+            opacity: 0;
+            transition: opacity 0.2s;
+            margin-top: 4px;
+        }
+        .timetable-cell:hover .cell-actions {
+            opacity: 1;
+        }
+        .timetable-corner {
+            background: #0f510e;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .class-selector-container {
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .class-selector-container label {
+            font-weight: 600;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .class-selector-container select {
+            max-width: 300px;
+        }
+        .no-data-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .no-data-message i {
+            font-size: 3em;
+            margin-bottom: 12px;
+            color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html" class="active"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 ms-3">Timetable Management</h4>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <div class="ms-auto d-flex align-items-center">
+                    <button class="btn btn-primary btn-sm" id="btn-add-timetable"><i class="fas fa-plus me-1"></i> Add Entry</button>
+                </div>
+            </nav>
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Class Selector -->
+                <div class="class-selector-container">
+                    <label for="class-select"><i class="fas fa-chalkboard me-1"></i> Select Class:</label>
+                    <select class="form-select form-select-sm" id="class-select">
+                        <option value="" disabled selected>Loading classes...</option>
+                    </select>
+                </div>
+
+                <!-- Timetable Grid -->
+                <div class="card main-table-card">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <h6 id="timetable-title">Weekly Timetable</h6>
+                        <div class="text-muted" style="font-size: 0.85em;">
+                            <i class="fas fa-info-circle me-1"></i> Click on a cell to edit or delete entries
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="timetable-container">
+                            <div class="no-data-message">
+                                <i class="fas fa-clock d-block"></i>
+                                <p>Please select a class to view its timetable.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timetable Entry Modal -->
+    <div class="modal fade" id="timetableModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="timetableForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="timetableModalTitle">Add Timetable Entry</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="entry-id">
+                        <div class="mb-3">
+                            <label class="form-label">Class</label>
+                            <select class="form-select" name="classId" id="modal-class-select" required>
+                                <option value="" disabled selected>Select a class...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Day of Week</label>
+                            <select class="form-select" name="dayOfWeek" required>
+                                <option value="" disabled selected>Select day...</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            <input type="text" name="subject" class="form-control" placeholder="e.g., Mathematics" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" name="startTime" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Time</label>
+                                <input type="time" name="endTime" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Room</label>
+                            <input type="text" name="room" class="form-control" placeholder="e.g., Room 101" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Teacher Name</label>
+                            <input type="text" name="teacherName" class="form-control" placeholder="e.g., Mr. Smith" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let loadClasses;
+        let loadTimetable;
+        document.addEventListener('DOMContentLoaded', () => {
+            const timetableModal = new bootstrap.Modal(document.getElementById('timetableModal'));
+            const timetableForm = document.getElementById('timetableForm');
+            const classSelect = document.getElementById('class-select');
+            const modalClassSelect = document.getElementById('modal-class-select');
+            const timetableContainer = document.getElementById('timetable-container');
+            const timetableTitle = document.getElementById('timetable-title');
+
+            const CLASSES_API_URL = '/api/classes';
+            const TIMETABLE_API_URL = '/api/timetables';
+
+            let classes = [];
+            let currentTimetable = [];
+            let selectedClassId = null;
+
+            const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const DAY_ORDER = { 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5 };
+
+            loadClasses = async function() {
+                classSelect.innerHTML = '<option value="" disabled selected>Loading classes...</option>';
+                modalClassSelect.innerHTML = '<option value="" disabled selected>Loading classes...</option>';
+                try {
+                    const response = await fetch(CLASSES_API_URL);
+                    if (!response.ok) throw new Error(`Classes API error (${response.status})`);
+                    classes = await response.json();
+
+                    classSelect.innerHTML = '<option value="" disabled selected>Select a class...</option>';
+                    modalClassSelect.innerHTML = '<option value="" disabled selected>Select a class...</option>';
+
+                    classes.forEach(c => {
+                        classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                        modalClassSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                    });
+
+                    if (classes.length > 0) {
+                        classSelect.disabled = false;
+                    } else {
+                        classSelect.innerHTML = '<option value="" disabled selected>No classes available</option>';
+                    }
+                } catch (error) {
+                    console.error('Error loading classes:', error);
+                    classSelect.innerHTML = '<option value="" disabled selected>Error loading classes</option>';
+                    timetableContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <i class="fas fa-exclamation-triangle d-block text-warning mb-2"></i>
+                            <p class="text-danger mb-2">Could not load classes: ${error.message}</p>
+                            <button class="btn btn-sm btn-outline-success" onclick="loadClasses()"><i class="fas fa-redo me-1"></i> Retry</button>
+                        </div>`;
+                }
+            };
+            window.loadClasses = loadClasses;
+
+            loadTimetable = async function(classId) {
+                if (!classId) return;
+                selectedClassId = classId;
+
+                const className = classes.find(c => c.id == classId)?.name || '';
+                timetableTitle.textContent = `Weekly Timetable - ${className}`;
+                timetableContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status"></div>
+                        <p class="mt-2 text-muted">Loading timetable...</p>
+                    </div>`;
+
+                try {
+                    const response = await fetch(`${TIMETABLE_API_URL}/class/${classId}`);
+                    if (!response.ok) throw new Error(`Timetable API error (${response.status})`);
+                    currentTimetable = await response.json();
+                    renderTimetable();
+                } catch (error) {
+                    console.error('Error loading timetable:', error);
+                    timetableContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <i class="fas fa-exclamation-triangle d-block text-warning mb-2"></i>
+                            <p class="text-danger mb-2">Could not load timetable: ${error.message}</p>
+                            <button class="btn btn-sm btn-outline-success" onclick="loadTimetable('${classId}')"><i class="fas fa-redo me-1"></i> Retry</button>
+                        </div>`;
+                }
+            };
+            window.loadTimetable = loadTimetable;
+
+            function renderTimetable() {
+                if (!selectedClassId) {
+                    timetableContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <i class="fas fa-clock d-block"></i>
+                            <p>Please select a class to view its timetable.</p>
+                        </div>`;
+                    return;
+                }
+
+                const timeSlots = getTimeSlots(currentTimetable);
+
+                if (timeSlots.length === 0) {
+                    timetableContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <i class="fas fa-calendar-times d-block"></i>
+                            <p>No timetable entries found for this class.</p>
+                            <p class="text-muted">Click "Add Entry" to create one.</p>
+                        </div>`;
+                    return;
+                }
+
+                let html = '<div class="timetable-grid">';
+
+                html += '<div class="timetable-corner">Time</div>';
+                DAYS.forEach(day => {
+                    html += `<div class="timetable-header">${day}</div>`;
+                });
+
+                timeSlots.forEach(slot => {
+                    html += `<div class="timetable-time">${slot.label}</div>`;
+
+                    DAYS.forEach(day => {
+                        const entry = currentTimetable.find(e =>
+                            e.day_of_week === day &&
+                            e.start_time === slot.start
+                        );
+
+                        if (entry) {
+                            html += `
+                                <div class="timetable-cell" data-id="${entry.id}">
+                                    <div class="subject">${escapeHtml(entry.subject)}</div>
+                                    <div class="teacher"><i class="fas fa-user-tie me-1"></i>${escapeHtml(entry.teacher_name)}</div>
+                                    <div class="room"><i class="fas fa-door-open me-1"></i>${escapeHtml(entry.room)}</div>
+                                    <div class="cell-actions">
+                                        <button class="btn btn-sm btn-outline-primary btn-edit-cell" data-id="${entry.id}" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger btn-delete-cell" data-id="${entry.id}" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>`;
+                        } else {
+                            html += `
+                                <div class="timetable-cell empty-cell" data-day="${day}" data-start="${slot.start}">
+                                    <span class="text-muted" style="font-size: 0.8em;"></span>
+                                </div>`;
+                        }
+                    });
+                });
+
+                html += '</div>';
+                timetableContainer.innerHTML = html;
+            }
+
+            function getTimeSlots(entries) {
+                const slotsMap = {};
+
+                entries.forEach(entry => {
+                    if (!entry.start_time || !entry.end_time) return;
+
+                    const startMinutes = timeToMinutes(entry.start_time);
+                    const endMinutes = timeToMinutes(entry.end_time);
+
+                    const key = entry.start_time;
+                    if (!slotsMap[key]) {
+                        slotsMap[key] = {
+                            start: entry.start_time,
+                            end: entry.end_time,
+                            startMinutes: startMinutes,
+                            label: `${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}`
+                        };
+                    } else {
+                        if (endMinutes > timeToMinutes(slotsMap[key].end)) {
+                            slotsMap[key].end = entry.end_time;
+                            slotsMap[key].label = `${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}`;
+                        }
+                    }
+                });
+
+                return Object.values(slotsMap).sort((a, b) => a.startMinutes - b.startMinutes);
+            }
+
+            function timeToMinutes(timeStr) {
+                const [h, m] = timeStr.split(':').map(Number);
+                return h * 60 + m;
+            }
+
+            function formatTime(timeStr) {
+                if (!timeStr) return '';
+                const [h, m] = timeStr.split(':').map(Number);
+                const period = h >= 12 ? 'PM' : 'AM';
+                const displayH = h % 12 || 12;
+                return `${displayH}:${String(m).padStart(2, '0')} ${period}`;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text || '';
+                return div.innerHTML;
+            }
+
+            function populateClassSelects() {
+                modalClassSelect.innerHTML = '<option value="" disabled selected>Select a class...</option>';
+                classes.forEach(c => {
+                    modalClassSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                });
+            }
+
+            document.getElementById('btn-add-timetable').addEventListener('click', () => {
+                timetableForm.reset();
+                timetableForm.dataset.mode = 'add';
+                document.getElementById('entry-id').value = '';
+                document.getElementById('timetableModalTitle').textContent = 'Add Timetable Entry';
+                populateClassSelects();
+                if (selectedClassId) {
+                    modalClassSelect.value = selectedClassId;
+                }
+                timetableModal.show();
+            });
+
+            timetableContainer.addEventListener('click', e => {
+                const editBtn = e.target.closest('.btn-edit-cell');
+                const deleteBtn = e.target.closest('.btn-delete-cell');
+
+                if (editBtn) {
+                    const id = parseInt(editBtn.dataset.id);
+                    const entry = currentTimetable.find(t => t.id === id);
+                    if (!entry) return;
+
+                    timetableForm.dataset.mode = 'edit';
+                    document.getElementById('entry-id').value = entry.id;
+                    document.getElementById('timetableModalTitle').textContent = 'Edit Timetable Entry';
+                    populateClassSelects();
+                    modalClassSelect.value = entry.classId || selectedClassId;
+                    timetableForm.elements.dayOfWeek.value = entry.day_of_week;
+                    timetableForm.elements.subject.value = entry.subject;
+                    timetableForm.elements.startTime.value = entry.start_time;
+                    timetableForm.elements.endTime.value = entry.end_time;
+                    timetableForm.elements.room.value = entry.room;
+                    timetableForm.elements.teacherName.value = entry.teacher_name;
+                    timetableModal.show();
+                } else if (deleteBtn) {
+                    const id = parseInt(deleteBtn.dataset.id);
+                    const entry = currentTimetable.find(t => t.id === id);
+                    if (!entry) return;
+
+                    if (confirm(`Are you sure you want to delete "${entry.subject}" on ${entry.day_of_week}?`)) {
+                        fetch(`${TIMETABLE_API_URL}/${id}`, { method: 'DELETE' })
+                            .then(res => {
+                                if (!res.ok) throw new Error('Deletion failed');
+                                loadTimetable(selectedClassId);
+                            })
+                            .catch(err => alert(`Error: ${err.message}`));
+                    }
+                }
+            });
+
+            timetableForm.addEventListener('submit', async e => {
+                e.preventDefault();
+                const mode = timetableForm.dataset.mode;
+                const id = document.getElementById('entry-id').value;
+                const data = {
+                    classId: parseInt(timetableForm.elements.classId.value),
+                    dayOfWeek: timetableForm.elements.dayOfWeek.value,
+                    subject: timetableForm.elements.subject.value.trim(),
+                    startTime: timetableForm.elements.startTime.value,
+                    endTime: timetableForm.elements.endTime.value,
+                    room: timetableForm.elements.room.value.trim(),
+                    teacherName: timetableForm.elements.teacherName.value.trim()
+                };
+
+                if (data.startTime && data.endTime && data.startTime >= data.endTime) {
+                    alert('End time must be after start time.');
+                    return;
+                }
+
+                const url = (mode === 'edit') ? `${TIMETABLE_API_URL}/${id}` : TIMETABLE_API_URL;
+                const method = (mode === 'edit') ? 'PUT' : 'POST';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!response.ok) throw new Error('Save operation failed');
+                    await loadTimetable(selectedClassId);
+                    timetableModal.hide();
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            });
+
+            classSelect.addEventListener('change', () => {
+                loadTimetable(classSelect.value);
+            });
+
+            // --- Sidebar Toggle ---
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            if (sidebar && sidebarToggler) {
+                sidebarToggler.addEventListener('click', () => {
+                    sidebar.classList.toggle('toggled');
+                });
+            }
+
+            // --- Logout ---
+            const logoutLink = document.querySelector('.sidebar-nav li:last-child a');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sessionStorage.removeItem('isAdminLoggedIn');
+                    sessionStorage.removeItem('activeUser');
+                    window.location.href = 'index.html';
+                });
+            }
+
+            // --- Initial Load ---
+            loadClasses();
+        });
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

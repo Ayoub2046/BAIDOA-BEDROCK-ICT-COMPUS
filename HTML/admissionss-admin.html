@@ -1,0 +1,77 @@
+<!-- HTML/admissions-admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <title>Manage Admissions</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <!-- ... (copy the <head> from another admin page like student.html) ... -->
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <!-- ... (your full sidebar HTML, with 'Manage Admissions' link added and active) ... -->
+    </nav>
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="top-navbar"><h4 class="mb-0 ms-3">Manage Admissions</h4>
+            <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+            </div>
+        </nav>
+        <div class="content-area">
+            <div class="card main-table-card">
+                <div class="card-header"><h6>Submitted Applications</h6></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr><th>Name</th><th>Grade</th><th>Parent</th><th>Submitted</th><th>Letter</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="applications-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tbody = document.getElementById('applications-tbody');
+        const API_URL = '/api/admissions';
+        
+        async function fetchApplications() { /* ... function to fetch and render the table ... */ }
+        
+        tbody.addEventListener('click', async (e) => { /* ... event handler for status change buttons ... */ });
+        
+        fetchApplications();
+    });
+</script>
+<script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+</script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

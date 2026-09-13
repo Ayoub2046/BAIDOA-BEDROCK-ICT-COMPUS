@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Admissions | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+            </h3>
+        </div>
+                <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html" class="active"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </nav>
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <nav class="top-navbar"><h4 class="mb-0 ms-3">Manage Admissions</h4>
+            <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+            </div>
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+        </nav>
+        
+        <div class="content-area">
+            <!-- Admissions Open/Close Control -->
+            <div class="card main-table-card mb-4">
+                <div class="card-header"><h6><i class="fas fa-toggle-on me-2"></i>Admissions Control</h6></div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h5 class="mb-1">
+                                Online Admissions are
+                                <span id="admission-status-badge" class="badge bg-success">Open</span>
+                            </h5>
+                            <p class="text-muted mb-0" id="admission-status-text">
+                                Visitors can currently submit applications through the website.
+                            </p>
+                        </div>
+                        <button class="btn btn-primary" id="toggle-admissions-btn">
+                            <i class="fas fa-lock me-2"></i>Close Admissions
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card main-table-card">
+                <div class="card-header"><h6>Submitted Applications</h6></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant Name</th>
+                                    <th>Grade</th>
+                                    <th>Parent Contact</th>
+                                    <th>Submitted</th>
+                                    <th>Letter</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applications-tbody">
+                                <!-- Applications will be loaded here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tbody = document.getElementById('applications-tbody');
+        const API_URL = '/api/admissions';
+        
+        const statusColors = {
+            'Pending': 'bg-warning text-dark',
+            'Accepted': 'bg-success',
+            'Rejected': 'bg-danger'
+        };
+        
+        async function fetchApplications() {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading applications...</td></tr>`;
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+                const applications = await response.json();
+                renderTable(applications);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load applications. <button class="btn btn-sm btn-outline-success ms-2" onclick="fetchApplications()"><i class="fas fa-redo me-1"></i>Retry</button></td></tr>`;
+            }
+        }
+        
+        function renderTable(applications) {
+            if (applications.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No new applications have been submitted.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = applications.map(app => `
+                <tr>
+                    <td>${app.name}</td>
+                    <td>${app.gradetoenroll}</td>
+                    <td>${app.parentname} (${app.parentemail})</td>
+                    <td>${app.submissiondate}</td>
+                    <td>
+                        ${app.applicationletterpath ? `<a href="${app.applicationletterpath}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>` : 'None'}
+                    </td>
+                    <td class="text-center">
+                        <span class="badge ${statusColors[app.status] || 'bg-secondary'}">${app.status}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-success btn-action" data-id="${app.id}" data-status="Accepted" title="Accept">✔</button>
+                            <button class="btn btn-danger btn-action" data-id="${app.id}" data-status="Rejected" title="Reject">✖</button>
+                            <button class="btn btn-secondary btn-action" data-id="${app.id}" data-status="Pending" title="Set as Pending">Pending</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        tbody.addEventListener('click', async (e) => {
+            const button = e.target.closest('.btn-action');
+            if (!button) return;
+            
+            const appId = button.dataset.id;
+            const newStatus = button.dataset.status;
+            
+            try {
+                const response = await fetch(`${API_URL}/${appId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (!response.ok) throw new Error('Failed to update status');
+                
+                // Refresh the table to show the new status
+                fetchApplications();
+                
+            } catch (error) {
+                console.error("Update Error:", error);
+                alert("Could not update the application status.");
+            }
+        });
+        
+        // Initial load
+        fetchApplications();
+
+        // --- Admissions Open/Close Control ---
+        let admissionsOpen = true;
+
+        async function loadAdmissionStatus() {
+            try {
+                const response = await fetch('/api/admissions/status');
+                const data = await response.json();
+                admissionsOpen = data.open !== false;
+                updateAdmissionUI();
+            } catch (error) {
+                console.error('Could not load admission status:', error);
+            }
+        }
+
+        function updateAdmissionUI() {
+            const badge = document.getElementById('admission-status-badge');
+            const text = document.getElementById('admission-status-text');
+            const btn = document.getElementById('toggle-admissions-btn');
+            if (admissionsOpen) {
+                badge.textContent = 'Open';
+                badge.className = 'badge bg-success';
+                text.textContent = 'Visitors can currently submit applications through the website.';
+                btn.innerHTML = '<i class="fas fa-lock me-2"></i>Close Admissions';
+                btn.className = 'btn btn-danger';
+            } else {
+                badge.textContent = 'Closed';
+                badge.className = 'badge bg-danger';
+                text.textContent = 'Visitors cannot submit applications right now.';
+                btn.innerHTML = '<i class="fas fa-lock-open me-2"></i>Open Admissions';
+                btn.className = 'btn btn-success';
+            }
+        }
+
+        document.getElementById('toggle-admissions-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('toggle-admissions-btn');
+            btn.disabled = true;
+            try {
+                const response = await fetch('/api/admissions/status', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ open: !admissionsOpen })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Failed to update admissions status');
+                admissionsOpen = result.open;
+                updateAdmissionUI();
+            } catch (error) {
+                console.error('Update Error:', error);
+                alert('Could not update admissions status: ' + error.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        loadAdmissionStatus();
+    });
+
+    // Add this code inside your main <script> tag at the bottom of each admin page
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+
+    // 1. Responsive Sidebar Toggler Functionality
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggler = document.getElementById('sidebar-toggler');
+    if (sidebarToggler) {
+        sidebarToggler.addEventListener('click', () => {
+            sidebar.classList.toggle('toggled');
+        });
+    }
+
+    // 2. Security & Logout
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('adminProfile');
+            window.location.href = 'admin-login.html';
+        });
+    });
+
+    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+
+
+    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
+    // For example, on student.html, your code to fetch students starts here.
+    // On teacher.html, your code to fetch teachers starts here.
+    // etc.
+
+});
+</script>
+<script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+</script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

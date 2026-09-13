@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content & News Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt=""><span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span></h3>
+        </div>
+                <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html" class="active"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </nav>
+    <div class="main-content">
+        <nav class="top-navbar">
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            <div class="theme-toggle me-3" onclick="toggleTheme()" style="cursor:pointer;">
+                <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+            </div>
+            <h4 class="mb-0 ms-3">Content & News Management</h4>
+        </nav>
+        <div class="content-area p-4">
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pages-pane">Page Content</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#announcements-pane"><i class="fas fa-bullhorn me-1 text-primary"></i>Daily Announcements</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#news-pane">News & Events</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#testimonials-pane">Testimonials</button></li>
+            </ul>
+            <div class="tab-content" id="mainTabsContent">
+                <!-- Page Content -->
+                <div class="tab-pane fade show active" id="pages-pane" role="tabpanel">
+                    <div id="save-alert-pages" class="mt-3"></div>
+                    <form id="content-form">
+                        <ul class="nav nav-pills mb-3 mt-3" id="pageContentTabs">
+                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home-tab-pane">Homepage</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#about-tab-pane">About Us</button></li>
+                        </ul>
+                        <div class="tab-content card p-4">
+                            <div class="tab-pane fade show active" id="home-tab-pane">
+                                <h5 class="fw-bold mb-3">Hero Section</h5>
+                                <div class="mb-3"><label class="form-label">Main Title</label><input type="text" id="hero-title" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Subtitle</label><input type="text" id="hero-subtitle" class="form-control"></div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Hero Gallery <small class="text-muted fw-normal">(auto-swipes every 5s)</small></label>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <input type="file" accept="image/*" class="form-control" id="hero-gallery-file">
+                                        <button type="button" class="btn btn-outline-secondary upload-image-btn" id="upload-hero-gallery-btn"><i class="fas fa-upload me-1"></i>Add Image</button>
+                                    </div>
+                                    <input type="hidden" id="heroGallery" value="[]">
+                                    <div id="hero-gallery-preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+                                <hr>
+                                <h5 class="fw-bold mt-4"><i class="fas fa-check-circle text-primary me-2"></i>"Why Choose Us" Section</h5>
+                                <p class="text-muted small">Customize the 3 highlight cards and add your own custom photos/pictures to showcase the campus strengths.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="card p-3 border h-100 shadow-sm">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-star me-1"></i> Feature 1</h6>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Title</label><input type="text" id="feature1-title" class="form-control form-control-sm" placeholder="e.g. Innovative Curriculum"></div>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Description</label><textarea id="feature1-text" class="form-control form-control-sm" rows="3" placeholder="Description of this feature..."></textarea></div>
+                                            <div class="mb-2">
+                                                <label class="form-label small fw-semibold">Picture / Photo</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="file" accept="image/*" class="form-control form-control-sm" id="feature1Image-file">
+                                                    <input type="hidden" id="feature1Image">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="feature1Image"><i class="fas fa-upload me-1"></i>Upload</button>
+                                                </div>
+                                                <div id="feature1Image-preview" class="mt-2" style="display:none;">
+                                                    <img src="" class="img-thumbnail" style="max-height:100px; width:100%; object-fit:cover; border-radius:6px;">
+                                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 mt-1 remove-image-btn" data-target="feature1Image"><i class="fas fa-times me-1"></i>Remove Picture</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card p-3 border h-100 shadow-sm">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user-tie me-1"></i> Feature 2</h6>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Title</label><input type="text" id="feature2-title" class="form-control form-control-sm" placeholder="e.g. Dedicated Faculty"></div>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Description</label><textarea id="feature2-text" class="form-control form-control-sm" rows="3" placeholder="Description of this feature..."></textarea></div>
+                                            <div class="mb-2">
+                                                <label class="form-label small fw-semibold">Picture / Photo</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="file" accept="image/*" class="form-control form-control-sm" id="feature2Image-file">
+                                                    <input type="hidden" id="feature2Image">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="feature2Image"><i class="fas fa-upload me-1"></i>Upload</button>
+                                                </div>
+                                                <div id="feature2Image-preview" class="mt-2" style="display:none;">
+                                                    <img src="" class="img-thumbnail" style="max-height:100px; width:100%; object-fit:cover; border-radius:6px;">
+                                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 mt-1 remove-image-btn" data-target="feature2Image"><i class="fas fa-times me-1"></i>Remove Picture</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card p-3 border h-100 shadow-sm">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-graduation-cap me-1"></i> Feature 3</h6>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Title</label><input type="text" id="feature3-title" class="form-control form-control-sm" placeholder="e.g. Vibrant Student Life"></div>
+                                            <div class="mb-2"><label class="form-label small fw-semibold">Description</label><textarea id="feature3-text" class="form-control form-control-sm" rows="3" placeholder="Description of this feature..."></textarea></div>
+                                            <div class="mb-2">
+                                                <label class="form-label small fw-semibold">Picture / Photo</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="file" accept="image/*" class="form-control form-control-sm" id="feature3Image-file">
+                                                    <input type="hidden" id="feature3Image">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="feature3Image"><i class="fas fa-upload me-1"></i>Upload</button>
+                                                </div>
+                                                <div id="feature3Image-preview" class="mt-2" style="display:none;">
+                                                    <img src="" class="img-thumbnail" style="max-height:100px; width:100%; object-fit:cover; border-radius:6px;">
+                                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 mt-1 remove-image-btn" data-target="feature3Image"><i class="fas fa-times me-1"></i>Remove Picture</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="about-tab-pane">
+                                <h5 class="fw-bold mb-3">About Us Page</h5>
+                                <div class="mb-3"><label class="form-label">Main Title</label><input type="text" id="about_mainTitle" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Main Paragraph</label><textarea id="about_mainParagraph" class="form-control" rows="5"></textarea></div>
+                                <div class="mb-3">
+                                    <label class="form-label">Main Image</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="file" accept="image/*" class="form-control" id="about_mainImage-file">
+                                        <input type="hidden" id="about_mainImage">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="about_mainImage"><i class="fas fa-upload me-1"></i>Upload</button>
+                                    </div>
+                                    <div id="about_mainImage-preview" class="mt-2" style="display:none;">
+                                        <img src="" class="img-thumbnail" style="max-height:120px;">
+                                        <button type="button" class="btn btn-sm btn-link text-danger remove-image-btn" data-target="about_mainImage">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3 px-4"><i class="fas fa-save me-2"></i>Save Page Content</button>
+                    </form>
+                </div>
+                <!-- Daily Announcements Management -->
+                <div class="tab-pane fade" id="announcements-pane" role="tabpanel">
+                    <div id="save-alert-announcements" class="mt-3"></div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold m-0"><i class="fas fa-bullhorn text-primary me-2"></i>Daily Announcements</h5>
+                                    <p class="text-muted small mb-0">Publish daily updates, notices, and bulletins with photos. They appear on the homepage and student portal.</p>
+                                </div>
+                                <span class="badge bg-primary px-3 py-2 fs-6" id="announcement-count-badge">0 Announcements</span>
+                            </div>
+                            
+                            <!-- Announcement Form -->
+                            <form id="announcement-manage-form" class="mb-4 p-3 border rounded bg-light shadow-sm">
+                                <input type="hidden" id="ann-id">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                                        <input type="text" id="ann-title" class="form-control" required placeholder="e.g. Campus Registration Deadline Extended">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-semibold">Publish Date</label>
+                                        <input type="date" id="ann-publish-date" class="form-control">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-semibold">Audience</label>
+                                        <select id="ann-audience" class="form-select">
+                                            <option value="all">Everyone (Public & Students)</option>
+                                            <option value="students">Students Only</option>
+                                            <option value="teachers">Teachers Only</option>
+                                            <option value="parents">Parents Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Message / Announcement Content <span class="text-danger">*</span></label>
+                                    <textarea id="ann-message" class="form-control" rows="3" required placeholder="Write the full announcement or summary here..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Announcement Picture / Photo (Optional)</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="file" accept="image/*" class="form-control form-control-sm" id="ann-imageUrl-file">
+                                        <input type="hidden" id="ann-imageUrl">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="ann-imageUrl"><i class="fas fa-upload me-1"></i>Upload Photo</button>
+                                    </div>
+                                    <div id="ann-imageUrl-preview" class="mt-2" style="display:none;">
+                                        <img src="" class="img-thumbnail" style="max-height:140px; border-radius:8px;">
+                                        <button type="button" class="btn btn-sm btn-link text-danger remove-image-btn p-0 ms-2" data-target="ann-imageUrl"><i class="fas fa-times me-1"></i>Remove Picture</button>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary" id="ann-submit-btn"><i class="fas fa-paper-plane me-2"></i>Post Announcement</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="ann-cancel-btn" style="display:none;"><i class="fas fa-times me-1"></i>Cancel</button>
+                                </div>
+                            </form>
+
+                            <h6 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Published Announcements</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 70px;">Picture</th>
+                                            <th>Title & Details</th>
+                                            <th style="width: 130px;">Publish Date</th>
+                                            <th style="width: 110px;">Audience</th>
+                                            <th style="width: 110px;" class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="announcements-tbody">
+                                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading announcements...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- News & Events -->
+                <div class="tab-pane fade" id="news-pane" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-newspaper me-2"></i>Manage News Articles</h5>
+                            <form id="news-form" class="mb-4 p-3 border rounded">
+                                <div class="mb-3"><label class="form-label">Title</label><input type="text" name="title" class="form-control" required></div>
+                                <div class="mb-3"><label class="form-label">Summary</label><input type="text" name="summary" class="form-control"></div>
+                                <div class="mb-3">
+                                    <label class="form-label">Image</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="file" accept="image/*" class="form-control" id="news-imageUrl-file">
+                                        <input type="hidden" name="imageUrl" id="news-imageUrl">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm upload-image-btn" data-target="news-imageUrl"><i class="fas fa-upload me-1"></i>Upload</button>
+                                    </div>
+                                    <div id="news-imageUrl-preview" class="mt-2" style="display:none;">
+                                        <img src="" class="img-thumbnail" style="max-height:120px;">
+                                        <button type="button" class="btn btn-sm btn-link text-danger remove-image-btn" data-target="news-imageUrl">Remove</button>
+                                    </div>
+                                </div>
+                                <div class="mb-3"><label class="form-label">Full Content</label><textarea name="content" class="form-control" rows="5" required></textarea></div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Publish Article</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="news-cancel-btn" style="display:none;">Cancel</button>
+                                </div>
+                            </form>
+                            <h6 class="fw-semibold">Published Articles</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead><tr><th>Title</th><th>Date</th><th>Image</th><th>Action</th></tr></thead>
+                                    <tbody id="news-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonials -->
+                <div class="tab-pane fade" id="testimonials-pane" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-quote-right me-2"></i>Manage Testimonials</h5>
+                            <form id="testimonial-form" class="mb-4 p-3 border rounded">
+                                <div class="mb-3"><label class="form-label">Quote</label><textarea name="quote" class="form-control" rows="4" required></textarea></div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3"><label class="form-label">Author Name</label><input type="text" name="author" class="form-control" required></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label">Relation</label><input type="text" name="relation" class="form-control" placeholder="e.g., Parent, Student"></div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add Testimonial</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="testimonial-cancel-btn" style="display:none;">Cancel</button>
+                                </div>
+                            </form>
+                            <h6 class="fw-semibold">Published Testimonials</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead><tr><th>Quote</th><th>Author</th><th>Action</th></tr></thead>
+                                    <tbody id="testimonials-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/HTML/js/admin.js"></script>
+<style>
+.upload-image-btn { white-space: nowrap; }
+.img-thumbnail { border-radius: 8px; object-fit: cover; width: auto; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') { window.location.href = 'admin-login.html'; return; }
+
+    const CONTENT_API = '/api/content';
+    const ANNOUNCEMENTS_API = '/api/announcements';
+    const NEWS_API = '/api/news';
+    const UPLOAD_API = '/api/upload';
+    const TESTIMONIALS_API = '/api/testimonials';
+
+    function alertMsg(container, msg, type, autoHide) {
+        const d = document.getElementById(container);
+        if (!d) return;
+        d.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        if (autoHide) setTimeout(() => d.innerHTML = '', 4000);
+    }
+
+    // --- IMAGE UPLOAD HANDLER ---
+    async function uploadImage(fileInputId, hiddenId, previewId) {
+        const fileInput = document.getElementById(fileInputId);
+        const file = fileInput.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            document.getElementById(hiddenId).value = data.url;
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.style.display = 'block';
+                preview.querySelector('img').src = data.url;
+            }
+        } catch (err) {
+            alertMsg('save-alert-pages', 'Upload failed: ' + err.message, 'danger', true);
+        }
+    }
+
+    document.querySelectorAll('.upload-image-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            const fileInput = document.getElementById(target + '-file');
+            if (fileInput) fileInput.click();
+        });
+    });
+
+    document.querySelectorAll('input[type="file"][accept="image/*"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const id = input.id.replace('-file', '');
+            uploadImage(input.id, id, id + '-preview');
+        });
+    });
+
+    document.querySelectorAll('.remove-image-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            document.getElementById(target).value = '';
+            const preview = document.getElementById(target + '-preview');
+            if (preview) { preview.style.display = 'none'; preview.querySelector('img').src = ''; }
+            const fileInput = document.getElementById(target + '-file');
+            if (fileInput) fileInput.value = '';
+        });
+    });
+
+    // --- PAGE CONTENT ---
+    const formFields = {
+        heroTitle: document.getElementById('hero-title'),
+        heroSubtitle: document.getElementById('hero-subtitle'),
+        heroGallery: document.getElementById('heroGallery'),
+        feature1Title: document.getElementById('feature1-title'),
+        feature1Text: document.getElementById('feature1-text'),
+        feature1Image: document.getElementById('feature1Image'),
+        feature2Title: document.getElementById('feature2-title'),
+        feature2Text: document.getElementById('feature2-text'),
+        feature2Image: document.getElementById('feature2Image'),
+        feature3Title: document.getElementById('feature3-title'),
+        feature3Text: document.getElementById('feature3-text'),
+        feature3Image: document.getElementById('feature3Image'),
+        about_mainTitle: document.getElementById('about_mainTitle'),
+        about_mainParagraph: document.getElementById('about_mainParagraph'),
+        about_mainImage: document.getElementById('about_mainImage')
+    };
+
+    function renderGallery(urls) {
+        const container = document.getElementById('hero-gallery-preview');
+        if (!urls || urls.length === 0) {
+            container.innerHTML = '<small class="text-muted">No images uploaded yet.</small>';
+            return;
+        }
+        container.innerHTML = urls.map((url, i) =>
+            `<div class="position-relative" style="width:100px;height:70px;">
+                <img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;border:2px solid #dee2e6;">
+                <button type="button" class="btn btn-sm btn-dark position-absolute top-0 end-0 px-1 py-0" style="font-size:10px;border-radius:50%;transform:translate(30%,-30%);" onclick="removeGalleryImage(${i})">&times;</button>
+            </div>`
+        ).join('');
+    }
+
+    window.removeGalleryImage = (index) => {
+        const hidden = document.getElementById('heroGallery');
+        const urls = JSON.parse(hidden.value || '[]');
+        urls.splice(index, 1);
+        hidden.value = JSON.stringify(urls);
+        renderGallery(urls);
+    };
+
+    document.getElementById('upload-hero-gallery-btn').addEventListener('click', async () => {
+        const input = document.getElementById('hero-gallery-file');
+        const file = input.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            const hidden = document.getElementById('heroGallery');
+            const urls = JSON.parse(hidden.value || '[]');
+            urls.push(data.url);
+            hidden.value = JSON.stringify(urls);
+            renderGallery(urls);
+            input.value = '';
+        } catch (err) {
+            alertMsg('save-alert-pages', 'Upload failed: ' + err.message, 'danger', true);
+        }
+    });
+
+    async function loadPageContent() {
+        try {
+            const res = await fetch(CONTENT_API);
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            const saved = await res.json();
+            let count = 0;
+            for (const key in formFields) {
+                if (saved[key] && formFields[key]) {
+                    formFields[key].value = saved[key];
+                    count++;
+                    if (key === 'heroGallery') {
+                        try { renderGallery(JSON.parse(saved[key])); } catch {}
+                    } else {
+                        const preview = document.getElementById(key + '-preview');
+                        if (preview && saved[key]) {
+                            preview.style.display = 'block';
+                            preview.querySelector('img').src = saved[key];
+                        }
+                    }
+                }
+            }
+            if (count > 0) console.log('Loaded ' + count + ' content fields from DB');
+        } catch (e) {
+            console.error('Load error:', e);
+            alertMsg('save-alert-pages', 'Failed to load page content: ' + e.message, 'danger', true);
+        }
+    }
+
+    document.getElementById('content-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {};
+        for (const key in formFields) { if (formFields[key]) data[key] = formFields[key].value; }
+        try {
+            const res = await fetch(CONTENT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (!res.ok) throw new Error('Save failed');
+            alertMsg('save-alert-pages', 'Page content saved!', 'success', true);
+        } catch (err) { alertMsg('save-alert-pages', 'Error: ' + err.message, 'danger', true); }
+    });
+
+    // --- NEWS ---
+    const newsForm = document.getElementById('news-form');
+    const newsTbody = document.getElementById('news-tbody');
+    let editingNewsId = null;
+
+    async function fetchNews() {
+        newsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading articles...</td></tr>';
+        try {
+            const res = await fetch(NEWS_API);
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            const articles = await res.json();
+            if (articles.length === 0) {
+                newsTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><i class="fas fa-newspaper fa-2x mb-2 d-block text-secondary"></i>No articles published yet.</td></tr>';
+                return;
+            }
+            newsTbody.innerHTML = articles.map(a =>
+                `<tr><td>${a.title}</td><td class="small">${a.publishdate || '-'}</td>
+                <td>${a.imageurl ? '<img src="'+a.imageurl+'" style="height:32px;width:auto;border-radius:4px;">' : '<span class="text-muted small">—</span>'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary rounded-pill btn-edit-news me-1" data-id="${a.id}"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete-news" data-id="${a.id}"><i class="fas fa-trash-alt"></i></button>
+                </td></tr>`
+            ).join('');
+        } catch (e) {
+            console.error(e);
+            newsTbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i><span class="d-block mb-2">Error loading articles: ' + e.message + '</span><button class="btn btn-sm btn-outline-primary" onclick="fetchNews()"><i class="fas fa-redo me-1"></i> Retry</button></td></tr>';
+        }
+    }
+    window.fetchNews = fetchNews;
+
+    function resetNewsForm() {
+        editingNewsId = null;
+        newsForm.reset();
+        document.getElementById('news-imageUrl-preview').style.display = 'none';
+        document.getElementById('news-imageUrl').value = '';
+        const btn = newsForm.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Publish Article';
+        document.getElementById('news-cancel-btn').style.display = 'none';
+    }
+
+    async function populateNewsForm(id) {
+        try {
+            const res = await fetch(NEWS_API + '/' + id);
+            const a = await res.json();
+            if (!res.ok) throw new Error(a.error);
+            editingNewsId = id;
+            newsForm.elements.title.value = a.title || '';
+            newsForm.elements.summary.value = a.summary || '';
+            newsForm.elements.content.value = a.content || '';
+            if (a.imageurl) {
+                document.getElementById('news-imageUrl').value = a.imageurl;
+                const preview = document.getElementById('news-imageUrl-preview');
+                preview.style.display = 'block';
+                preview.querySelector('img').src = a.imageurl;
+            }
+            const btn = newsForm.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Update Article';
+            document.getElementById('news-cancel-btn').style.display = '';
+        } catch (err) {
+            alertMsg('save-alert-pages', 'Load failed: ' + err.message, 'danger', true);
+        }
+    }
+
+    newsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            title: e.target.elements.title.value,
+            summary: e.target.elements.summary.value,
+            imageUrl: e.target.elements.imageUrl.value,
+            content: e.target.elements.content.value
+        };
+        try {
+            let res;
+            if (editingNewsId) {
+                res = await fetch(NEWS_API + '/' + editingNewsId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            } else {
+                res = await fetch(NEWS_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            }
+            if (!res.ok) throw new Error('Save failed');
+            resetNewsForm();
+            await fetchNews();
+            alertMsg('save-alert-pages', editingNewsId ? 'Article updated!' : 'Article published!', 'success', true);
+        } catch (err) { alertMsg('save-alert-pages', 'Error: ' + err.message, 'danger', true); }
+    });
+
+    document.getElementById('news-cancel-btn').addEventListener('click', resetNewsForm);
+
+    document.addEventListener('click', async (e) => {
+        const editBtn = e.target.closest('.btn-edit-news');
+        if (editBtn) { populateNewsForm(editBtn.dataset.id); return; }
+        const delBtn = e.target.closest('.btn-delete-news');
+        if (!delBtn) return;
+        const id = delBtn.dataset.id;
+        if (!confirm('Delete this article?')) return;
+        try {
+            const res = await fetch(NEWS_API + '/' + id, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+            if (editingNewsId == id) resetNewsForm();
+            await fetchNews();
+        } catch (err) { alertMsg('save-alert-pages', 'Error: ' + err.message, 'danger', true); }
+    });
+
+    // --- TESTIMONIALS ---
+    const tForm = document.getElementById('testimonial-form');
+    const tTbody = document.getElementById('testimonials-tbody');
+    let editingTestimonialId = null;
+
+    async function fetchTestimonials() {
+        tTbody.innerHTML = '<tr><td colspan="3" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading testimonials...</td></tr>';
+        try {
+            const res = await fetch(TESTIMONIALS_API);
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            const items = await res.json();
+            if (items.length === 0) {
+                tTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4"><i class="fas fa-quote-right fa-2x mb-2 d-block text-secondary"></i>No testimonials published yet.</td></tr>';
+                return;
+            }
+            tTbody.innerHTML = items.map(t =>
+                `<tr><td><em>"${(t.quote || '').substring(0, 60)}..."</em></td><td>${t.author}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary rounded-pill btn-edit-testimonial me-1" data-id="${t.id}"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete-testimonial" data-id="${t.id}"><i class="fas fa-trash-alt"></i></button>
+                </td></tr>`
+            ).join('');
+        } catch (e) {
+            console.error(e);
+            tTbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i><span class="d-block mb-2">Error loading testimonials: ' + e.message + '</span><button class="btn btn-sm btn-outline-primary" onclick="fetchTestimonials()"><i class="fas fa-redo me-1"></i> Retry</button></td></tr>';
+        }
+    }
+    window.fetchTestimonials = fetchTestimonials;
+
+    function resetTestimonialForm() {
+        editingTestimonialId = null;
+        tForm.reset();
+        tForm.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-plus me-2"></i>Add Testimonial';
+        document.getElementById('testimonial-cancel-btn').style.display = 'none';
+    }
+
+    async function populateTestimonialForm(id) {
+        try {
+            const res = await fetch(TESTIMONIALS_API + '/' + id);
+            const t = await res.json();
+            if (!res.ok) throw new Error(t.error);
+            editingTestimonialId = id;
+            tForm.elements.quote.value = t.quote || '';
+            tForm.elements.author.value = t.author || '';
+            tForm.elements.relation.value = t.relation || '';
+            tForm.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save me-2"></i>Update Testimonial';
+            document.getElementById('testimonial-cancel-btn').style.display = '';
+        } catch (err) {
+            alertMsg('save-alert-pages', 'Load failed: ' + err.message, 'danger', true);
+        }
+    }
+
+    tForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = { quote: e.target.elements.quote.value, author: e.target.elements.author.value, relation: e.target.elements.relation.value };
+        try {
+            let res;
+            if (editingTestimonialId) {
+                res = await fetch(TESTIMONIALS_API + '/' + editingTestimonialId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            } else {
+                res = await fetch(TESTIMONIALS_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            }
+            if (!res.ok) throw new Error('Save failed');
+            resetTestimonialForm();
+            await fetchTestimonials();
+        } catch (err) { alertMsg('save-alert-pages', 'Error: ' + err.message, 'danger', true); }
+    });
+
+    document.getElementById('testimonial-cancel-btn').addEventListener('click', resetTestimonialForm);
+
+    document.addEventListener('click', async (e) => {
+        const editBtn = e.target.closest('.btn-edit-testimonial');
+        if (editBtn) { populateTestimonialForm(editBtn.dataset.id); return; }
+        const delBtn = e.target.closest('.btn-delete-testimonial');
+        if (!delBtn) return;
+        const id = delBtn.dataset.id;
+        if (!confirm('Delete this testimonial?')) return;
+        try {
+            const res = await fetch(TESTIMONIALS_API + '/' + id, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+            if (editingTestimonialId == id) resetTestimonialForm();
+            await fetchTestimonials();
+        } catch (err) { alertMsg('save-alert-pages', 'Error: ' + err.message, 'danger', true); }
+    });
+
+    // --- DAILY ANNOUNCEMENTS ---
+    const annForm = document.getElementById('announcement-manage-form');
+    const annTbody = document.getElementById('announcements-tbody');
+    const annBadge = document.getElementById('announcement-count-badge');
+    let editingAnnId = null;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const annDateInput = document.getElementById('ann-publish-date');
+    if (annDateInput && !annDateInput.value) annDateInput.value = todayStr;
+
+    async function fetchAnnouncements() {
+        if (!annTbody) return;
+        annTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading announcements...</td></tr>';
+        try {
+            const res = await fetch(ANNOUNCEMENTS_API);
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            const items = await res.json();
+            if (annBadge) annBadge.textContent = items.length + ' Announcement' + (items.length === 1 ? '' : 's');
+            if (items.length === 0) {
+                annTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-bullhorn fa-2x mb-2 d-block text-secondary"></i>No announcements posted yet. Use the form above to add one.</td></tr>';
+                return;
+            }
+            annTbody.innerHTML = items.map(a => {
+                const imgHtml = a.image_url 
+                    ? `<img src="${a.image_url}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">`
+                    : `<span class="badge bg-light text-secondary border py-2 px-2" style="font-size:10px;"><i class="fas fa-image"></i> No Pic</span>`;
+                const dateVal = a.publish_date ? String(a.publish_date).split('T')[0] : (a.created_at ? String(a.created_at).split('T')[0] : '-');
+                const audBadge = a.audience === 'all' ? '<span class="badge bg-success">Everyone</span>' : `<span class="badge bg-info text-dark">${a.audience}</span>`;
+                return `<tr>
+                    <td>${imgHtml}</td>
+                    <td>
+                        <div class="fw-bold text-dark">${a.title}</div>
+                        <div class="small text-muted text-truncate" style="max-width:350px;">${a.message || ''}</div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border"><i class="far fa-calendar-alt me-1 text-primary"></i>${dateVal}</span></td>
+                    <td>${audBadge}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill btn-edit-ann me-1" data-id="${a.id}" title="Edit"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete-ann" data-id="${a.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            console.error('Fetch announcements error:', e);
+            annTbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error loading announcements: ' + e.message + '</td></tr>';
+        }
+    }
+    window.fetchAnnouncements = fetchAnnouncements;
+
+    function resetAnnouncementForm() {
+        editingAnnId = null;
+        if (annForm) {
+            annForm.reset();
+            document.getElementById('ann-id').value = '';
+            document.getElementById('ann-imageUrl').value = '';
+            const preview = document.getElementById('ann-imageUrl-preview');
+            if (preview) { preview.style.display = 'none'; preview.querySelector('img').src = ''; }
+            const submitBtn = document.getElementById('ann-submit-btn');
+            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Post Announcement';
+            const cancelBtn = document.getElementById('ann-cancel-btn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            if (annDateInput) annDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+
+    async function populateAnnouncementForm(id) {
+        try {
+            const res = await fetch(ANNOUNCEMENTS_API + '/' + id);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            editingAnnId = id;
+            document.getElementById('ann-id').value = data.id;
+            document.getElementById('ann-title').value = data.title || '';
+            document.getElementById('ann-message').value = data.message || '';
+            document.getElementById('ann-audience').value = data.audience || 'all';
+            if (data.publish_date) {
+                document.getElementById('ann-publish-date').value = String(data.publish_date).split('T')[0];
+            }
+            if (data.image_url) {
+                document.getElementById('ann-imageUrl').value = data.image_url;
+                const preview = document.getElementById('ann-imageUrl-preview');
+                if (preview) {
+                    preview.style.display = 'block';
+                    preview.querySelector('img').src = data.image_url;
+                }
+            }
+            const submitBtn = document.getElementById('ann-submit-btn');
+            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Update Announcement';
+            const cancelBtn = document.getElementById('ann-cancel-btn');
+            if (cancelBtn) cancelBtn.style.display = 'inline-block';
+            window.scrollTo({ top: annForm.offsetTop - 100, behavior: 'smooth' });
+        } catch (err) {
+            alertMsg('save-alert-announcements', 'Failed to load announcement: ' + err.message, 'danger', true);
+        }
+    }
+
+    if (annForm) {
+        annForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('ann-title').value.trim(),
+                message: document.getElementById('ann-message').value.trim(),
+                audience: document.getElementById('ann-audience').value,
+                publishDate: document.getElementById('ann-publish-date').value,
+                imageUrl: document.getElementById('ann-imageUrl').value
+            };
+            try {
+                let res;
+                if (editingAnnId) {
+                    res = await fetch(ANNOUNCEMENTS_API + '/' + editingAnnId, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(ANNOUNCEMENTS_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                const resData = await res.json();
+                if (!res.ok) throw new Error(resData.error || 'Operation failed');
+                alertMsg('save-alert-announcements', editingAnnId ? 'Announcement updated successfully!' : 'Announcement posted successfully!', 'success', true);
+                resetAnnouncementForm();
+                await fetchAnnouncements();
+            } catch (err) {
+                alertMsg('save-alert-announcements', 'Error: ' + err.message, 'danger', true);
+            }
+        });
+    }
+
+    const cancelAnnBtn = document.getElementById('ann-cancel-btn');
+    if (cancelAnnBtn) cancelAnnBtn.addEventListener('click', resetAnnouncementForm);
+
+    document.addEventListener('click', async (e) => {
+        const editBtn = e.target.closest('.btn-edit-ann');
+        if (editBtn) {
+            populateAnnouncementForm(editBtn.dataset.id);
+            return;
+        }
+        const delBtn = e.target.closest('.btn-delete-ann');
+        if (delBtn) {
+            const id = delBtn.dataset.id;
+            if (!confirm('Are you sure you want to delete this announcement?')) return;
+            try {
+                const res = await fetch(ANNOUNCEMENTS_API + '/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Delete failed');
+                if (editingAnnId == id) resetAnnouncementForm();
+                alertMsg('save-alert-announcements', 'Announcement deleted.', 'info', true);
+                await fetchAnnouncements();
+            } catch (err) {
+                alertMsg('save-alert-announcements', 'Delete error: ' + err.message, 'danger', true);
+            }
+        }
+    });
+
+    loadPageContent();
+    fetchAnnouncements();
+    fetchNews();
+    fetchTestimonials();
+});
+
+function toggleTheme() {
+    const body = document.body, next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() { const saved = localStorage.getItem('elif-theme') || 'light'; document.body.setAttribute('data-theme', saved); const icon = document.getElementById('themeIcon'); if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon'; })();
+</script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

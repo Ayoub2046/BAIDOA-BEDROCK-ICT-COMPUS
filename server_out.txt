@@ -1,0 +1,5 @@
+
+Server is running successfully!
+View on your computer at: http://localhost:3000
+View on other devices on your network at: http://YOUR_IP_ADDRESS:3000
+Connected to Supabase PostgreSQL.

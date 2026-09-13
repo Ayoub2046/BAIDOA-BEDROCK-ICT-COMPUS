@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clearance Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .clearance-cleared { background-color: #d4edda; border-left: 4px solid #28a745; }
+        .clearance-revoked { background-color: #f8d7da; border-left: 4px solid #dc3545; }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html" class="active"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 ms-3">Clearance Management</h4>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn btn-primary btn-sm" id="btn-release-clearance"><i class="fas fa-plus me-1"></i> Release Clearance</button>
+                </div>
+            </nav>
+            <div class="content-area">
+                <!-- Summary Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card border-success">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Total Cleared</h6>
+                                    <div class="fs-2 fw-bold text-success" id="total-cleared">0</div>
+                                </div>
+                                <div class="icon text-success"><i class="fas fa-check-circle fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card border-danger">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Revoked</h6>
+                                    <div class="fs-2 fw-bold text-danger" id="total-revoked">0</div>
+                                </div>
+                                <div class="icon text-danger"><i class="fas fa-times-circle fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card border-primary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Total Cards</h6>
+                                    <div class="fs-2 fw-bold text-primary" id="total-cards">0</div>
+                                </div>
+                                <div class="icon text-primary"><i class="fas fa-id-card fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clearance Records Table -->
+                <div class="card main-table-card">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <h6>All Clearance Cards</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-success btn-sm rounded-pill px-3" id="sync-clearance-btn"><i class="fas fa-sync me-1"></i>Sync from Fees</button>
+                            <select class="form-select form-select-sm" id="clearance-filter" style="width: auto;">
+                                <option value="all" selected>Filter by Status</option>
+                                <option value="cleared">Cleared</option>
+                                <option value="revoked">Revoked</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student Name</th>
+                                        <th>Grade</th>
+                                        <th>Status</th>
+                                        <th>Semester</th>
+                                        <th>Released By</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clearance-table-body">
+                                    <!-- JS will populate this -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Release Clearance Modal -->
+    <div class="modal fade" id="clearanceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="clearanceForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Release Clearance Card</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Student</label>
+                            <select class="form-select" name="studentId" required>
+                                <option value="" disabled selected>Select a student...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Semester</label>
+                            <input type="text" name="semester" class="form-control" value="Current Semester" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Release Clearance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+
+    <script>
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible d-flex align-items-center py-2 px-3 m-0 shadow`;
+            el.style.minWidth = '280px';
+            el.style.animation = 'slideIn 0.3s ease';
+            el.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} me-2"></i> ${msg}
+                <button type="button" class="btn-close ms-2" data-bs-dismiss="alert" style="font-size:.7rem;"></button>`;
+            container.appendChild(el);
+            setTimeout(() => { el.remove(); }, 4000);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let loadPageData;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const clearanceModal = new bootstrap.Modal(document.getElementById('clearanceModal'));
+            const clearanceForm = document.getElementById('clearanceForm');
+            const statusFilter = document.getElementById('clearance-filter');
+            const CLEARANCE_API = '/api/clearance';
+            const STUDENTS_API = '/api/students';
+
+            let clearances = [];
+            let students = [];
+
+            loadPageData = async function() {
+                const tbody = document.getElementById('clearance-table-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success me-2" role="status"></div> Loading clearance data...</td></tr>`;
+                }
+                try {
+                    const clearRes = await fetch(CLEARANCE_API);
+                    if (!clearRes.ok) throw new Error(`Clearance API error (${clearRes.status})`);
+                    clearances = await clearRes.json();
+
+                    const studRes = await fetch(STUDENTS_API);
+                    if (!studRes.ok) throw new Error(`Students API error (${studRes.status})`);
+                    students = await studRes.json();
+
+                    updateSummaryCards();
+                    renderTable();
+                } catch (error) {
+                    console.error('Error loading clearance data:', error);
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr><td colspan="8" class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
+                                <span class="text-danger d-block mb-2">Error loading clearance data: ${error.message}</span>
+                                <button class="btn btn-sm btn-outline-success" onclick="loadPageData()"><i class="fas fa-redo me-1"></i> Try Again</button>
+                            </td></tr>`;
+                    }
+                }
+            };
+            window.loadPageData = loadPageData;
+
+            function updateSummaryCards() {
+                const cleared = clearances.filter(c => c.is_cleared === true).length;
+                const revoked = clearances.filter(c => c.is_cleared === false).length;
+                document.getElementById('total-cleared').textContent = cleared;
+                document.getElementById('total-revoked').textContent = revoked;
+                document.getElementById('total-cards').textContent = clearances.length;
+            }
+
+            function renderTable(filter = 'all') {
+                const tbody = document.getElementById('clearance-table-body');
+                let filtered = clearances;
+                if (filter === 'cleared') filtered = clearances.filter(c => c.is_cleared === true);
+                if (filter === 'revoked') filtered = clearances.filter(c => c.is_cleared === false);
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-clipboard-check fa-3x mb-2 d-block text-secondary"></i>
+                        <p class="mb-0">No clearance records found.</p>
+                    </td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = filtered.map(c => {
+                    const statusBadge = c.is_cleared
+                        ? '<span class="badge bg-success">Cleared</span>'
+                        : '<span class="badge bg-danger">Revoked</span>';
+                    const date = c.released_at ? new Date(c.released_at).toLocaleDateString() : 'N/A';
+                    return `
+                    <tr class="${c.is_cleared ? 'clearance-cleared' : 'clearance-revoked'}">
+                        <td>CLR-${String(c.id).padStart(4, '0')}</td>
+                        <td>${c.studentName || 'N/A'}</td>
+                        <td>${c.grade || 'N/A'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${c.semester || 'N/A'}</td>
+                        <td>${c.released_by || 'N/A'}</td>
+                        <td>${date}</td>
+                        <td class="action-buttons">
+                            ${c.is_cleared
+                                ? `<button class="btn btn-sm btn-danger btn-revoke" data-id="${c.id}" title="Revoke"><i class="fas fa-ban"></i></button>`
+                                : `<button class="btn btn-sm btn-success btn-reinstate" data-id="${c.id}" title="Reinstate"><i class="fas fa-undo"></i></button>`}
+                            <button class="btn btn-sm btn-delete" data-id="${c.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Populate student dropdown
+            function populateStudentSelect() {
+                const select = clearanceForm.elements.studentId;
+                select.innerHTML = '<option value="" disabled selected>Select a student...</option>';
+                students.forEach(s => {
+                    select.innerHTML += `<option value="${s.id}">ELP${250000 + s.id} - ${s.name}</option>`;
+                });
+            }
+
+            // Release clearance
+            document.getElementById('btn-release-clearance').addEventListener('click', () => {
+                clearanceForm.reset();
+                populateStudentSelect();
+                clearanceModal.show();
+            });
+
+            clearanceForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const studentId = parseInt(clearanceForm.elements.studentId.value);
+                const semester = clearanceForm.elements.semester.value;
+
+                try {
+                    const res = await fetch(CLEARANCE_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, releasedBy: 'Admin', semester })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed to release clearance');
+                    showToast('Clearance card released successfully!', 'success');
+                    clearanceModal.hide();
+                    loadPageData();
+                } catch (err) {
+                    showToast(`Error: ${err.message}`, 'error');
+                }
+            });
+
+            // Sync Clearance from Fees
+            document.getElementById('sync-clearance-btn').addEventListener('click', async () => {
+                const btn = document.getElementById('sync-clearance-btn');
+                const orig = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Syncing...';
+                try {
+                    const res = await fetch(`${CLEARANCE_API}/sync`, { method: 'POST' });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    showToast(data.message, 'success');
+                    loadPageData();
+                } catch (err) {
+                    showToast(err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
+            });
+
+            // Table action buttons
+            document.getElementById('clearance-table-body').addEventListener('click', async (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const id = parseInt(button.dataset.id);
+
+                if (button.classList.contains('btn-revoke')) {
+                    if (confirm('Are you sure you want to revoke this clearance?')) {
+                        try {
+                            const res = await fetch(`${CLEARANCE_API}/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ isCleared: false, releasedBy: 'Admin', semester: 'Revoked' })
+                            });
+                            if (!res.ok) throw new Error('Revoke failed');
+                            loadPageData();
+                        } catch (err) { showToast(`Error: ${err.message}`, 'error'); }
+                    }
+                } else if (button.classList.contains('btn-reinstate')) {
+                    if (confirm('Reinstate this clearance card?')) {
+                        try {
+                            const res = await fetch(`${CLEARANCE_API}/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ isCleared: true, releasedBy: 'Admin', semester: 'Current Semester' })
+                            });
+                            if (!res.ok) throw new Error('Reinstate failed');
+                            loadPageData();
+                        } catch (err) { showToast(`Error: ${err.message}`, 'error'); }
+                    }
+                } else if (button.classList.contains('btn-delete')) {
+                    if (confirm('Delete this clearance card permanently?')) {
+                        try {
+                            const res = await fetch(`${CLEARANCE_API}/${id}`, { method: 'DELETE' });
+                            if (!res.ok) throw new Error('Delete failed');
+                            loadPageData();
+                        } catch (err) { showToast(`Error: ${err.message}`, 'error'); }
+                    }
+                }
+            });
+
+            statusFilter.addEventListener('change', () => renderTable(statusFilter.value));
+
+            loadPageData();
+        });
+
+        // Sidebar toggle & logout
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            if (sidebarToggler) sidebarToggler.addEventListener('click', () => sidebar.classList.toggle('toggled'));
+
+            if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') window.location.href = 'admin-login.html';
+
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.removeItem('isAdminLoggedIn');
+                sessionStorage.removeItem('adminProfile');
+                window.location.href = 'admin-login.html';
+            });
+        });
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

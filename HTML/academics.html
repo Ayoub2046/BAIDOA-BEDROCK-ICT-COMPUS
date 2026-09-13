@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academics |BAIDOA BEDROCK ICT CAMPUS</title>
+
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Internal CSS for this page */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* --- Classic Navigation Bar Style --- */
+        .navbar-classic {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+        }
+
+        .navbar-classic .navbar-nav .nav-link {
+            color: #555;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .navbar-classic .navbar-nav .nav-link:hover {
+            color: #0f510e;
+        }
+
+        .navbar-classic .navbar-nav .nav-link.active {
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* General page styling */
+        .page-header {
+            background-color: #e9ecef;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .content-card {
+            background-color: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .academics-accordion .accordion-button {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .academics-accordion .accordion-button:not(.collapsed) {
+            background-color: #e7f8e7;
+            color: #0f510e;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Classic Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/HTML/index.html">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Logo"
+                    style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                <span class="fw-bold">Baidoa Bedrock ICT Campus</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/HTML/index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/HTML/academics.html">Academics</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/admision.html">Admissions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/news.html">News & Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/gallery.html">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-primary"
+                            href="/HTML/Student Results.html">Check Results</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/student-library.html">Student Library</a></li>
+                </ul>
+                <a class="btn btn-primary ms-lg-3" href="/HTML/portal_login.html">Portal Login</a>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <!-- Page Header -->
+    <header class="page-header text-center">
+        <div class="container">
+            <h1 class="display-4">Our Curriculum</h1>
+            <p class="lead">Fostering a lifelong love of learning and intellectual curiosity.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="card content-card">
+            <div class="card-body p-5">
+                <p class="lead mb-5 text-center">Our academic program is designed to challenge students at every level,
+                    from foundational learning in our Lower School to advanced college-preparatory courses in our Upper
+                    School. We emphasize critical thinking, collaboration, and real-world problem-solving.</p>
+
+                <div class="accordion academics-accordion" id="academicsAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseOne">
+                                Lower School (Grades 1-5)
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show"
+                            data-bs-parent="#academicsAccordion">
+                            <div class="accordion-body">
+                                Our Lower School builds a strong foundation in core subjects like reading, writing, and
+                                mathematics. Through project-based learning and interactive activities, we nurture
+                                curiosity and help young students discover the joy of learning in a supportive
+                                environment.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseTwo">
+                                Middle School (Grades 6-8)
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#academicsAccordion">
+                            <div class="accordion-body">
+                                In Middle School, students transition to a more departmentalized structure, exploring
+                                subjects like advanced sciences, humanities, world languages, and the arts in greater
+                                depth. We focus on developing organizational skills, independent study habits, and
+                                responsible digital citizenship.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseThree">
+                                Upper School (Grades 9-12)
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse"
+                            data-bs-parent="#academicsAccordion">
+                            <div class="accordion-body">
+                                The Upper School offers a rigorous, college-preparatory curriculum designed to challenge
+                                students and prepare them for success in higher education and beyond. A wide selection
+                                of Honors and Advanced Placement (AP) courses are available, alongside specialized
+                                tracks in STEM, fine arts, and global studies.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="lib-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand d-flex align-items-center mb-3">
+                        <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo">
+                        <div>
+                            <p class="fb-name">Baidoa Bedrock ICT Campus</p>
+                            <p class="fb-tag">Nurturing Minds, Shaping Futures</p>
+                        </div>
+                    </div>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.75);">
+                        A tradition of excellence in education — nurturing minds and shaping futures.
+                        Explore academics, news, and student portals all in one place.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/index.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Home</a></li>
+                        <li><a href="/HTML/about.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>About Us</a></li>
+                        <li><a href="/HTML/academics.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Academics</a></li>
+                        <li><a href="/HTML/admision.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Admissions</a></li>
+                        <li><a href="/HTML/news.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>News &amp; Events</a></li>
+                        <li><a href="/HTML/contact.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Portals</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Portal Login</a></li>
+                        <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Check Results</a></li>
+                        <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance</a></li>
+                        <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Digital Library</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Contact Us</h6>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-map-marker-alt"></i>123 Education Lane, Mogadishu</p>
+                        <p><i class="fas fa-phone"></i>+252 618972046</p>
+                        <p><i class="fas fa-envelope"></i>info@bbict.edu.so</p>
+                        <p><i class="fas fa-clock"></i>Mon - Fri: 8:00 AM - 4:00 PM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="mb-0">© <span id="year"></span> Baidoa Bedrock ICT Campus. All Rights Reserved. | Developed By <span class="dev">ENG AYUOB ADAN ABDI</span></p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.navbar-classic .nav-link');
+            const currentPage = window.location.pathname.split('/').pop();
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/BEDRCOK LOGO.JPG">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Records | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/jpeg" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 50px; height: 50px; border-radius: 10px; object-fit: contain;" alt=""><span
+                        style="font-size: 16px; line-height: 1.2;">Baidoa Bedrock ICT Campus</span></h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html" class="active"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html" id="logout-link"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <h4 class="mb-0 ms-3">Student Records</h4>
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            </nav>
+            <div class="content-area">
+                <div class="card main-table-card">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h6 class="m-0">All Students (Baidoa Bedrock ICT Campus)</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a id="download-students-template" class="btn btn-success btn-sm" href="/api/students/template/download" target="_blank"><i class="fas fa-download me-1"></i>Download Template</a>
+                            <button id="upload-students-csv-trigger" class="btn btn-warning btn-sm"><i class="fas fa-upload me-1"></i>Import CSV</button>
+                            <input type="file" id="upload-students-csv-input" accept=".csv" style="display:none;">
+                            <button class="btn btn-primary btn-sm" id="btn-add-student"><i class="fas fa-plus me-1"></i> Add New Student</button>
+                            <button class="btn btn-outline-danger btn-sm" id="btn-delete-all-students"><i class="fas fa-trash-alt me-1"></i>Delete All</button>
+                            <a href="recycle-bin.html" class="btn btn-outline-secondary btn-sm" title="View Recycle Bin"><i class="fas fa-trash-restore me-1"></i>Recycle Bin</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="csv-toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Grade</th>
+                                        <th>Parent</th>
+                                        <th>Enrollment</th>
+                                        <th>Password (Admin-Managed)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Modal -->
+    <div class="modal fade" id="studentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="studentForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="studentModalTitle">Student Information</h5><button type="button"
+                            class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Grade</label>
+                                <input type="text" name="grade" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Attendance (%)</label>
+                                <input type="number" name="attendance" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Enrollment Date</label>
+                                <input type="date" name="enrollmentDate" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Birth Date</label>
+                                <input type="date" name="birthDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Parent Account</label>
+                            <select name="parentid" class="form-select">
+                                <option value="">— No parent assigned —</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fas fa-key me-1 text-primary"></i>Student Password</label>
+                            <div class="input-group">
+                                <input type="text" name="password" id="modalStudentPassword" class="form-control" placeholder="e.g. bb260001 (or custom)">
+                                <button class="btn btn-outline-secondary" type="button" id="btnGenPwd"><i class="fas fa-random me-1"></i>Generate</button>
+                            </div>
+                            <div class="form-text">Admins can see and set student passwords here. Tell students who forget their password.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Save
+                            Changes</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
+            const studentForm = document.getElementById('studentForm');
+            const API_URL = '/api/students';
+            let students = [];
+            let parents = [];
+
+            async function loadParents() {
+                try {
+                    const res = await fetch('/api/users/parents');
+                    parents = await res.json();
+                    const sel = studentForm.elements.parentid;
+                    sel.innerHTML = '<option value="">— No parent assigned —</option>';
+                    parents.forEach(p => {
+                        sel.innerHTML += `<option value="${p.id}">${p.name} (${p.email})</option>`;
+                    });
+                } catch { /* ignore */ }
+            }
+
+            async function fetchStudents() {
+                const tbody = document.getElementById('student-table-body');
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading students...</td></tr>`;
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error(`Server error ${response.status}`);
+                    students = await response.json();
+                    renderStudents();
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load students. <button class="btn btn-sm btn-outline-success ms-2" onclick="fetchStudents()"><i class="fas fa-redo me-1"></i>Retry</button></td></tr>`;
+                }
+            }
+
+            function formatDate(d) {
+                if (!d) return '-';
+                try {
+                    const dt = new Date(d);
+                    if (isNaN(dt.getTime())) return d;
+                    return dt.toISOString().split('T')[0];
+                } catch {
+                    return d;
+                }
+            }
+
+            function toDateInputValue(d) {
+                if (!d) return '';
+                try {
+                    const dt = new Date(d);
+                    if (isNaN(dt.getTime())) return '';
+                    const year = dt.getFullYear();
+                    const month = String(dt.getMonth() + 1).padStart(2, '0');
+                    const day = String(dt.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                } catch {
+                    return '';
+                }
+            }
+
+            function renderStudents() {
+                const tbody = document.getElementById('student-table-body');
+                if (students.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No students found. Click 'Add New Student' to begin.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = students.map(s => {
+                    const bbId = s.bbId || s.bb_id || ('BB' + (260000 + s.id));
+                    const pwd = s.plain_password || ('bb' + (260000 + s.id));
+                    return `
+                <tr>
+                    <td><span class="badge" style="background:#e6f2fb; color:#1a7fd4; font-size:0.9rem; font-weight:700; padding:6px 10px; border-radius:8px;">${bbId}</span></td>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.grade}</td>
+                    <td>${s.parent_name || '<span class="text-muted">—</span>'}</td>
+                    <td>${formatDate(s.enrollmentdate)}</td>
+                    <td>
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace" style="letter-spacing:1px;" id="pwd-box-${s.id}">••••••••</span>
+                            <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="toggleStudentPwd(${s.id}, '${pwd}')" title="View Password">
+                                <i class="fas fa-eye" id="eye-${s.id}"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link text-primary p-0 ms-1" onclick="copyCredentials('${bbId}', '${pwd}', '${s.name.replace(/'/g, "\\'")}')" title="Copy Login Details">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-view" data-id="${s.id}" title="View Result"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-edit" data-id="${s.id}" title="Edit Student & Password"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-delete" data-id="${s.id}" title="Move to Recycle Bin"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+                }).join('');
+            }
+
+            window.toggleStudentPwd = function(id, rawPwd) {
+                const box = document.getElementById('pwd-box-' + id);
+                const eye = document.getElementById('eye-' + id);
+                if (box.textContent === '••••••••') {
+                    box.textContent = rawPwd;
+                    box.classList.remove('bg-light');
+                    box.style.background = '#fde8c0';
+                    eye.className = 'fas fa-eye-slash';
+                } else {
+                    box.textContent = '••••••••';
+                    box.style.background = '';
+                    box.classList.add('bg-light');
+                    eye.className = 'fas fa-eye';
+                }
+            };
+
+            window.copyCredentials = function(bbId, pwd, name) {
+                const text = `Baidoa Bedrock ICT Campus\nStudent: ${name}\nStudent ID: ${bbId}\nPassword: ${pwd}\nLogin: http://localhost:3000/HTML/Student%20Results.html`;
+                navigator.clipboard.writeText(text).then(() => {
+                    showCsvToast(`Copied credentials for ${name} (${bbId})!`, 'success');
+                }).catch(() => {
+                    prompt('Copy credentials:', text);
+                });
+            };
+
+            const btnGenPwd = document.getElementById('btnGenPwd');
+            if (btnGenPwd) {
+                btnGenPwd.addEventListener('click', () => {
+                    const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+                    let randomStr = '';
+                    for (let i = 0; i < 6; i++) randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    studentForm.elements.password.value = 'bb' + randomStr;
+                });
+            }
+
+            document.getElementById('btn-add-student').addEventListener('click', async () => {
+                document.getElementById('studentModalTitle').textContent = 'Add New Student';
+                studentForm.reset();
+                studentForm.dataset.mode = 'add';
+                delete studentForm.dataset.id;
+                const nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
+                studentForm.elements.password.value = 'bb' + (260000 + nextId);
+                if (studentForm.elements.parentid.options.length <= 1) await loadParents();
+                studentModal.show();
+            });
+
+            document.getElementById('student-table-body').addEventListener('click', async e => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const id = parseInt(button.dataset.id);
+                const student = students.find(s => s.id === id);
+                if (!student) return;
+
+                if (button.classList.contains('btn-edit')) {
+                    document.getElementById('studentModalTitle').textContent = 'Edit Student';
+                    studentForm.dataset.mode = 'edit';
+                    studentForm.dataset.id = student.id;
+                    studentForm.elements.name.value = student.name || '';
+                    studentForm.elements.grade.value = student.grade || '';
+                    studentForm.elements.attendance.value = student.attendance != null ? student.attendance : '';
+                    studentForm.elements.enrollmentDate.value = toDateInputValue(student.enrollmentdate);
+                    studentForm.elements.birthDate.value = toDateInputValue(student.birthdate);
+                    studentForm.elements.password.value = student.plain_password || ('bb' + (260000 + student.id));
+                    if (studentForm.elements.parentid.options.length <= 1) await loadParents();
+                    studentForm.elements.parentid.value = student.parentid || '';
+                    studentModal.show();
+                } else if (button.classList.contains('btn-delete')) {
+                    if (confirm(`Are you sure you want to move "${student.name}" to the Recycle Bin?`)) {
+                        try {
+                            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                            if (!res.ok) {
+                                const errData = await res.json().catch(() => ({}));
+                                throw new Error(errData.error || 'Failed to delete student');
+                            }
+                            showCsvToast(`"${student.name}" moved to Recycle Bin.`, 'success');
+                            await fetchStudents();
+                        } catch (err) {
+                            showCsvToast('Error: ' + err.message, 'danger');
+                        }
+                    }
+                } else if (button.classList.contains('btn-view')) {
+                    sessionStorage.setItem('viewingStudentId', 'BB' + (260000 + student.id));
+                    sessionStorage.setItem('viewingStudentBirthDate', student.birthdate);
+                    window.open('/HTML/Student Results.html', '_blank');
+                }
+            });
+
+            studentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const mode = studentForm.dataset.mode;
+                const id = studentForm.dataset.id;
+                const pid = studentForm.elements.parentid.value;
+                const studentData = {
+                    name: studentForm.elements.name.value,
+                    grade: studentForm.elements.grade.value,
+                    enrollmentDate: studentForm.elements.enrollmentDate.value,
+                    birthDate: studentForm.elements.birthDate.value,
+                    attendance: parseInt(studentForm.elements.attendance.value) || null,
+                    parentid: pid ? parseInt(pid) : null,
+                    password: studentForm.elements.password.value
+                };
+
+                let url = API_URL;
+                let method = 'POST';
+                if (mode === 'edit') {
+                    url = `${API_URL}/${id}`;
+                    method = 'PUT';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(studentData),
+                    });
+                    if (!response.ok) {
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.error || 'Save operation failed');
+                    }
+                    showCsvToast(mode === 'edit' ? 'Student updated successfully.' : 'Student added successfully.', 'success');
+                    await fetchStudents();
+                    studentModal.hide();
+                } catch (error) {
+                    alert(`Error saving student: ${error.message}`);
+                }
+            });
+
+            fetchStudents();
+            loadParents();
+
+            // CSV Upload trigger
+            document.getElementById('upload-students-csv-trigger').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('upload-students-csv-input').click();
+            });
+
+            function showCsvToast(message, type) {
+                const container = document.getElementById('csv-toast-container');
+                const id = 'toast-' + Date.now();
+                container.innerHTML = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
+                const toast = new bootstrap.Toast(document.getElementById(id), { delay: 6000 });
+                toast.show();
+            }
+
+            document.getElementById('upload-students-csv-input').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('file', file);
+                const btn = document.getElementById('upload-students-csv-trigger');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importing...';
+                try {
+                    const res = await fetch('/api/students/upload-csv', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    let msg = data.message;
+                    if (data.errors && data.errors.length > 0) msg += '<br><small class="opacity-75">' + data.errors.slice(0,3).join('<br>') + (data.errors.length > 3 ? '<br>...and ' + (data.errors.length-3) + ' more' : '') + '</small>';
+                    showCsvToast(msg, data.errors && data.errors.length > 0 ? 'warning' : 'success');
+                    fetchStudents();
+                } catch (err) {
+                    showCsvToast('Error: ' + err.message, 'danger');
+                }
+                btn.innerHTML = '<i class="fas fa-upload me-2"></i>Import CSV';
+                e.target.value = '';
+            });
+
+            // Delete All Students
+            document.getElementById('btn-delete-all-students').addEventListener('click', async () => {
+                if (students.length === 0) {
+                    showCsvToast('No active students to delete.', 'info');
+                    return;
+                }
+                if (!confirm(`Are you sure you want to move ALL ${students.length} student(s) to the Recycle Bin?\nYou can restore them at any time from the Recycle Bin.`)) return;
+                const btn = document.getElementById('btn-delete-all-students');
+                const origHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Moving to Trash...';
+                try {
+                    const res = await fetch('/api/trash/soft-delete-all/students', { method: 'POST' });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed to delete students');
+                    showCsvToast(data.message || 'All students moved to Recycle Bin.', 'success');
+                    await fetchStudents();
+                } catch (err) {
+                    showCsvToast('Error: ' + err.message, 'danger');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            });
+        });
+
+
+
+        // Add this code inside your main <script> tag at the bottom of each admin page
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+    // (Sidebar toggling handled cleanly by /HTML/js/admin.js)
+
+    // 2. Security & Logout
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('adminProfile');
+            window.location.href = 'admin-login.html';
+        });
+    });
+
+    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+
+
+    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
+    // For example, on student.html, your code to fetch students starts here.
+    // On teacher.html, your code to fetch teachers starts here.
+    // etc.
+
+});
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

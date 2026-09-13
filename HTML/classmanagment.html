@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+  <!-- The full, correct sidebar for classmanagment.html -->
+
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+            <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+        </h3>
+    </div>
+            <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html" class="active"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+</nav>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            <h4 class="mb-0 ms-3">Class Management</h4>
+            <div class="ms-auto d-flex align-items-center">
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <a id="download-class-assign-template" class="btn btn-success btn-sm" href="/api/classes/assign-template/download" target="_blank"><i class="fas fa-download me-1"></i>Download Template</a>
+                <button id="upload-class-assign-csv-trigger" class="btn btn-warning btn-sm"><i class="fas fa-upload me-1"></i>Import CSV</button>
+                <input type="file" id="upload-class-assign-csv-input" accept=".csv" style="display:none;">
+                <button class="btn btn-primary btn-sm" id="btn-add-class"><i class="fas fa-plus me-1"></i> Add New Class</button>
+            </div>
+        </nav>
+        <!-- Content Area -->
+        <div class="content-area">
+            <div id="csv-toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
+            <div class="row g-4" id="class-cards-container">
+                <!-- Class cards will be populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Class Modal -->
+<div class="modal fade" id="classModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="classForm">
+                <div class="modal-header"><h5 class="modal-title" id="classModalTitle">Class Information</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Class Name</label><input type="text" name="name" class="form-control" required></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label">Assigned Teacher</label><select class="form-select" name="teacherId" required></select></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Room Number</label><input type="text" name="room" class="form-control" required></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label">Current Students</label><input type="number" name="students" class="form-control" value="0" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Max Capacity</label><input type="number" name="capacity" class="form-control" value="30" required></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Header Color</label><input type="color" name="color" class="form-control form-control-color" value="#4e73df"></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/HTML/js/admin.js"></script>
+<script>
+    // Exposed globally for retry button
+    let loadPageData;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const classModal = new bootstrap.Modal(document.getElementById('classModal'));
+        const classForm = document.getElementById('classForm');
+        const classContainer = document.getElementById('class-cards-container');
+        const CLASSES_API_URL = '/api/classes';
+        const TEACHERS_API_URL = '/api/teachers';
+
+        let classes = [];
+        let teachers = [];
+
+        loadPageData = async function() {
+            classContainer.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-border text-success" role="status"></div><p class="mt-2 text-muted">Loading classes...</p></div>`;
+            try {
+                // Sequential fetches to avoid exhausting Supabase connection pool
+                const teachersRes = await fetch(TEACHERS_API_URL);
+                if (!teachersRes.ok) throw new Error(`Teachers API error: ${teachersRes.status}`);
+                teachers = await teachersRes.json();
+
+                const classesRes = await fetch(CLASSES_API_URL);
+                if (!classesRes.ok) throw new Error(`Classes API error: ${classesRes.status}`);
+                classes = await classesRes.json();
+
+                renderClassCards();
+            } catch (error) {
+                console.error('Error loading class data:', error);
+                classContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-danger">Could not load class data</h5>
+                        <p class="text-muted small">${error.message}</p>
+                        <button class="btn btn-outline-success mt-2" onclick="loadPageData()">
+                            <i class="fas fa-redo me-1"></i> Try Again
+                        </button>
+                    </div>`;
+            }
+        }
+
+        function renderClassCards() {
+            if (classes.length === 0) {
+                classContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-school fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Classes Yet</h5>
+                        <p class="text-muted small">Click "Add New Class" to create your first class.</p>
+                    </div>`;
+                return;
+            }
+            classContainer.innerHTML = classes.map(c => {
+                const progress = c.capacity > 0 ? (c.students / c.capacity) * 100 : 0;
+                const assignedTeacher = teachers.find(t => t.id === c.teacherid);
+                const teacherName = assignedTeacher ? assignedTeacher.name : 'Unassigned';
+                const teacherImage = assignedTeacher && assignedTeacher.image ? assignedTeacher.image : '/images/BEDRCOK LOGO.JPG';
+
+                return `
+                <div class="col-lg-4 col-md-6">
+                    <div class="class-card">
+                        <div class="card-header" style="background-color: ${c.color || '#4e73df'};">
+                            <h5 class="card-title">${c.name}</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item btn-edit-class" href="#" data-id="${c.id}">Edit</a></li>
+                                    <li><a class="dropdown-item btn-delete-class" href="#" data-id="${c.id}">Delete</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="teacher-info d-flex align-items-center mb-3">
+                                <img src="${teacherImage}" alt="${teacherName}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div><h6 class="mb-0">${teacherName}</h6><small class="text-muted">Assigned Teacher</small></div>
+                            </div>
+                            <div class="class-details">
+                                <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> Room: <strong>${c.room}</strong></p>
+                                <p class="mb-2"><i class="fas fa-users me-2"></i> Students: <strong>${c.students} / ${c.capacity}</strong></p>
+                                <div class="progress" style="height: 10px;"><div class="progress-bar" style="width: ${progress}%;"></div></div>
+                            </div>
+                            <div class="mt-3">
+                                <a href="class-detail.html?id=${c.id}" class="btn btn-sm btn-primary w-100"><i class="fas fa-eye me-1"></i> View Students</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function populateTeacherSelect() {
+            const select = classForm.elements.teacherId;
+            select.innerHTML = '<option value="" disabled selected>Select a teacher...</option>';
+            teachers.forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+            });
+        }
+
+        document.getElementById('btn-add-class').addEventListener('click', () => {
+            document.getElementById('classModalTitle').textContent = 'Add New Class';
+            classForm.reset();
+            classForm.dataset.mode = 'add';
+            delete classForm.dataset.id;
+            populateTeacherSelect();
+            classModal.show();
+        });
+
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-edit-class, .btn-delete-class');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (!id) return;
+            const targetClass = classes.find(c => c.id === parseInt(id));
+            if (!targetClass) return;
+            e.preventDefault();
+
+            if (btn.classList.contains('btn-edit-class')) {
+                document.getElementById('classModalTitle').textContent = 'Edit Class';
+                classForm.dataset.mode = 'edit';
+                classForm.dataset.id = id;
+                populateTeacherSelect();
+                classForm.elements.name.value = targetClass.name;
+                classForm.elements.teacherId.value = targetClass.teacherId || '';
+                classForm.elements.room.value = targetClass.room;
+                classForm.elements.students.value = targetClass.students;
+                classForm.elements.capacity.value = targetClass.capacity;
+                classForm.elements.color.value = targetClass.color;
+                classModal.show();
+            } else if (btn.classList.contains('btn-delete-class')) {
+                showCsvToast(`Moving "${targetClass.name}" to recycle bin...`, 'info');
+                fetch(`${CLASSES_API_URL}/${id}`, { method: 'DELETE' })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Delete failed');
+                        loadPageData();
+                        showCsvToast(`"${targetClass.name}" moved to recycle bin.`, 'success');
+                    })
+                    .catch(err => showCsvToast('Error: ' + err.message, 'danger'));
+            }
+        });
+
+        classForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const mode = classForm.dataset.mode;
+            const id = classForm.dataset.id;
+            const data = {
+                name: classForm.elements.name.value,
+                teacherId: parseInt(classForm.elements.teacherId.value) || null,
+                room: classForm.elements.room.value,
+                students: parseInt(classForm.elements.students.value),
+                capacity: parseInt(classForm.elements.capacity.value),
+                color: classForm.elements.color.value,
+            };
+            const url = (mode === 'edit') ? `${CLASSES_API_URL}/${id}` : CLASSES_API_URL;
+            const method = (mode === 'edit') ? 'PUT' : 'POST';
+            try {
+                const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                if (!response.ok) throw new Error('Save operation failed');
+                await loadPageData();
+                classModal.hide();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
+
+        loadPageData();
+
+        document.getElementById('upload-class-assign-csv-trigger').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('upload-class-assign-csv-input').click();
+        });
+
+        function showCsvToast(message, type) {
+            const container = document.getElementById('csv-toast-container');
+            const id = 'toast-' + Date.now();
+            container.innerHTML = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
+            const t = new bootstrap.Toast(document.getElementById(id), { delay: 6000 });
+            t.show();
+        }
+
+        document.getElementById('upload-class-assign-csv-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            const btn = document.getElementById('upload-class-assign-csv-trigger');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importing...';
+            try {
+                const res = await fetch('/api/classes/assign-csv', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                let msg = data.message;
+                if (data.errors && data.errors.length > 0) msg += '<br><small class="opacity-75">' + data.errors.slice(0,3).join('<br>') + (data.errors.length > 3 ? '<br>...and ' + (data.errors.length-3) + ' more' : '') + '</small>';
+                showCsvToast(msg, data.errors && data.errors.length > 0 ? 'warning' : 'success');
+                loadPageData();
+            } catch (err) {
+                showCsvToast('Error: ' + err.message, 'danger');
+            }
+            btn.innerHTML = '<i class="fas fa-upload me-2"></i>Import CSV';
+            e.target.value = '';
+        });
+    });
+
+
+
+</script>
+<script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+</script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

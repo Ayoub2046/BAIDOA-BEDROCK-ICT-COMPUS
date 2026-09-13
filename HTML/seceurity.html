@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security & Permissions | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html" class="active"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <h4 class="mb-0 ms-3">Security & Permissions</h4>
+            </nav>
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="security-card">
+                    <div class="card-header bg-transparent p-3">
+                        <ul class="nav nav-pills" id="security-tabs" role="tablist">
+                            <li class="nav-item" role="presentation"><button class="nav-link active" id="roles-tab"
+                                    data-bs-toggle="pill" data-bs-target="#roles-content" type="button">User
+                                    Roles</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link" id="logs-tab"
+                                    data-bs-toggle="pill" data-bs-target="#logs-content" type="button">Access
+                                    Logs</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link" id="settings-tab"
+                                    data-bs-toggle="pill" data-bs-target="#settings-content" type="button">General
+                                    Settings</button></li>
+                        </ul>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="security-tabs-content">
+                            <!-- Tab 1: User Roles & Permissions (THIS IS THE DYNAMIC PART) -->
+                            <div class="tab-pane fade show active" id="roles-content" role="tabpanel">
+                                <h5>Role-Based Access Control</h5>
+                                <p class="text-muted">Manage the primary role for each registered user. The default
+                                    admin's role cannot be changed.</p>
+                                <div id="roles-save-alert" class="mt-3"></div>
+                                <div class="table-responsive mt-3">
+                                    <table class="table permissions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>User Name</th>
+                                                <th>Email</th>
+                                                <th>Assigned Role</th>
+                                            </tr>
+                                        </thead>
+                                        <!-- The user roles will be dynamically inserted here by our script -->
+                                        <tbody id="roles-tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button class="btn btn-primary mt-3" id="save-roles-btn"><i
+                                        class="fas fa-save me-2"></i>Save All Changes</button>
+                            </div>
+                            <!-- Tab 2: Access Logs (This is a static mockup) -->
+                            <div class="tab-pane fade" id="logs-content" role="tabpanel">
+                                <h5>Recent Access Logs</h5>
+                                <p class="text-muted">A record of recent login attempts and significant activities.</p>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>User</th>
+                                                <th>Action</th>
+                                                <th>Status</th>
+                                                <th>IP Address</th>
+                                                <th>Timestamp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Admin User</td>
+                                                <td>Logged In</td>
+                                                <td><span class="badge bg-success">Success</span></td>
+                                                <td>192.168.1.1</td>
+                                                <td>2023-11-10 09:05 AM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>teacher@school.edu</td>
+                                                <td>Logged In</td>
+                                                <td><span class="badge bg-success">Success</span></td>
+                                                <td>203.0.113.25</td>
+                                                <td>2023-11-10 09:02 AM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>unknown@user.com</td>
+                                                <td>Login Attempt</td>
+                                                <td><span class="badge bg-danger">Failed</span></td>
+                                                <td>198.51.100.10</td>
+                                                <td>2023-11-10 08:55 AM</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Tab 3: General Settings (This is a static mockup) -->
+                            <div class="tab-pane fade" id="settings-content" role="tabpanel">
+                                <h5>General Security Settings</h5>
+                                <p class="text-muted">Configure site-wide security options.</p>
+                                <ul class="list-group list-group-flush">
+                                    <li
+                                        class="list-group-item d-flex justify-content-between align-items-center settings-item p-3">
+                                        <div><strong>Two-Factor Authentication (2FA)</strong>
+                                            <p class="mb-0 text-muted">Require all users to verify their identity using
+                                                a second method.</p>
+                                        </div>
+                                        <div class="form-check form-switch"><input class="form-check-input"
+                                                type="checkbox" role="switch" checked></div>
+                                    </li>
+                                    <li
+                                        class="list-group-item d-flex justify-content-between align-items-center settings-item p-3">
+                                        <div><strong>Password Expiration Policy</strong>
+                                            <p class="mb-0 text-muted">Force users to reset their passwords every 90
+                                                days.</p>
+                                        </div>
+                                        <div class="form-check form-switch"><input class="form-check-input"
+                                                type="checkbox" role="switch"></div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let fetchUsers;
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Common sidebar toggle logic ---
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            if (sidebarToggler) sidebarToggler.addEventListener('click', () => {
+                sidebar.classList.toggle('toggled');
+            });
+
+            // --- Page-specific JS for User Role Management ---
+            const rolesTbody = document.getElementById('roles-tbody');
+            const saveButton = document.getElementById('save-roles-btn');
+            const USERS_API_URL = '/api/users';
+            let users = [];
+
+            // --- Core Functions ---
+            fetchUsers = async function() {
+                if (rolesTbody) {
+                    rolesTbody.innerHTML = `<tr><td colspan="3" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading user accounts...</td></tr>`;
+                }
+                try {
+                    const response = await fetch(USERS_API_URL);
+                    if (!response.ok) throw new Error(`Users API error (${response.status})`);
+                    users = await response.json();
+                    renderRolesTable();
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    if (rolesTbody) {
+                        rolesTbody.innerHTML = `
+                            <tr><td colspan="3" class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
+                                <span class="text-danger d-block mb-2">Error loading user data: ${error.message}</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="fetchUsers()"><i class="fas fa-redo me-1"></i> Try Again</button>
+                            </td></tr>`;
+                    }
+                }
+            };
+            window.fetchUsers = fetchUsers;
+
+            function renderRolesTable() {
+                if (!users || users.length === 0) {
+                    rolesTbody.innerHTML = `<tr><td colspan="3" class="text-center py-5 text-muted">
+                        <i class="fas fa-users-cog fa-3x mb-2 d-block text-secondary"></i>
+                        <p class="mb-0">No users found.</p>
+                    </td></tr>`;
+                    return;
+                }
+                rolesTbody.innerHTML = users.map(user => {
+                    const isDefaultAdmin = user.email === 'admin';
+                    return `
+                        <tr>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <select class="form-select form-select-sm" data-userid="${user.id}" ${isDefaultAdmin ? 'disabled' : ''}>
+                                    <option value="Parent" ${user.role === 'Parent' ? 'selected' : ''}>Parent</option>
+                                    <option value="Teacher" ${user.role === 'Teacher' ? 'selected' : ''}>Teacher</option>
+                                    <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="Student" ${user.role === 'Student' ? 'selected' : ''}>Student</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // --- Event Listener for the Save Button ---
+            saveButton.addEventListener('click', async () => {
+                const updates = [];
+                rolesTbody.querySelectorAll('select').forEach(select => {
+                    const userId = select.dataset.userid;
+                    const newRole = select.value;
+                    const originalUser = users.find(u => u.id == userId);
+
+                    if (originalUser && originalUser.role !== newRole) {
+                        updates.push({
+                            id: userId,
+                            name: originalUser.name,
+                            email: originalUser.email,
+                            role: newRole
+                        });
+                    }
+                });
+
+                if (updates.length === 0) {
+                    alert('No changes to save.');
+                    return;
+                }
+
+                saveButton.disabled = true;
+                saveButton.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Saving...`;
+
+                try {
+                    const updatePromises = updates.map(update =>
+                        fetch(`${USERS_API_URL}/${update.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(update)
+                        })
+                    );
+
+                    await Promise.all(updatePromises);
+
+                    const alertDiv = document.getElementById('roles-save-alert');
+                    alertDiv.innerHTML = `<div class="alert alert-success">User roles updated successfully!</div>`;
+                    setTimeout(() => { alertDiv.innerHTML = ''; }, 4000);
+
+                    await fetchUsers();
+
+                } catch (error) {
+                    console.error('Error saving roles:', error);
+                    alert('An error occurred while saving changes.');
+                } finally {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = `<i class="fas fa-save me-2"></i>Save All Changes`;
+                }
+            });
+
+            // --- Initial Load ---
+            fetchUsers();
+        });
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

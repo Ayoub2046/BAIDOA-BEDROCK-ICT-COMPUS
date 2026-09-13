@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width:60px;height:60px;border-radius:50px;" alt=""><span style="font-size:20px;">Baidoa Bedrock ICT Campus</span></h3>
+        </div>
+                <ul class="sidebar-nav">
+            <li><a href="admin.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exams-admin.html"><i class="fas fa-pen-fancy"></i> <span>Manage Exams</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            <h4 class="mb-0 ms-3 fw-bold">Dashboard</h4>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm d-none d-md-flex" style="max-width:220px;">
+                    <input type="text" class="form-control rounded-start" placeholder="Search students..." id="student-search-input">
+                    <button class="btn btn-primary rounded-end" type="button"><i class="fas fa-search"></i></button>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="refresh-btn"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+                <div class="theme-toggle" onclick="toggleTheme()" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon fs-5" id="themeIcon"></i>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <img id="dashboardProfileImg" src="/images/BEDRCOK LOGO.JPG" alt="Admin" class="rounded-circle border" style="width:34px;height:34px;object-fit:cover;">
+                        <strong id="dashboardProfileName" class="ms-2 d-none d-sm-inline">Admin</strong>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li><a class="dropdown-item" href="/HTML/index.html" id="logout-link-dropdown"><i class="fas fa-sign-out-alt me-2"></i>Sign out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content-area p-3 p-lg-4">
+
+            <!-- Stat Cards -->
+            <div class="row g-3 mb-4" id="stat-cards">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-primary h-100">
+                        <div class="stat-bg-icon"><i class="fas fa-user-graduate"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Students</div>
+                            <div class="stat-value" id="total-students-display">0</div>
+                            <div class="stat-trend up" id="stat-trend-students"><i class="fas fa-arrow-up me-1"></i>All time</div>
+                        </div>
+                        <div class="stat-icon-circle"><i class="fas fa-user-graduate"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-success h-100">
+                        <div class="stat-bg-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Teachers</div>
+                            <div class="stat-value" id="total-teachers-display">0</div>
+                            <div class="stat-trend up"><i class="fas fa-arrow-up me-1"></i>Active staff</div>
+                        </div>
+                        <div class="stat-icon-circle"><i class="fas fa-chalkboard-teacher"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-warning h-100">
+                        <div class="stat-bg-icon"><i class="fas fa-check-double"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Pending Approvals</div>
+                            <div class="stat-value" id="pending-approvals-display">0</div>
+                            <div class="stat-trend" id="stat-trend-approvals"><i class="fas fa-clock me-1"></i>Awaiting review</div>
+                        </div>
+                        <div class="stat-icon-circle"><i class="fas fa-check-double"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-danger h-100">
+                        <div class="stat-bg-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Overdue Fees</div>
+                            <div class="stat-value" id="overdue-fees-display">$0</div>
+                            <div class="stat-trend" id="stat-trend-fees"><i class="fas fa-exclamation-circle me-1"></i>Requires action</div>
+                        </div>
+                        <div class="stat-icon-circle"><i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts + Overall Attendance Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center gap-2 py-3">
+                            <div class="card-header-icon bg-success-subtle"><i class="fas fa-user-check text-success"></i></div>
+                            <span class="fw-semibold">Attendance</span>
+                        </div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center py-3">
+                            <div class="chart-wrap"><canvas id="attendanceChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center gap-2 py-3">
+                            <div class="card-header-icon bg-info-subtle"><i class="fas fa-layer-group text-info"></i></div>
+                            <span class="fw-semibold">Grade Distribution</span>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="chart-wrap"><canvas id="gradeChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center gap-2 py-3">
+                            <div class="card-header-icon bg-warning-subtle"><i class="fas fa-dollar-sign text-warning"></i></div>
+                            <span class="fw-semibold">Fee Collection</span>
+                        </div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center py-3">
+                            <div class="chart-wrap"><canvas id="feeChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: Recent Activity + Alerts + Overall Attendance -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between py-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="card-header-icon bg-primary-subtle"><i class="fas fa-history text-primary"></i></div>
+                                <span class="fw-semibold">Recent Activity</span>
+                            </div>
+                            <span class="badge bg-light text-muted rounded-pill" id="activity-count">0</span>
+                        </div>
+                        <div class="card-body p-0" id="activity-feed">
+                            <div class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin fa-lg mb-2"></i><br><small>Loading...</small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center gap-2 py-3">
+                            <div class="card-header-icon bg-warning-subtle"><i class="fas fa-exclamation-triangle text-warning"></i></div>
+                            <span class="fw-semibold">Alerts</span>
+                        </div>
+                        <div class="card-body" id="alerts-panel">
+                            <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i><br><small>Loading...</small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header d-flex align-items-center gap-2 py-3">
+                            <div class="card-header-icon bg-success-subtle"><i class="fas fa-percent text-success"></i></div>
+                            <span class="fw-semibold">Overall Attendance</span>
+                        </div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height:200px;">
+                            <div class="display-3 fw-bold" id="overall-att-pct" style="color:var(--primary);">0%</div>
+                            <div class="progress mt-2" style="height:8px;width:80%;">
+                                <div class="progress-bar" id="att-progress-bar" role="progressbar" style="width:0%;background:linear-gradient(90deg,#198754,#0dcaf0);border-radius:4px;"></div>
+                            </div>
+                            <small class="text-muted mt-2">across all students</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex align-items-center gap-2 py-3">
+                    <div class="card-header-icon bg-primary-subtle"><i class="fas fa-bolt text-primary"></i></div>
+                    <span class="fw-semibold">Quick Actions</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="student.html" class="quick-action-link">
+                                <div class="qa-icon bg-primary-subtle"><i class="fas fa-user-plus text-primary"></i></div>
+                                <span>Add Student</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="teacher.html" class="quick-action-link">
+                                <div class="qa-icon bg-success-subtle"><i class="fas fa-chalkboard-teacher text-success"></i></div>
+                                <span>Teachers</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="results-approval.html" class="quick-action-link">
+                                <div class="qa-icon bg-warning-subtle"><i class="fas fa-check-double text-warning"></i></div>
+                                <span>Approve Results</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="fee-managment.html" class="quick-action-link">
+                                <div class="qa-icon bg-danger-subtle"><i class="fas fa-dollar-sign text-danger"></i></div>
+                                <span>Fee Management</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="event.html" class="quick-action-link">
+                                <div class="qa-icon bg-info-subtle"><i class="fas fa-calendar-plus text-info"></i></div>
+                                <span>Events</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <a href="admissions-admin.html" class="quick-action-link">
+                                <div class="qa-icon bg-secondary-subtle"><i class="fas fa-file-signature" style="color:var(--text-secondary);"></i></div>
+                                <span>Admissions</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Import -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between py-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="card-header-icon" style="background:rgba(111,66,193,.12);"><i class="fas fa-cloud-upload-alt" style="color:#6f42c1;"></i></div>
+                        <span class="fw-semibold">Bulk Import</span>
+                    </div>
+                    <small class="text-muted">Upload CSV files to import data in bulk</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="import-card text-center p-3" id="import-students-card">
+                                <div class="import-icon bg-primary-subtle"><i class="fas fa-user-graduate text-primary"></i></div>
+                                <h6 class="fw-semibold mt-2 mb-1">Import Students</h6>
+                                <small class="text-muted d-block mb-3">Bulk add students from CSV</small>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill download-template-btn px-3" data-type="students"><i class="fas fa-download me-1"></i>Template</button>
+                                    <button class="btn btn-primary btn-sm rounded-pill import-btn px-3" data-type="students"><i class="fas fa-upload me-1"></i>Import</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="import-card text-center p-3" id="import-classes-card">
+                                <div class="import-icon bg-success-subtle"><i class="fas fa-layer-group text-success"></i></div>
+                                <h6 class="fw-semibold mt-2 mb-1">Assign Classes</h6>
+                                <small class="text-muted d-block mb-3">Assign students to classes</small>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button class="btn btn-outline-success btn-sm rounded-pill download-template-btn px-3" data-type="classes"><i class="fas fa-download me-1"></i>Template</button>
+                                    <button class="btn btn-success btn-sm rounded-pill import-btn px-3" data-type="classes"><i class="fas fa-upload me-1"></i>Import</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="import-card text-center p-3" id="import-results-card">
+                                <div class="import-icon bg-warning-subtle"><i class="fas fa-poll text-warning"></i></div>
+                                <h6 class="fw-semibold mt-2 mb-1">Import Results</h6>
+                                <small class="text-muted d-block mb-3">Bulk import exam results</small>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button class="btn btn-outline-warning btn-sm rounded-pill download-template-btn px-3" data-type="results"><i class="fas fa-download me-1"></i>Template</button>
+                                    <button class="btn btn-warning btn-sm rounded-pill import-btn px-3" data-type="results"><i class="fas fa-upload me-1"></i>Import</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="file" id="import-file-input-students" accept=".csv" style="display:none">
+                    <input type="file" id="import-file-input-classes" accept=".csv" style="display:none">
+                    <input type="file" id="import-file-input-results" accept=".csv" style="display:none">
+                    <div id="import-toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
+                </div>
+            </div>
+
+            <!-- Student Directory List -->
+            <div class="card dashboard-card">
+                <div class="card-header d-flex align-items-center justify-content-between py-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="card-header-icon bg-primary-subtle"><i class="fas fa-address-book text-primary"></i></div>
+                        <span class="fw-semibold">Student Directory</span>
+                        <span class="badge bg-primary rounded-pill" id="directory-count">0</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <input type="text" class="form-control form-control-sm" style="width:160px;" placeholder="Search name or ID..." id="directory-search">
+                        <a href="student.html" class="btn btn-primary btn-sm rounded-pill px-3"><i class="fas fa-external-link-alt me-1"></i>Manage</a>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="directory-list">
+                    <div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/HTML/js/admin.js"></script>
+<style>
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0b5ed7;
+    --card-shadow: 0 2px 12px rgba(0,0,0,.06);
+    --card-hover-shadow: 0 8px 30px rgba(0,0,0,.1);
+    --border-color: #e9ecef;
+    --text-secondary: #6c757d;
+    --radius: 16px;
+    --fs-xs: .68rem;
+    --fs-sm: .75rem;
+    --fs-base: .82rem;
+    --fs-md: .88rem;
+    --fs-lg: .95rem;
+}
+body { font-size: var(--fs-base); }
+body[data-theme="dark"] {
+    --card-shadow: 0 2px 12px rgba(0,0,0,.2);
+    --card-hover-shadow: 0 8px 30px rgba(0,0,0,.3);
+    --border-color: #2a2f2a;
+}
+.content-area { animation: fadeIn .4s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Stat Cards */
+.stat-card {
+    position: relative;
+    border-radius: var(--radius);
+    padding: 1.1rem 1rem;
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease;
+    cursor: default;
+    isolation: isolate;
+}
+.stat-card:hover { transform: translateY(-5px); box-shadow: var(--card-hover-shadow); }
+.stat-bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 6rem;
+    opacity: .06;
+    line-height: 1;
+    pointer-events: none;
+}
+.stat-content { position: relative; z-index: 1; }
+.stat-label { font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; opacity: .85; margin-bottom: .2rem; }
+.stat-value { font-size: 1.7rem; font-weight: 800; line-height: 1.2; }
+.stat-trend { font-size: var(--fs-xs); opacity: .7; margin-top: .3rem; }
+.stat-icon-circle {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+    opacity: .85;
+}
+.stat-primary { background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%); color: #1a56db; }
+.stat-success { background: linear-gradient(135deg, #e6f7ee 0%, #c8f0d8 100%); color: #0e8345; }
+.stat-warning { background: linear-gradient(135deg, #fff9e6 0%, #fff3c4 100%); color: #b8860b; }
+.stat-danger { background: linear-gradient(135deg, #fde8e8 0%, #fccfcf 100%); color: #b91c1c; }
+.stat-primary .stat-icon-circle { background: rgba(26,86,219,.12); }
+.stat-success .stat-icon-circle { background: rgba(14,131,69,.12); }
+.stat-warning .stat-icon-circle { background: rgba(184,134,11,.12); }
+.stat-danger .stat-icon-circle { background: rgba(185,28,28,.12); }
+body[data-theme="dark"] .stat-primary { background: linear-gradient(135deg, #0a1a3a 0%, #0f244a 100%); color: #6ea8fe; }
+body[data-theme="dark"] .stat-success { background: linear-gradient(135deg, #072a18 0%, #0a3d24 100%); color: #75b798; }
+body[data-theme="dark"] .stat-warning { background: linear-gradient(135deg, #2a2100 0%, #3d3100 100%); color: #ffda6a; }
+body[data-theme="dark"] .stat-danger { background: linear-gradient(135deg, #2a0a0a 0%, #3d0f0f 100%); color: #ea868f; }
+
+/* Dashboard Cards */
+.dashboard-card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    transition: box-shadow .3s ease;
+}
+.dashboard-card:hover { box-shadow: var(--card-hover-shadow); }
+.dashboard-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: .7rem 1rem;
+    font-size: var(--fs-sm);
+}
+.card-header-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    flex-shrink: 0;
+}
+.chart-wrap { width: 100%; max-width: 180px; margin: 0 auto; position: relative; }
+.dash-card-body-sm { padding: .65rem 1rem; font-size: var(--fs-sm); }
+
+/* Activity Feed */
+.activity-item {
+    padding: .55rem .85rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: var(--fs-sm);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    transition: background .15s;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-item:hover { background: rgba(0,0,0,.015); }
+body[data-theme="dark"] .activity-item:hover { background: rgba(255,255,255,.02); }
+.activity-item .act-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; flex-shrink: 0;
+}
+.activity-item .act-time { font-size: var(--fs-xs); color: var(--text-secondary); white-space: nowrap; margin-left: auto; }
+
+/* Alert Chips */
+.alert-chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: #fff3cd; color: #856404;
+    border-radius: 50px; padding: .3rem .7rem;
+    font-size: var(--fs-xs);
+    font-weight: 600; margin: .15rem;
+    width: 100%;
+}
+body[data-theme="dark"] .alert-chip { background: rgba(255,193,7,.1); color: #ffc107; }
+
+/* Quick Actions */
+.quick-action-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    padding: .75rem .5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all .25s ease;
+    background: transparent;
+}
+.quick-action-link:hover {
+    background: rgba(0,0,0,.03);
+    transform: translateY(-3px);
+    color: inherit;
+}
+body[data-theme="dark"] .quick-action-link:hover { background: rgba(255,255,255,.04); }
+.qa-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: transform .25s;
+}
+.quick-action-link:hover .qa-icon { transform: scale(1.1) rotate(-5deg); }
+.quick-action-link span { font-size: var(--fs-xs); font-weight: 500; text-align: center; }
+
+/* Import Cards */
+.import-card {
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    background: transparent;
+    transition: all .25s ease;
+    padding: .75rem !important;
+}
+.import-card:hover {
+    border-color: var(--primary);
+    background: rgba(13,110,253,.02);
+    transform: translateY(-2px);
+}
+.import-card h6 { font-size: var(--fs-sm); }
+.import-card small { font-size: var(--fs-xs); }
+.import-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+body[data-theme="dark"] .import-card:hover { background: rgba(255,255,255,.02); }
+
+/* Dashboard Table */
+.dash-table thead th {
+    background: transparent;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+    padding: .6rem .7rem;
+}
+.dash-table tbody td {
+    padding: .5rem .7rem;
+    vertical-align: middle;
+    font-size: var(--fs-sm);
+}
+.dash-table tbody tr:hover { background: rgba(0,0,0,.015); }
+body[data-theme="dark"] .dash-table tbody tr:hover { background: rgba(255,255,255,.02); }
+.dash-table .badge { font-size: var(--fs-xs); }
+.dash-table .fw-semibold { font-size: var(--fs-sm); }
+
+/* Directory List */
+.directory-item {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .15s;
+    display: flex;
+    align-items: center;
+}
+.directory-item:last-child { border-bottom: none; }
+.directory-item:hover { background: rgba(0,0,0,.015); }
+body[data-theme="dark"] .directory-item:hover { background: rgba(255,255,255,.02); }
+.avatar-circle {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1rem;
+    flex-shrink: 0;
+}
+.dir-name { font-size: var(--fs-sm); }
+
+/* Dark mode: keep card headers and directory text readable */
+body[data-theme="dark"] .dashboard-card .card-header {
+    color: var(--text-primary);
+}
+body[data-theme="dark"] .dashboard-card .card-header span,
+body[data-theme="dark"] .dashboard-card .card-header small,
+body[data-theme="dark"] .dashboard-card .card-header .fw-semibold {
+    color: var(--text-primary);
+}
+body[data-theme="dark"] .directory-item .dir-name,
+body[data-theme="dark"] .directory-item .fw-semibold {
+    color: var(--text-primary);
+}
+body[data-theme="dark"] .directory-item .text-muted,
+body[data-theme="dark"] .directory-item .text-secondary {
+    color: var(--text-secondary) !important;
+}
+body[data-theme="dark"] .dashboard-card .card-header .form-control {
+    background: var(--bg-navbar);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+body[data-theme="dark"] .dashboard-card .card-header .form-control::placeholder {
+    color: var(--text-secondary);
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') { window.location.href = 'admin-login.html'; return; }
+
+    const searchInput = document.getElementById('directory-search');
+    let allStudents = [];
+    let charts = {};
+
+    function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); } catch { return d; } }
+
+    function attColor(pct) {
+        if (pct == null) return { badge: 'bg-secondary', text: '-' };
+        if (pct < 50) return { badge: 'bg-danger', text: pct + '%' };
+        if (pct < 75) return { badge: 'bg-warning text-dark', text: pct + '%' };
+        return { badge: 'bg-success', text: pct + '%' };
+    }
+
+    function renderDirectory(studentsToRender) {
+        const list = document.getElementById('directory-list');
+        const count = document.getElementById('directory-count');
+        if (!studentsToRender || studentsToRender.length === 0) {
+            list.innerHTML = '<div class="text-center py-5 text-muted"><i class="fas fa-user-graduate fa-3x mb-3 opacity-25"></i><br><small>No students found.</small></div>';
+            if (count) count.textContent = '0';
+            return;
+        }
+        if (count) count.textContent = studentsToRender.length;
+        list.innerHTML = studentsToRender.map(s => {
+            const att = attColor(s.attendance);
+            const initial = (s.name || '?').charAt(0).toUpperCase();
+            const colors = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#0dcaf0','#20c997','#e83e8c'];
+            const avatarColor = colors[s.id % colors.length];
+            return `<div class="directory-item" data-id="${s.id}">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="avatar-circle" style="background:${avatarColor};">${initial}</div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="fw-semibold dir-name">${s.name}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal px-2">ELP${250000 + s.id}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-normal px-2">${s.grade || '-'}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 mt-1 small text-muted">
+                            <span><i class="fas fa-user-friends me-1" style="width:12px;"></i>${s.parent_name || 'No parent'}</span>
+                            <span><i class="fas fa-calendar me-1" style="width:12px;"></i>${fmtDate(s.enrollmentdate)}</span>
+                            <span><span class="badge rounded-pill ${att.badge} px-2 py-1 fw-normal" style="font-size:10px;"><i class="fas fa-check-circle me-1"></i>${att.text}</span></span>
+                        </div>
+                    </div>
+                    <a href="student.html" class="btn btn-outline-primary btn-sm rounded-pill flex-shrink-0" title="View Profile"><i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderCharts(data) {
+        const attCanvas = document.getElementById('attendanceChart');
+        if (attCanvas) {
+            if (charts.attendance) charts.attendance.destroy();
+            const att = data.overallAttendance || { total: 0, present: 0 };
+            const absent = Math.max(0, att.total - att.present);
+            charts.attendance = new Chart(attCanvas, {
+                type: 'doughnut',
+                data: { labels: ['Present', 'Absent'], datasets: [{ data: [att.present, absent], backgroundColor: ['#198754', '#dc3545'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 8 } } }, cutout: '75%' }
+            });
+        }
+        const gradeCanvas = document.getElementById('gradeChart');
+        if (gradeCanvas) {
+            if (charts.grade) charts.grade.destroy();
+            const grades = data.gradeDistribution || [];
+            charts.grade = new Chart(gradeCanvas, {
+                type: 'bar',
+                data: { labels: grades.map(g => g.grade), datasets: [{ label: 'Students', data: grades.map(g => parseInt(g.cnt)), backgroundColor: 'rgba(13,110,253,.6)', borderColor: '#0d6efd', borderWidth: 1, borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }, x: { grid: { display: false } } } }
+            });
+        }
+        const feeCanvas = document.getElementById('feeChart');
+        if (feeCanvas) {
+            if (charts.fee) charts.fee.destroy();
+            const fs = data.feeSummary || {};
+            charts.fee = new Chart(feeCanvas, {
+                type: 'doughnut',
+                data: { labels: ['Paid', 'Pending', 'Overdue'], datasets: [{ data: [fs.paid || 0, fs.pending || 0, fs.overdue || 0], backgroundColor: ['#198754', '#ffc107', '#dc3545'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 8 } } }, cutout: '75%' }
+            });
+        }
+    }
+
+    function renderActivity(data) {
+        const feed = document.getElementById('activity-feed');
+        if (!feed) return;
+        const items = [];
+        (data.recentStudents || []).forEach(s => items.push({ icon: 'fa-user-graduate', bg: 'rgba(25,135,84,.12)', color: '#198754', text: `<strong>${s.name}</strong> enrolled (Grade ${s.grade})`, time: fmtDate(s.enrollmentdate) }));
+        (data.recentResults || []).forEach(r => items.push({ icon: 'fa-poll', bg: 'rgba(13,202,240,.12)', color: '#0dcaf0', text: `<strong>${r.student_name}</strong> — ${r.subject}: ${r.score}`, time: fmtDate(r.submitted_at) }));
+        (data.recentFees || []).forEach(f => items.push({ icon: 'fa-dollar-sign', bg: 'rgba(255,193,7,.12)', color: '#ffc107', text: `<strong>${f.student_name}</strong> — $${parseFloat(f.amount).toFixed(2)} <span class="badge bg-${f.status === 'Paid' ? 'success' : f.status === 'Overdue' ? 'danger' : 'warning'}">${f.status}</span>`, time: fmtDate(f.duedate) }));
+        const el = document.getElementById('activity-count');
+        if (el) el.textContent = items.length;
+        if (items.length === 0) { feed.innerHTML = '<div class="text-center text-muted py-5"><i class="fas fa-inbox fs-2 mb-2 d-block opacity-25"></i><small>No recent activity.</small></div>'; return; }
+        feed.innerHTML = items.map(i => `<div class="activity-item"><span class="act-icon" style="background:${i.bg};color:${i.color};"><i class="${i.icon}"></i></span><div class="flex-grow-1 min-w-0"><div class="text-truncate">${i.text}</div></div><span class="act-time">${i.time}</span></div>`).join('');
+    }
+
+    function renderAlerts(data) {
+        const panel = document.getElementById('alerts-panel');
+        if (!panel) return;
+        const chips = [];
+        if (data.pendingApprovals > 0) chips.push(`<span class="alert-chip"><i class="fas fa-check-double"></i>${data.pendingApprovals} result(s) pending approval</span>`);
+        if (data.feeSummary && data.feeSummary.overdue > 0) chips.push(`<span class="alert-chip"><i class="fas fa-exclamation-circle"></i>${data.feeSummary.overdue} overdue fee(s) — $${(data.feeSummary.totalOverdue || 0).toLocaleString()}</span>`);
+        (data.lowAttendanceStudents || []).forEach(s => chips.push(`<span class="alert-chip"><i class="fas fa-user-graduate"></i>${s.name} (${s.grade}) — ${Number(s.attendance).toFixed(0)}% attendance</span>`));
+        panel.innerHTML = chips.length > 0 ? chips.join('') : '<div class="text-center text-muted py-4"><i class="fas fa-check-circle text-success fs-4 mb-2"></i><br><small>All clear — no alerts.</small></div>';
+    }
+
+    async function loadDashboard() {
+        const dirList = document.getElementById('directory-list');
+        if (dirList && (!allStudents || allStudents.length === 0)) {
+            dirList.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-success me-2" role="status"></div><span class="text-muted">Loading dashboard data...</span></div>';
+        }
+        try {
+            const res = await fetch('/api/dashboard/summary');
+            if (!res.ok) throw new Error(`Dashboard API error (${res.status})`);
+            const data = await res.json();
+
+            document.getElementById('total-students-display').textContent = data.totalStudents;
+            document.getElementById('total-teachers-display').textContent = data.totalTeachers;
+            document.getElementById('pending-approvals-display').textContent = data.pendingApprovals;
+            const feeOverdue = (data.feeSummary && data.feeSummary.totalOverdue) || 0;
+            document.getElementById('overdue-fees-display').textContent = '$' + feeOverdue.toLocaleString();
+            const attPct = (data.overallAttendance && data.overallAttendance.percentage) || 0;
+            document.getElementById('overall-att-pct').textContent = attPct + '%';
+            const attBar = document.getElementById('att-progress-bar');
+            if (attBar) attBar.style.width = attPct + '%';
+
+            allStudents = data.recentStudents || [];
+            renderDirectory(allStudents);
+            renderCharts(data);
+            renderAlerts(data);
+
+            const actRes = await fetch('/api/dashboard/activities');
+            if (actRes.ok) { const actData = await actRes.json(); renderActivity(actData); }
+        } catch (err) {
+            console.error('Dashboard load error:', err);
+            if (dirList) {
+                dirList.innerHTML = `
+                    <div class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
+                        <span class="d-block mb-2">Error loading dashboard: ${err.message}</span>
+                        <button class="btn btn-sm btn-outline-success" onclick="loadDashboard()"><i class="fas fa-redo me-1"></i> Retry</button>
+                    </div>`;
+            }
+        }
+    }
+    window.loadDashboard = loadDashboard;
+
+    searchInput.addEventListener('input', () => {
+        const term = searchInput.value.toLowerCase().trim();
+        if (!term) { renderDirectory(allStudents); return; }
+        renderDirectory(allStudents.filter(s => s.name.toLowerCase().includes(term) || `elp${250000 + s.id}`.includes(term)));
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', loadDashboard);
+
+    // Bulk Import Logic
+    const importConfig = {
+        students:  { url: '/api/students/upload-csv',      template: '/api/students/template/download' },
+        classes:   { url: '/api/classes/assign-csv',       template: '/api/classes/assign-template/download' },
+        results:   { url: '/api/results/upload-csv',       template: '/api/results/template/download' }
+    };
+
+    document.querySelectorAll('.download-template-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            if (importConfig[type]) window.location.href = importConfig[type].template;
+        });
+    });
+
+    document.querySelectorAll('.import-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            const input = document.getElementById('import-file-input-' + type);
+            if (input) input.click();
+        });
+    });
+
+    function showImportToast(message, type) {
+        const container = document.getElementById('import-toast-container');
+        const id = 'toast-' + Date.now();
+        container.innerHTML = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert"><div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
+        new bootstrap.Toast(document.getElementById(id), { delay: 6000 }).show();
+    }
+
+    ['students', 'classes', 'results'].forEach(type => {
+        const input = document.getElementById('import-file-input-' + type);
+        if (!input) return;
+        input.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const card = document.getElementById('import-' + type + '-card');
+            const btn = card ? card.querySelector('.import-btn') : null;
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Importing...'; }
+            const formData = new FormData(); formData.append('file', file);
+            try {
+                const res = await fetch(importConfig[type].url, { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Upload failed');
+                let msg = data.message;
+                if (data.errors && data.errors.length > 0) msg += '<br><small class="opacity-75">' + data.errors.slice(0,3).join('<br>') + (data.errors.length > 3 ? '<br>...and ' + (data.errors.length-3) + ' more' : '') + '</small>';
+                showImportToast(msg, data.errors && data.errors.length > 0 ? 'warning' : 'success');
+                if (type === 'students') loadDashboard();
+            } catch (err) { showImportToast('Error: ' + err.message, 'danger'); }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-upload me-1"></i>Import'; }
+            e.target.value = '';
+        });
+    });
+
+    loadDashboard();
+});
+
+function toggleTheme() {
+    const body = document.body, next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next); localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun fs-5' : 'fas fa-moon fs-5';
+}
+(function() { const saved = localStorage.getItem('elif-theme') || 'light'; document.body.setAttribute('data-theme', saved); const icon = document.getElementById('themeIcon'); if (icon) icon.className = saved === 'dark' ? 'fas fa-sun fs-5' : 'fas fa-moon fs-5'; })();
+</script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

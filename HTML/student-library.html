@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Elif Library">
+    <link rel="apple-touch-icon" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --primary-dark: #0f510e;
+            --primary: #1dd91d;
+            --primary-light: #41be41;
+            --primary-medium: #359335;
+            --red: #e74c3c;
+            --yellow: #f39c12;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: #f0f2f5;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        body[data-theme="dark"] { background: #1a1d1a; }
+
+        /* ========== LIBRARY HEADER ========== */
+        .lib-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: #fff;
+            padding: 1rem 1rem 0.8rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(15, 81, 14, 0.25);
+        }
+        .lib-header .lib-greeting { font-size: 1.3rem; font-weight: 700; margin: 0; color: #fff; }
+        .lib-header .lib-greeting-date { font-size: 0.8rem; opacity: 0.85; margin: 2px 0 0; }
+        .lib-header .header-icons { display: flex; gap: 0.6rem; align-items: center; }
+        .lib-header .header-icon-btn {
+            background: rgba(255,255,255,0.15);
+            border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem; cursor: pointer; transition: background 0.2s; position: relative;
+        }
+        .lib-header .header-icon-btn:hover { background: rgba(255,255,255,0.25); }
+        .lib-header .header-icon-btn .badge-dot {
+            position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
+            background: #ff4444; border-radius: 50%; border: 2px solid var(--primary);
+        }
+
+        /* ========== SEARCH BAR ========== */
+        .lib-search-wrap {
+            background: #fff; border-bottom: 1px solid #e0e0e0; padding: 0.75rem 1rem;
+        }
+        body[data-theme="dark"] .lib-search-wrap { background: #252825; border-color: #3a3d3a; }
+        .lib-search-wrap .form-control { border-radius: 30px; padding-left: 1rem; }
+
+        /* ========== HERO BANNER ========== */
+        .lib-hero {
+            margin: 1rem;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 20px;
+            padding: 1.4rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 8px 25px rgba(15, 81, 14, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        .lib-hero::after {
+            content: '\f518'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
+            position: absolute; right: -10px; bottom: -25px; font-size: 7rem; opacity: 0.12;
+        }
+        .lib-hero .lib-hero-text h1 { color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0; }
+        .lib-hero .lib-hero-text p { opacity: 0.9; font-size: 0.82rem; margin: 4px 0 0; }
+        .lib-hero .lib-hero-icon {
+            width: 60px; height: 60px; background: rgba(255,255,255,0.18);
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem; flex-shrink: 0;
+        }
+
+        /* ========== STATS ROW ========== */
+        .lib-stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; padding: 0 1rem; margin-bottom: 1rem;
+        }
+        .lib-stat-card {
+            background: #fff; border-radius: 14px; padding: 0.85rem 0.5rem; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s;
+        }
+        body[data-theme="dark"] .lib-stat-card { background: #252825; }
+        .lib-stat-card:hover { transform: translateY(-2px); }
+        .lib-stat-card .stat-icon {
+            width: 38px; height: 38px; border-radius: 10px; margin: 0 auto 0.5rem;
+            display: flex; align-items: center; justify-content: center; font-size: 0.95rem; color: #fff;
+        }
+        .lib-stat-card .stat-val { font-size: 1.35rem; font-weight: 700; color: #333; }
+        body[data-theme="dark"] .lib-stat-card .stat-val { color: #e8f8e8; }
+        .lib-stat-card .stat-lbl { font-size: 0.62rem; color: #888; font-weight: 600; }
+
+        .st-primary { background: linear-gradient(135deg, #1e8449, #27ae60); }
+        .st-blue { background: linear-gradient(135deg, #2471a3, #3498db); }
+        .st-orange { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .st-purple { background: linear-gradient(135deg, #7d3c98, #a569bd); }
+
+        /* ========== FILTER CHIPS ========== */
+        .lib-filters { padding: 0 1rem; margin-bottom: 1rem; }
+        .lib-filters .chip-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.3rem; -webkit-overflow-scrolling: touch; }
+        .lib-chip {
+            border: 1.5px solid #dde5dd; background: #fff; color: #555; font-size: 0.75rem; font-weight: 600;
+            padding: 0.4rem 1rem; border-radius: 30px; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+        }
+        body[data-theme="dark"] .lib-chip { background: #252825; border-color: #3a3d3a; color: #bbb; }
+        .lib-chip:hover { border-color: var(--primary); color: var(--primary-dark); }
+        .lib-chip.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); }
+
+        /* ========== BOOK GRID ========== */
+        .books-section { padding: 0 1rem 2rem; }
+        .books-section .books-heading { font-size: 0.95rem; font-weight: 700; color: #333; margin: 0 0 0.8rem; display: flex; align-items: center; justify-content: space-between; }
+        body[data-theme="dark"] .books-section .books-heading { color: #e8f8e8; }
+        .books-section .books-count { font-size: 0.7rem; color: #888; font-weight: 600; }
+
+        .book-card {
+            background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #eee;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; height: 100%;
+            display: flex; flex-direction: column;
+        }
+        body[data-theme="dark"] .book-card { background: #252825; border-color: #3a3d3a; }
+        .book-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+
+        .book-cover-wrap {
+            position: relative; height: 200px; background: linear-gradient(135deg, #e8f5e8, #d5ecd5);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        body[data-theme="dark"] .book-cover-wrap { background: linear-gradient(135deg, #1a2e1a, #223022); }
+        .book-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .book-cover-wrap .book-cover-placeholder { font-size: 3.2rem; color: var(--primary-medium); opacity: 0.55; }
+        .book-card .book-cat-badge {
+            position: absolute; top: 10px; left: 10px; background: rgba(15,81,14,0.9); color: #fff;
+            font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+            padding: 0.25rem 0.7rem; border-radius: 20px;
+        }
+        .book-card .book-status {
+            position: absolute; top: 10px; right: 10px; font-size: 0.6rem; font-weight: 700;
+            padding: 0.25rem 0.7rem; border-radius: 20px; color: #fff;
+        }
+        .book-status.available { background: #27ae60; }
+        .book-status.checked { background: #e74c3c; }
+        .book-card .book-card-body { padding: 0.9rem 1rem; display: flex; flex-direction: column; flex: 1; }
+        .book-card .book-title { font-size: 0.92rem; font-weight: 700; color: #333; margin: 0 0 2px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        body[data-theme="dark"] .book-card .book-title { color: #e8f8e8; }
+        .book-card .book-author { font-size: 0.75rem; color: #888; margin: 0 0 0.7rem; }
+        .book-card .book-actions { margin-top: auto; display: flex; gap: 0.4rem; }
+
+        .btn-read {
+            flex: 1; background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            border: none; color: #fff; font-size: 0.75rem; font-weight: 600;
+            padding: 0.45rem 0.5rem; border-radius: 10px; transition: all 0.2s;
+        }
+        .btn-read:hover { filter: brightness(1.1); color: #fff; }
+        .btn-fav {
+            width: 38px; background: #f0f2f5; border: none; color: #888; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;
+        }
+        body[data-theme="dark"] .btn-fav { background: #1a1d1a; color: #888; }
+        .btn-fav.active { color: #e74c3c; }
+        .btn-fav.active i { font-weight: 900; }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-modern {
+            text-align: center; padding: 3rem 1rem; background: #fff; border-radius: 16px;
+            border: 1px dashed #ddd; color: #888;
+        }
+        body[data-theme="dark"] .empty-modern { background: #252825; border-color: #3a3d3a; }
+        .empty-modern .empty-icon { font-size: 2.8rem; margin-bottom: 0.8rem; opacity: 0.35; }
+        .empty-modern h5 { font-weight: 700; color: #555; }
+        body[data-theme="dark"] .empty-modern h5 { color: #bbb; }
+        .empty-modern p { font-size: 0.82rem; margin: 0; }
+
+        /* ========== READER MODAL ========== */
+        .reader-modal .modal-dialog { max-width: 900px; }
+        .reader-modal .modal-content { border-radius: 16px; overflow: hidden; }
+        .reader-modal .modal-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: #fff; border: none; padding: 0.8rem 1.2rem;
+        }
+        .reader-modal .modal-title { font-size: 1rem; font-weight: 700; color: #fff; }
+        .reader-modal .modal-header .btn-close { filter: invert(1); }
+        .reader-frame { width: 100%; height: 75vh; border: none; background: #fff; }
+        .reader-unavailable {
+            height: 60vh; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: #888; text-align: center; padding: 2rem;
+        }
+        .reader-unavailable i { font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; }
+
+        /* ========== DETAIL MODAL ========== */
+        .detail-modal .modal-dialog { max-width: 560px; }
+        .detail-modal .modal-content { border-radius: 16px; overflow: hidden; border: none; }
+        .detail-hero {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            padding: 1.5rem; color: #fff; text-align: center; position: relative;
+        }
+        .detail-hero img { width: 110px; height: 150px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .detail-hero .placeholder-lg {
+            width: 110px; height: 150px; background: rgba(255,255,255,0.15); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 2.4rem; margin: 0 auto;
+        }
+        .detail-hero h4 { color: #fff; font-weight: 700; margin: 0.9rem 0 2px; }
+        .detail-hero p { opacity: 0.85; font-size: 0.82rem; margin: 0; }
+        .detail-body { padding: 1.3rem; }
+        .detail-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+        .detail-meta .dm-item { background: #f6f8f6; border-radius: 10px; padding: 0.55rem 0.7rem; }
+        body[data-theme="dark"] .detail-meta .dm-item { background: #1a1d1a; }
+        .detail-meta .dm-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 600; }
+        .detail-meta .dm-value { font-size: 0.82rem; font-weight: 700; color: #333; margin: 0; }
+        body[data-theme="dark"] .detail-meta .dm-value { color: #e8f8e8; }
+
+        /* ========== BOTTOM NAV ========== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #fff; z-index: 990;
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0.5rem 0 0.7rem; border-top: 1px solid #eee;
+        }
+        body[data-theme="dark"] .bottom-nav { background: #252825; border-color: #3a3d3a; }
+        .bottom-nav .bn-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            background: none; border: none; color: #999; font-size: 0.6rem; font-weight: 600; cursor: pointer; flex: 1;
+        }
+        .bottom-nav .bn-item i { font-size: 1.1rem; }
+        .bottom-nav .bn-item.active { color: var(--primary-dark); }
+        body[data-theme="dark"] .bottom-nav .bn-item.active { color: var(--primary); }
+
+        body.has-bottom-nav { padding-bottom: 70px; }
+
+        /* ========== PROFESSIONAL FOOTER ========== */
+        .lib-footer {
+            background: linear-gradient(135deg, #0a2e09, #0f510e);
+            color: rgba(255,255,255,0.85);
+            padding: 2.5rem 0 0;
+            margin-top: 2rem;
+        }
+        .lib-footer .footer-brand img {
+            width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);
+            margin-right: 0.8rem;
+        }
+        .lib-footer .footer-brand .fb-name { color: #fff; font-weight: 700; font-size: 1.1rem; margin: 0; }
+        .lib-footer .footer-brand .fb-tag { font-size: 0.72rem; opacity: 0.75; margin: 0; }
+        .lib-footer h6 {
+            color: #fff; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 1rem; position: relative; padding-bottom: 0.5rem;
+        }
+        .lib-footer h6::after {
+            content: ''; position: absolute; left: 0; bottom: 0; width: 32px; height: 3px;
+            background: var(--primary); border-radius: 3px;
+        }
+        .lib-footer .footer-links { list-style: none; padding: 0; margin: 0; }
+        .lib-footer .footer-links li { margin-bottom: 0.5rem; }
+        .lib-footer .footer-links a { color: rgba(255,255,255,0.8); font-size: 0.82rem; transition: all 0.2s; text-decoration: none; }
+        .lib-footer .footer-links a:hover { color: var(--primary); padding-left: 4px; }
+        .lib-footer .footer-contact p { font-size: 0.82rem; margin-bottom: 0.5rem; color: rgba(255,255,255,0.8); }
+        .lib-footer .footer-contact i { width: 22px; color: var(--primary); }
+        .lib-footer .footer-social { display: flex; gap: 0.6rem; margin-top: 1rem; }
+        .lib-footer .footer-social a {
+            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            font-size: 0.9rem; transition: all 0.2s;
+        }
+        .lib-footer .footer-social a:hover { background: var(--primary); color: #0a2e09; transform: translateY(-2px); }
+        .lib-footer .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.15); margin-top: 2rem; padding: 1rem 0;
+            font-size: 0.75rem; color: rgba(255,255,255,0.6); text-align: center;
+        }
+        .lib-footer .footer-bottom .heart { color: var(--primary); }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .lib-stats { grid-template-columns: repeat(2, 1fr); }
+            .lib-hero { padding: 1.2rem; }
+            .lib-hero .lib-hero-text h1 { font-size: 1.2rem; }
+            .detail-meta { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            .lib-stats { gap: 0.4rem; padding: 0 0.75rem; }
+            .books-section, .lib-filters { padding-left: 0.75rem; padding-right: 0.75rem; }
+            .reader-frame { height: 68vh; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============ LOGIN VIEW ============ -->
+    <div id="login-view" class="login-container">
+        <div class="card login-card shadow-lg">
+            <div class="login-header">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo" class="login-logo">
+                <h3>Digital Library</h3>
+                <p>Baidoa Bedrock ICT Campus</p>
+            </div>
+            <div class="login-body">
+                <div id="login-alert"></div>
+                <form id="login-form" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="inputStudentId" class="form-label">
+                            <i class="fas fa-id-card me-1"></i>Student ID
+                        </label>
+                        <input type="text" class="form-control" id="inputStudentId"
+                            placeholder="e.g. ELP250001" required>
+                        <div class="form-text">Format: ELP followed by 6 digits</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">
+                            <i class="fas fa-lock me-1"></i>Password (Birth Date)
+                        </label>
+                        <input type="date" class="form-control" id="inputPassword" required>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-login" id="btn-login">
+                            <i class="fas fa-book-open me-2"></i>Enter Library
+                        </button>
+                    </div>
+                </form>
+                <div class="login-footer">
+                    <a href="/HTML/index.html">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Website
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ LIBRARY VIEW ============ -->
+    <div id="library-view" class="d-none">
+
+        <!-- Header -->
+        <header class="lib-header no-print">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="lib-greeting" id="lib-greeting">Welcome, Student!</h1>
+                    <p class="lib-greeting-date" id="lib-date"></p>
+                </div>
+                <div class="header-icons">
+                    <button class="header-icon-btn" title="Search" onclick="toggleSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                    <button class="header-icon-btn" title="Logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search bar -->
+        <div class="lib-search-wrap d-none" id="search-wrap">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" class="form-control border-start-0" id="search-input"
+                    placeholder="Search by title, author, or category..." oninput="renderBooks()">
+                <button class="btn btn-outline-secondary" onclick="toggleSearch()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Hero Banner -->
+        <div class="lib-hero no-print">
+            <div class="lib-hero-text">
+                <h1><i class="fas fa-book-reader me-2"></i>Elif Digital Library</h1>
+                <p>Explore thousands of books and read them right here.</p>
+            </div>
+            <div class="lib-hero-icon"><i class="fas fa-layer-group"></i></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="lib-stats no-print">
+            <div class="lib-stat-card">
+                <div class="stat-icon st-primary"><i class="fas fa-book"></i></div>
+                <div class="stat-val" id="stat-total">0</div>
+                <div class="stat-lbl">Total Books</div>
+            </div>
+            <div class="lib-stat-card">
+                <div class="stat-icon st-blue"><i class="fas fa-tags"></i></div>
+                <div class="stat-val" id="stat-categories">0</div>
+                <div class="stat-lbl">Categories</div>
+            </div>
+            <div class="lib-stat-card">
+                <div class="stat-icon st-orange"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-val" id="stat-available">0</div>
+                <div class="stat-lbl">Available</div>
+            </div>
+            <div class="lib-stat-card">
+                <div class="stat-icon st-purple"><i class="fas fa-heart"></i></div>
+                <div class="stat-val" id="stat-favorites">0</div>
+                <div class="stat-lbl">Favorites</div>
+            </div>
+        </div>
+
+        <!-- Category chips -->
+        <div class="lib-filters no-print">
+            <div class="chip-row" id="category-chips"></div>
+        </div>
+
+        <!-- Books grid -->
+        <div class="books-section">
+            <div class="books-heading">
+                <span><i class="fas fa-books me-2" style="color:var(--primary-dark);"></i>Browse Books</span>
+                <span class="books-count" id="books-count"></span>
+            </div>
+            <div id="books-grid" class="row g-3">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently read -->
+        <div class="books-section d-none" id="recent-section">
+            <div class="books-heading">
+                <span><i class="fas fa-history me-2" style="color:var(--primary-dark);"></i>Recently Read</span>
+            </div>
+            <div id="recent-grid" class="row g-3"></div>
+        </div>
+
+        <!-- Professional Footer -->
+        <footer class="lib-footer">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-brand d-flex align-items-center mb-3">
+                            <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo">
+                            <div>
+                                <p class="fb-name">Baidoa Bedrock ICT Campus</p>
+                                <p class="fb-tag">Nurturing Minds, Shaping Futures</p>
+                            </div>
+                        </div>
+                        <p style="font-size:0.82rem; color:rgba(255,255,255,0.75);">
+                            A digital library built for our students — explore, read, and grow with Elif.
+                            Access textbooks, literature, and reference materials anywhere, anytime.
+                        </p>
+                        <div class="footer-social">
+                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <h6>Quick Links</h6>
+                        <ul class="footer-links">
+                            <li><a href="/HTML/index.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Home</a></li>
+                            <li><a href="/HTML/about.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>About Us</a></li>
+                            <li><a href="/HTML/academics.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Academics</a></li>
+                            <li><a href="/HTML/admision.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Admissions</a></li>
+                            <li><a href="/HTML/news.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>News &amp; Events</a></li>
+                            <li><a href="/HTML/contact.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <h6>Portals</h6>
+                        <ul class="footer-links">
+                            <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Portal Login</a></li>
+                            <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Check Results</a></li>
+                            <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance</a></li>
+                            <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Digital Library</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <h6>Contact Us</h6>
+                        <div class="footer-contact">
+                            <p><i class="fas fa-map-marker-alt"></i>123 Education Lane, Mogadishu</p>
+                            <p><i class="fas fa-phone"></i>+252 618972046</p>
+                            <p><i class="fas fa-envelope"></i>info@bbict.edu.so</p>
+                            <p><i class="fas fa-clock"></i>Mon - Fri: 8:00 AM - 4:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p class="mb-0">© <span id="year"></span> Baidoa Bedrock ICT Campus. All Rights Reserved. Built with <i class="fas fa-heart heart"></i> for our students. | Developed By <span class="dev">ENG AYUOB ADAN ABDI</span></p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ============ READER MODAL ============ -->
+    <div class="modal fade reader-modal" id="readerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-book-open me-2"></i><span id="reader-title">Reading...</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" id="reader-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DETAIL MODAL ============ -->
+    <div class="modal fade detail-modal" id="detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="detail-hero">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" style="filter:invert(1);" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div id="detail-cover"></div>
+                    <h4 id="detail-title"></h4>
+                    <p id="detail-author"></p>
+                </div>
+                <div class="detail-body">
+                    <div class="detail-meta">
+                        <div class="dm-item">
+                            <div class="dm-label">Category</div>
+                            <p class="dm-value" id="detail-category"></p>
+                        </div>
+                        <div class="dm-item">
+                            <div class="dm-label">Status</div>
+                            <p class="dm-value" id="detail-status"></p>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-read" id="detail-read-btn">
+                            <i class="fas fa-book-open me-2"></i>Read Now
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="detail-fav-btn">
+                            <i class="far fa-heart me-1"></i>Add to Favorites
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ BOTTOM NAV ============ -->
+    <nav class="bottom-nav no-print d-md-none" id="bottom-nav">
+        <button class="bn-item" onclick="scrollTo('top')"><i class="fas fa-home"></i>Home</button>
+        <button class="bn-item" onclick="scrollTo('books')"><i class="fas fa-books"></i>Books</button>
+        <button class="bn-item" onclick="scrollTo('recent')"><i class="fas fa-history"></i>Recent</button>
+        <button class="bn-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i>Exit</button>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allBooks = [];
+        let currentCategory = 'all';
+        let favorites = JSON.parse(localStorage.getItem('elif-library-favorites') || '[]');
+        let recentlyRead = JSON.parse(localStorage.getItem('elif-library-recent') || '[]');
+        let readerModal, detailModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            readerModal = new bootstrap.Modal(document.getElementById('readerModal'));
+            detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+            document.getElementById('year').textContent = new Date().getFullYear();
+            setGreeting();
+            initTheme();
+
+            // Restore session
+            const session = sessionStorage.getItem('elif-library-session');
+            if (session) {
+                showLibrary(JSON.parse(session));
+            }
+
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('login-alert');
+            const studentIdInput = document.getElementById('inputStudentId').value.toUpperCase().replace('ELP', '');
+            const realDbId = parseInt(studentIdInput) - 250000;
+            const passwordInput = document.getElementById('inputPassword').value;
+
+            if (isNaN(realDbId)) {
+                alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID format.</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/results/${realDbId}`);
+                if (!response.ok) throw new Error('ID_NOT_FOUND');
+                const studentData = await response.json();
+                const dbBirthdate = studentData.birthdate ? (() => {
+                    const d = new Date(studentData.birthdate);
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                })() : '';
+
+                if (dbBirthdate === passwordInput) {
+                    const session = { name: studentData.name, id: studentData.id };
+                    sessionStorage.setItem('elif-library-session', JSON.stringify(session));
+                    showLibrary(session);
+                } else {
+                    throw new Error('WRONG_PASSWORD');
+                }
+            } catch (error) {
+                if (error.message === 'ID_NOT_FOUND') {
+                    alertBox.innerHTML = '<div class="alert alert-danger">Student ID not found. Please check your ID.</div>';
+                } else {
+                    alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID or Password.</div>';
+                }
+            }
+        }
+
+        function showLibrary(session) {
+            document.getElementById('login-view').classList.add('d-none');
+            document.getElementById('library-view').classList.remove('d-none');
+            document.body.classList.add('has-bottom-nav');
+            const now = new Date();
+            document.getElementById('lib-greeting').textContent = `Welcome, ${session.name.split(' ')[0]}!`;
+            document.getElementById('lib-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            fetchBooks();
+        }
+
+        function setGreeting() {
+            const h = new Date().getHours();
+            const text = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('lib-greeting').textContent = text + ', Student!';
+        }
+
+        async function fetchBooks() {
+            try {
+                const response = await fetch('/api/books');
+                if (!response.ok) throw new Error('Could not fetch books.');
+                allBooks = await response.json();
+                allBooks = allBooks.filter(b => !b.deleted_at);
+                buildChips();
+                updateStats();
+                renderBooks();
+                renderRecent();
+            } catch (error) {
+                console.error('Fetch Books Error:', error);
+                document.getElementById('books-grid').innerHTML =
+                    `<div class="col-12"><div class="empty-modern"><div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div><h5>Could not load library</h5><p>Please try again later.</p></div></div>`;
+            }
+        }
+
+        function buildChips() {
+            const categories = ['All', ...new Set(allBooks.map(b => b.category).filter(Boolean))];
+            const chipsEl = document.getElementById('category-chips');
+            chipsEl.innerHTML = categories.map(c =>
+                `<button class="lib-chip ${c === 'All' ? 'active' : ''}" data-cat="${c}" onclick="filterCategory('${c.replace(/'/g, "\\'")}')">${c}</button>`
+            ).join('');
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.lib-chip').forEach(ch => {
+                ch.classList.toggle('active', ch.dataset.cat === cat);
+            });
+            renderBooks();
+        }
+
+        function updateStats() {
+            const cats = new Set(allBooks.map(b => b.category).filter(Boolean));
+            document.getElementById('stat-total').textContent = allBooks.length;
+            document.getElementById('stat-categories').textContent = cats.size;
+            document.getElementById('stat-available').textContent = allBooks.filter(b => (b.status || 'Available').toLowerCase() === 'available').length;
+            document.getElementById('stat-favorites').textContent = favorites.length;
+        }
+
+        function getFilteredBooks() {
+            const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+            return allBooks.filter(b => {
+                const matchCat = currentCategory === 'All' || b.category === currentCategory;
+                const matchQ = !q ||
+                    (b.title || '').toLowerCase().includes(q) ||
+                    (b.author || '').toLowerCase().includes(q) ||
+                    (b.category || '').toLowerCase().includes(q);
+                return matchCat && matchQ;
+            });
+        }
+
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+            const countEl = document.getElementById('books-count');
+            const books = getFilteredBooks();
+            countEl.textContent = books.length + (books.length === 1 ? ' book' : ' books');
+
+            if (books.length === 0) {
+                grid.innerHTML = `<div class="col-12"><div class="empty-modern">
+                    <div class="empty-icon"><i class="fas fa-books"></i></div>
+                    <h5>No books found</h5>
+                    <p>Try a different search or category.</p>
+                </div></div>`;
+                return;
+            }
+
+            grid.innerHTML = books.map(b => {
+                const isFav = favorites.includes(b.id);
+                const isAvailable = (b.status || 'Available').toLowerCase() === 'available';
+                const hasLink = !!(b.digitallink && b.digitallink.trim());
+                return `
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="book-card">
+                        <div class="book-cover-wrap">
+                            <span class="book-cat-badge">${escapeHtml(b.category || 'General')}</span>
+                            <span class="book-status ${isAvailable ? 'available' : 'checked'}">${isAvailable ? 'Available' : 'Checked Out'}</span>
+                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder())">` : bookPlaceholder()}
+                        </div>
+                        <div class="book-card-body">
+                            <h6 class="book-title">${escapeHtml(b.title)}</h6>
+                            <p class="book-author"><i class="fas fa-user-pen me-1"></i>${escapeHtml(b.author || 'Unknown')}</p>
+                            <div class="book-actions">
+                                ${hasLink
+                                    ? `<button class="btn-read" onclick="openBook(${b.id})"><i class="fas fa-book-open me-1"></i>Read</button>`
+                                    : `<button class="btn-read" style="opacity:.6;cursor:not-allowed;" disabled><i class="fas fa-lock me-1"></i>Unavailable</button>`}
+                                <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFavorite(${b.id})" title="Add to favorites">
+                                    <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function bookPlaceholder() {
+            return '<div class="book-cover-placeholder"><i class="fas fa-book-open"></i></div>';
+        }
+
+        function toggleFavorite(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(f => f !== id);
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('elif-library-favorites', JSON.stringify(favorites));
+            updateStats();
+            renderBooks();
+            renderRecent();
+            showToast(favorites.includes(id) ? 'Added to favorites' : 'Removed from favorites');
+        }
+
+        function isFavorite(id) {
+            return favorites.includes(id);
+        }
+
+        function openBook(id) {
+            const book = allBooks.find(b => b.id === id);
+            if (!book) return;
+            markRecent(book);
+            if (!book.digitallink || !book.digitallink.trim()) {
+                showDetail(id);
+                return;
+            }
+            document.getElementById('reader-title').textContent = book.title;
+            const body = document.getElementById('reader-body');
+            body.innerHTML = `
+                <iframe class="reader-frame" src="${book.digitallink}" title="${escapeHtml(book.title)}" loading="lazy"></iframe>`;
+            readerModal.show();
+        }
+
+        function showDetail(id) {
+            const book = allBooks.find(b => b.id === id);
+            if (!book) return;
+            const isFav = favorites.includes(id);
+            const isAvailable = (book.status || 'Available').toLowerCase() === 'available';
+            document.getElementById('detail-cover').innerHTML = book.cover
+                ? `<img src="${book.cover}" alt="${escapeHtml(book.title)}" onerror="this.replaceWith(bookPlaceholder())">`
+                : `<div class="placeholder-lg"><i class="fas fa-book-open"></i></div>`;
+            document.getElementById('detail-title').textContent = book.title;
+            document.getElementById('detail-author').textContent = `by ${book.author || 'Unknown'}`;
+            document.getElementById('detail-category').textContent = book.category || 'General';
+            document.getElementById('detail-status').innerHTML = `<span class="badge ${isAvailable ? 'bg-success' : 'bg-danger'}">${isAvailable ? 'Available' : 'Checked Out'}</span>`;
+            const readBtn = document.getElementById('detail-read-btn');
+            if (book.digitallink && book.digitallink.trim()) {
+                readBtn.disabled = false;
+                readBtn.onclick = () => { detailModal.hide(); openBook(id); };
+            } else {
+                readBtn.disabled = true;
+                readBtn.onclick = null;
+            }
+            const favBtn = document.getElementById('detail-fav-btn');
+            favBtn.innerHTML = isFav ? '<i class="fas fa-heart me-1"></i>Remove from Favorites' : '<i class="far fa-heart me-1"></i>Add to Favorites';
+            favBtn.onclick = () => { toggleFavorite(id); detailModal.hide(); };
+            detailModal.show();
+        }
+
+        function markRecent(book) {
+            recentlyRead = recentlyRead.filter(r => r.id !== book.id);
+            recentlyRead.unshift({ id: book.id, title: book.title, author: book.author, cover: book.cover, digitallink: book.digitallink });
+            recentlyRead = recentlyRead.slice(0, 4);
+            localStorage.setItem('elif-library-recent', JSON.stringify(recentlyRead));
+            renderRecent();
+        }
+
+        function renderRecent() {
+            const section = document.getElementById('recent-section');
+            const grid = document.getElementById('recent-grid');
+            if (!recentlyRead.length) {
+                section.classList.add('d-none');
+                return;
+            }
+            section.classList.remove('d-none');
+            grid.innerHTML = recentlyRead.map(b => `
+                <div class="col-6 col-md-3">
+                    <div class="book-card">
+                        <div class="book-cover-wrap" style="height:140px;">
+                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder())">` : bookPlaceholder()}
+                        </div>
+                        <div class="book-card-body p-2">
+                            <h6 class="book-title" style="font-size:.8rem;">${escapeHtml(b.title)}</h6>
+                            <button class="btn-read w-100" onclick="openBook(${b.id})"><i class="fas fa-book-open me-1"></i>Read Again</button>
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function toggleSearch() {
+            const wrap = document.getElementById('search-wrap');
+            wrap.classList.toggle('d-none');
+            if (!wrap.classList.contains('d-none')) {
+                document.getElementById('search-input').focus();
+            }
+        }
+
+        function scrollTo(where) {
+            if (where === 'top') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (where === 'books') {
+                document.querySelector('.books-section').scrollIntoView({ behavior: 'smooth' });
+            } else if (where === 'recent') {
+                document.getElementById('recent-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('elif-library-session');
+            window.location.reload();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function showToast(msg) {
+            const existing = document.getElementById('lib-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'lib-toast';
+            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--primary-dark);color:#fff;padding:.6rem 1.2rem;border-radius:30px;font-size:.8rem;font-weight:600;z-index:2000;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .3s;';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; });
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 1800);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('elif-theme', next);
+            document.getElementById('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function initTheme() {
+            const saved = localStorage.getItem('elif-theme') || 'light';
+            document.body.setAttribute('data-theme', saved);
+            document.getElementById('themeIcon').className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

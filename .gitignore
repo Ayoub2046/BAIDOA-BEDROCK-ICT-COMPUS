@@ -1,0 +1,25 @@
+# Node.js dependencies
+/Backend/node_modules
+/node_modules
+
+# SQLite Database File
+/Backend/school.db
+/Backend/school.db-journal
+
+# Uploaded files from users
+/uploads/
+
+# Environment variables
+.env
+**/.env
+Backend/.env
+
+# Vercel output
+.vercel
+
+# IDE settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

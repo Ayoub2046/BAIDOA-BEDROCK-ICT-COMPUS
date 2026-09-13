@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Generation | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* [PASTE THE COMMON CSS FROM THE PREVIOUS RESPONSE HERE] */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        :root {
+            /* Light Mode */
+            --sidebar-bg: #000009d8;
+            --sidebar-text: #b0b8d3;
+            --sidebar-text-active: #ffffff;
+            --sidebar-active-bg: rgba(255, 255, 255, 0.08);
+            --sidebar-active-border: #367BF5;
+            --topbar-bg: #ffffff;
+            --main-bg: #f4f7fc;
+            --card-bg: #ffffff;
+            --text-primary: #0f510e;
+            --text-secondary: #5a5c69;
+            --border-color: #e3e6f0;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode {
+            /* Dark Mode */
+            --sidebar-bg: #1f2937;
+            --topbar-bg: #111827;
+            --main-bg: #0f172a;
+            --card-bg: #1f2937;
+            --text-primary: #e5e7eb;
+            --text-secondary: #d1d5db;
+            --border-color: #374151;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--main-bg);
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 22px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h3 {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 15px 0;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            color: var(--sidebar-text);
+            padding: 12px 25px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav li a:hover,
+        .sidebar-nav li a.active {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-text-active);
+            border-left: 4px solid var(--sidebar-active-border);
+            padding-left: 21px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            margin-left: 260px;
+            transition: all 0.3s ease;
+        }
+
+        .top-navbar {
+            background-color: var(--topbar-bg);
+            color: var(--text-primary);
+            padding: 15px 30px;
+            box-shadow: 0 1px 5px var(--shadow-color);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            gap: 8px;
+        }
+
+        .top-navbar > #sidebar-toggler { order: 1; }
+        .top-navbar > h4 { order: 2; margin-left: 0 !important; }
+        .top-navbar > .theme-toggle { order: 5; margin-left: auto; display: flex; align-items: center; }
+
+        @media (max-width: 992px) {
+            .top-navbar { padding: 10px 12px; gap: 6px; }
+            .top-navbar > h4 { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .top-navbar .theme-toggle-icon { font-size: 1.25rem; }
+        }
+
+        #sidebar-toggler {
+            display: none;
+        }
+
+        .content-area {
+            padding: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -260px;
+            }
+
+            .sidebar.toggled {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            #sidebar-toggler {
+                display: block;
+            }
+        }
+
+        .dark-mode .form-control,
+        .dark-mode .form-select {
+            background-color: #1f2937;
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        /* [NEW] Report Generation Specific Styles */
+        .report-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+
+        .report-card .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #report-output {
+            display: none;
+            /* Hidden by default */
+        }
+
+        .printable-area {
+            color: #333;
+            /* Use dark text for printing regardless of theme */
+        }
+
+        .printable-area .report-header h2 {
+            color: #0f510e;
+        }
+
+        @media print {
+
+            body,
+            .dashboard-wrapper,
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: white !important;
+            }
+
+            .sidebar,
+            .top-navbar,
+            .report-generator-card,
+            .btn {
+                display: none !important;
+            }
+
+            .content-area {
+                padding: 0 !important;
+            }
+
+            #report-output {
+                display: block !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html" class="active"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <h4 class="mb-0 ms-3">Report Generation</h4>
+            </nav>
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Report Generator Form Card -->
+                <div class="card report-card report-generator-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Generate a New Report</h5>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Replace the old form in HTML/report.html with this one -->
+                        <form id="report-form">
+                            <div class="row align-items-end">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Report Type</label>
+                                    <select class="form-select" name="reportType" required>
+                                        <option value="" disabled selected>Select a report to generate...</option>
+                                        <option value="financial_overview">Financial Overview (Fee Status)</option>
+                                        <option value="student_enrollment">Student Enrollment by Grade</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-cogs me-2"></i>Generate Report
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+
+                    </div>
+                </div>
+
+                <!-- Report Output Card -->
+                <div class="card report-card" id="report-output">
+                    <div class="card-body printable-area">
+                        <div class="report-header d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2> Baidoa Bedrock ICT Campus</h2>
+                                <h4 id="report-title" class="text-muted">Report Title</h4>
+                            </div>
+                            <div>
+                                <p class="mb-0"><strong>Date Generated:</strong> <span id="generation-date"></span></p>
+                                <p class="mb-0"><strong>For:</strong> <span id="report-for"></span></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="report-content">
+                            <!-- Report summary text -->
+                            <div id="report-summary" class="mb-4"></div>
+                            <!-- Chart container -->
+                            <div class="chart-container" style="position: relative; height:40vh; width:100%;">
+                                <canvas id="reportChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent text-end">
+                        <button class="btn btn-secondary" onclick="window.print()"><i
+                                class="fas fa-print me-2"></i>Print Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The script at the bottom of HTML/report.html -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Page Globals ---
+            const reportForm = document.getElementById('report-form');
+            const reportOutput = document.getElementById('report-output');
+            const API_URL = '/api/reports';
+            let chartInstance = null; // To hold the Chart.js object
+
+            // --- Event Listener ---
+            reportForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const reportType = reportForm.elements.reportType.value;
+                if (!reportType) {
+                    alert('Please select a report type.');
+                    return;
+                }
+
+                try {
+                    // Fetch the report data from our new API
+                    const response = await fetch(`${API_URL}?type=${reportType}`);
+                    if (!response.ok) throw new Error('Failed to generate report');
+                    const reportData = await response.json();
+
+                    // --- Prepare and Render the Report ---
+                    const reportTitles = {
+                        'financial_overview': 'Financial Overview',
+                        'student_enrollment': 'Student Enrollment by Grade'
+                    };
+                    document.getElementById('report-title').textContent = reportTitles[reportType];
+                    document.getElementById('generation-date').textContent = new Date().toLocaleDateString();
+                    document.getElementById('report-for').textContent = 'Entire School'; // Or dynamic if needed
+
+                    // You can add dynamic summary text here if you want
+                    document.getElementById('report-summary').innerHTML = `<p>This report was generated from the live database.</p>`;
+
+                    reportOutput.style.display = 'block';
+
+                    // --- Render the Chart ---
+                    const ctx = document.getElementById('reportChart').getContext('2d');
+                    if (chartInstance) {
+                        chartInstance.destroy(); // Destroy previous chart to prevent conflicts
+                    }
+
+                    const chartType = (reportType === 'financial_overview') ? 'pie' : 'bar';
+                    chartInstance = new Chart(ctx, {
+                        type: chartType,
+                        data: reportData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top' },
+                                title: { display: true, text: reportTitles[reportType] }
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error generating report:', error);
+                    alert('An error occurred while generating the report.');
+                }
+            });
+        });
+
+
+        // Add this code inside your main <script> tag at the bottom of each admin page
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+
+    // 1. Responsive Sidebar Toggler Functionality
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggler = document.getElementById('sidebar-toggler');
+    if (sidebarToggler) {
+        sidebarToggler.addEventListener('click', () => {
+            sidebar.classList.toggle('toggled');
+        });
+    }
+
+    // 2. Security & Logout
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('adminProfile');
+            window.location.href = 'admin-login.html';
+        });
+    });
+
+    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+
+
+    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
+    // For example, on student.html, your code to fetch students starts here.
+    // On teacher.html, your code to fetch teachers starts here.
+    // etc.
+
+});
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+
+
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

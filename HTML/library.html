@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header"><h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt=""><span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span></h3></div>
+                <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html" class="active"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </nav>
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="top-navbar">
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+            </div>
+            <h4 class="mb-0 ms-3">Library Management</h4>
+        </nav>
+        <div class="content-area p-4">
+            <div class="card main-table-card mb-4">
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <input type="text" id="book-search" class="form-control me-2" placeholder="Search by title or author...">
+                        <select id="category-filter" class="form-select" style="width: auto;"><option value="all">All Categories</option><option value="Science Fiction">Science Fiction</option><option value="History">History</option><option value="Mathematics">Mathematics</option><option value="Literature">Literature</option></select>
+                    </div>
+                    <button class="btn btn-primary mt-2 mt-md-0" id="btn-add-book"><i class="fas fa-plus me-1"></i> Add New Book</button>
+                </div>
+            </div>
+            <div class="row g-4" id="books-container">
+                <div class="col-12 text-center"><div class="spinner-border text-primary"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Book Modal (Add/Edit) -->
+<div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="bookForm">
+            <div class="modal-header"><h5 class="modal-title" id="bookModalTitle">Book Information</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Title</label><input type="text" name="title" class="form-control" required></div>
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label class="form-label">Author</label><input type="text" name="author" class="form-control" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Category</label><select class="form-select" name="category"><option>Science Fiction</option><option>History</option><option>Mathematics</option><option>Literature</option></select></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cover Image</label>
+                    <input type="file" id="cover-file" class="form-control" accept="image/*">
+                    <input type="hidden" name="cover">
+                    <div class="mt-2" id="cover-preview" style="display:none;"><img src="" alt="Cover preview" style="max-height:120px;border-radius:6px;border:2px solid #dee2e6;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Digital Book File (PDF)</label>
+                    <input type="file" id="digital-file" class="form-control" accept=".pdf,.doc,.docx,.epub">
+                    <input type="hidden" name="digitalLink">
+                    <div class="mt-2"><small class="text-muted" id="digital-file-name"></small></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Book</button></div>
+        </form>
+    </div></div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="checkoutForm">
+            <div class="modal-header"><h5 class="modal-title">Check Out Book</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><input type="hidden" name="bookId"><div class="mb-3">Book: <strong id="checkout-book-title"></strong></div><div class="mb-3"><label class="form-label">Student Name</label><select name="studentId" class="form-select" required><option value="" disabled selected>Select a student...</option></select></div></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Confirm Checkout</button></div>
+        </form>
+    </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggler = document.getElementById('sidebar-toggler');
+        if (sidebarToggler) { sidebarToggler.addEventListener('click', () => sidebar.classList.toggle('toggled')); }
+        if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') { window.location.href = 'admin-login.html'; }
+        const logout = () => { sessionStorage.clear(); window.location.href = 'admin-login.html'; };
+        document.querySelectorAll('#logout-link, #logout-link-dropdown').forEach(l => l.addEventListener('click', e => { e.preventDefault(); logout(); }));
+        
+        const bookModal = new bootstrap.Modal(document.getElementById('bookModal'));
+        const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+        const bookForm = document.getElementById('bookForm');
+        const checkoutForm = document.getElementById('checkoutForm');
+        const booksContainer = document.getElementById('books-container');
+        const searchInput = document.getElementById('book-search');
+        const categoryFilter = document.getElementById('category-filter');
+        const BOOKS_API_URL = '/api/books';
+        const STUDENTS_API_URL = '/api/students';
+        const UPLOAD_API = '/api/upload';
+        let books = [];
+        let students = [];
+
+        async function uploadLibraryFile(fileInputId, hiddenName, field, folder) {
+            const input = document.getElementById(fileInputId);
+            const file = input.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append(field, file);
+            formData.append('folder', folder);
+            try {
+                const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                bookForm.elements[hiddenName].value = data.url;
+                if (hiddenName === 'cover') {
+                    const coverPreview = document.getElementById('cover-preview');
+                    coverPreview.style.display = 'block';
+                    coverPreview.querySelector('img').src = data.url;
+                } else {
+                    document.getElementById('digital-file-name').textContent = 'Uploaded: ' + file.name;
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+                input.value = '';
+            }
+        }
+
+        document.getElementById('cover-file').addEventListener('change', () => uploadLibraryFile('cover-file', 'cover', 'image', 'book-covers'));
+        document.getElementById('digital-file').addEventListener('change', () => uploadLibraryFile('digital-file', 'digitalLink', 'file', 'books'));
+
+        async function loadPageData() {
+            booksContainer.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-success" role="status"></div>
+                    <p class="mt-2 text-muted">Loading library books...</p>
+                </div>`;
+            try {
+                const booksRes = await fetch(BOOKS_API_URL);
+                if (!booksRes.ok) throw new Error(`Books API error (${booksRes.status})`);
+                books = await booksRes.json();
+
+                const studentsRes = await fetch(STUDENTS_API_URL);
+                if (!studentsRes.ok) throw new Error(`Students API error (${studentsRes.status})`);
+                students = await studentsRes.json();
+
+                renderBooks();
+            } catch (error) {
+                console.error('Error loading library data:', error);
+                booksContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-danger">Could not load library data</h5>
+                        <p class="text-muted small">${error.message}</p>
+                        <button class="btn btn-outline-success mt-2" onclick="loadPageData()">
+                            <i class="fas fa-redo me-1"></i> Try Again
+                        </button>
+                    </div>`;
+            }
+        }
+        window.loadPageData = loadPageData;
+
+        function renderBooks() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            const filteredBooks = books.filter(book => {
+                const matchesSearch = book.title.toLowerCase().includes(searchTerm) || (book.author && book.author.toLowerCase().includes(searchTerm));
+                const matchesCategory = category === 'all' || book.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            if (filteredBooks.length === 0) {
+                booksContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Books Found</h5>
+                        <p class="text-muted small">No books match your criteria, or no books have been added yet.</p>
+                    </div>`;
+                return;
+            }
+            booksContainer.innerHTML = filteredBooks.map(book => {
+                const statusColor = book.status === 'Available' ? 'bg-success' : 'bg-danger';
+                const coverStyle = book.cover ? `background-image: url('${book.cover}')` : `background-image: linear-gradient(45deg, #6c757d, #343a40)`;
+                return `
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="book-card">
+                        <div class="book-cover" style="${coverStyle}">${!book.cover ? book.title : ''}</div>
+                        <div class="card-body">
+                            <h5 class="book-title" title="${book.title}">${book.title}</h5>
+                            <p class="book-author mb-2">${book.author}</p>
+                            <span class="badge ${statusColor}">${book.status}</span>
+                            ${book.status === 'Checked Out' ? `<small class="d-block text-muted mt-1">To: ${book.checkedOutTo}</small>` : ''}
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <button class="btn btn-sm btn-secondary btn-edit-book" data-id="${book.id}">Edit</button>
+                            ${book.status === 'Available' ? `<button class="btn btn-sm btn-primary btn-checkout-book" data-id="${book.id}">Check Out</button>` : `<button class="btn btn-sm btn-success btn-checkin-book" data-id="${book.id}">Check In</button>`}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        document.getElementById('btn-add-book').addEventListener('click', () => {
+            document.getElementById('bookModalTitle').textContent = 'Add New Book';
+            bookForm.reset();
+            bookForm.dataset.mode = 'add';
+            delete bookForm.dataset.id;
+            const coverPreview = document.getElementById('cover-preview');
+            coverPreview.style.display = 'none';
+            coverPreview.querySelector('img').src = '';
+            document.getElementById('digital-file-name').textContent = '';
+            bookModal.show();
+        });
+
+        booksContainer.addEventListener('click', e => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            const id = parseInt(button.dataset.id);
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+
+            if (button.classList.contains('btn-edit-book')) {
+                document.getElementById('bookModalTitle').textContent = 'Edit Book';
+                bookForm.dataset.mode = 'edit';
+                bookForm.dataset.id = id;
+                bookForm.elements.title.value = book.title;
+                bookForm.elements.author.value = book.author;
+                bookForm.elements.category.value = book.category;
+                bookForm.elements.cover.value = book.cover || '';
+                bookForm.elements.digitalLink.value = book.digitalLink || '';
+                const coverPreview = document.getElementById('cover-preview');
+                if (book.cover) {
+                    coverPreview.style.display = 'block';
+                    coverPreview.querySelector('img').src = book.cover;
+                } else {
+                    coverPreview.style.display = 'none';
+                    coverPreview.querySelector('img').src = '';
+                }
+                document.getElementById('digital-file-name').textContent = book.digitalLink ? 'Current file: ' + book.digitalLink.split('/').pop() : '';
+                bookModal.show();
+            } else if (button.classList.contains('btn-checkout-book')) {
+                const studentSelect = checkoutForm.elements.studentId;
+                checkoutForm.elements.bookId.value = id;
+                document.getElementById('checkout-book-title').textContent = book.title;
+                studentSelect.innerHTML = '<option value="" disabled selected>Select a student...</option>';
+                students.forEach(s => studentSelect.innerHTML += `<option value="${s.id}">ELP${250000 + s.id} - ${s.name}</option>`);
+                checkoutModal.show();
+            } else if (button.classList.contains('btn-checkin-book')) {
+                if (confirm('Check this book in?')) {
+                    const updatedBook = { ...book, status: 'Available', checkedOutTo: null };
+                    fetch(`${BOOKS_API_URL}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedBook) })
+                    .then(res => res.ok ? loadPageData() : alert('Check-in failed.'));
+                }
+            }
+        });
+
+        bookForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const mode = bookForm.dataset.mode;
+            const id = bookForm.dataset.id;
+            const book = books.find(b => b.id == id) || {};
+            const data = {
+                title: bookForm.elements.title.value,
+                author: bookForm.elements.author.value,
+                category: bookForm.elements.category.value,
+                cover: bookForm.elements.cover.value,
+                digitalLink: bookForm.elements.digitalLink.value,
+                status: mode === 'edit' ? book.status : 'Available',
+                checkedOutTo: mode === 'edit' ? book.checkedOutTo : null
+            };
+            const url = (mode === 'edit') ? `${BOOKS_API_URL}/${id}` : BOOKS_API_URL;
+            const method = (mode === 'edit') ? 'PUT' : 'POST';
+            try {
+                const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                if (!response.ok) throw new Error('Save operation failed');
+                await loadPageData();
+                bookModal.hide();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
+
+        checkoutForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const bookId = parseInt(e.target.elements.bookId.value);
+            const studentId = parseInt(e.target.elements.studentId.value);
+            const book = books.find(b => b.id === bookId);
+            const student = students.find(s => s.id === studentId);
+            const updatedBook = { ...book, status: 'Checked Out', checkedOutTo: `ELP${250000 + student.id} - ${student.name}` };
+            try {
+                const response = await fetch(`${BOOKS_API_URL}/${bookId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedBook) });
+                if (!response.ok) throw new Error('Checkout failed');
+                await loadPageData();
+                checkoutModal.hide();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
+
+        searchInput.addEventListener('input', renderBooks);
+        categoryFilter.addEventListener('change', renderBooks);
+        loadPageData();
+    });
+</script>
+<script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+</script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

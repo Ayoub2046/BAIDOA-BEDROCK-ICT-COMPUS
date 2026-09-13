@@ -1,0 +1,4055 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/jpeg" href="/images/BEDRCOK LOGO.JPG">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bedrock Student">
+    <link rel="apple-touch-icon" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #0d4f8c;
+            --primary: #1a7fd4;
+            --primary-light: #4a9fe0;
+            --primary-medium: #2a6ab0;
+            --accent: #f5a623;
+            --red: #e74c3c;
+            --yellow: #f5a623;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: #f0f2f5;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 70px;
+        }
+
+        /* ========== DASHBOARD HEADER ========== */
+        .dash-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: #fff;
+            padding: 1rem 1rem 0.8rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .dash-header .greeting { font-size: 1.3rem; font-weight: 700; margin: 0; }
+        .dash-header .greeting-date { font-size: 0.8rem; opacity: 0.85; margin: 2px 0 0; }
+        .dash-header .header-icons { display: flex; gap: 0.6rem; align-items: center; }
+        .dash-header .header-icon-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .dash-header .header-icon-btn:hover { background: rgba(255,255,255,0.25); }
+        .dash-header .header-icon-btn .badge-dot {
+            position: absolute;
+            top: 6px; right: 6px;
+            width: 8px; height: 8px;
+            background: #ff4444;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        /* ========== PROFILE CARD ========== */
+        .profile-card {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin: 1rem;
+            color: #fff;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(15, 81, 14, 0.3);
+        }
+
+        .profile-card .badge-elif {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .profile-card .student-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 0.8rem 0;
+        }
+
+        .profile-card .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .profile-card .info-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 0.5rem 0.6rem;
+        }
+
+        .profile-card .info-item .info-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.75;
+            font-weight: 600;
+        }
+
+        .profile-card .info-item .info-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .profile-card .eye-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .profile-card .eye-toggle:hover { background: rgba(255,255,255,0.25); }
+        .profile-card .masked { filter: blur(5px); transition: filter 0.3s; }
+        .profile-card .unmasked { filter: none; transition: filter 0.3s; }
+
+        /* ========== QUICK ACTIONS ========== */
+        .quick-actions {
+            padding: 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-actions .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.8rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            background: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: 0.8rem 0.4rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .action-btn:active { transform: scale(0.96); }
+
+        .action-btn .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: #fff;
+        }
+
+        .action-btn .action-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .icon-green { background: linear-gradient(135deg, #1e8449, #27ae60); }
+        .icon-blue { background: linear-gradient(135deg, #2471a3, #3498db); }
+        .icon-orange { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .icon-teal { background: linear-gradient(135deg, #16a085, #1abc9c); }
+        .icon-red { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .icon-purple { background: linear-gradient(135deg, #7d3c98, #a569bd); }
+        .icon-orange-light { background: linear-gradient(135deg, #d68910, #f39c12); }
+        .icon-gray { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
+
+        /* ========== GREETING CARD ========== */
+        .greeting-card {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 16px;
+            padding: 1.2rem 1rem;
+            margin: 0 1rem 1rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .greeting-card .greet-text h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .greeting-card .greet-text p { font-size: 0.75rem; opacity: 0.85; margin: 2px 0 0; }
+        .greeting-card .greet-icon { font-size: 2.2rem; opacity: 0.3; }
+
+        /* ========== STATS ROW ========== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            padding: 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-mini-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 0.9rem 0.6rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-mini-card:hover { transform: translateY(-2px); }
+
+        .stat-mini-card .stat-icon-mini {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 0.95rem;
+            color: #fff;
+        }
+
+        .stat-mini-card .stat-val {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-mini-card .stat-lbl {
+            font-size: 0.65rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        /* ========== ANNOUNCEMENTS ========== */
+        .announcements-section {
+            padding: 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .announcements-section .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.6rem;
+        }
+
+        .announcement-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+        }
+
+        .announcement-item .ann-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+        }
+
+        .announcement-item .ann-text { flex: 1; }
+        .announcement-item .ann-text h6 { margin: 0; font-size: 0.85rem; font-weight: 700; color: #333; }
+        .announcement-item .ann-text p { margin: 2px 0 0; font-size: 0.72rem; color: #888; }
+
+        /* ========== BOTTOM NAV ========== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.5rem 0 0.6rem;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
+            z-index: 1000;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.2rem 0.8rem;
+            color: #aaa;
+            transition: color 0.2s;
+        }
+
+        .bottom-nav .nav-item.active { color: var(--primary); }
+        .bottom-nav .nav-item:hover { color: var(--primary-light); }
+        .bottom-nav .nav-item i { font-size: 1.15rem; }
+        .bottom-nav .nav-item span { font-size: 0.6rem; font-weight: 600; }
+
+        /* ========== SECTION CARDS ========== */
+        .section-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-card h5 {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e8f5e8;
+        }
+
+        /* ========== TAB NAV (hidden, used by JS) ========== */
+        .tab-nav-wrapper { display: none; }
+
+        /* ========== STAT CARDS (attendance tab) ========== */
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover { transform: translateY(-3px); }
+
+        .stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.6rem;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: #333; }
+        .stat-card .stat-label { font-size: 0.8rem; color: #777; font-weight: 600; }
+
+        .stat-icon.bg-primary-grad { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+        .stat-icon.bg-success-grad { background: linear-gradient(135deg, #1e8449, #27ae60); }
+        .stat-icon.bg-danger-grad { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .stat-icon.bg-warning-grad { background: linear-gradient(135deg, #d68910, #f39c12); }
+
+        /* ========== PERCENT CIRCLE ========== */
+        .percent-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 0 auto;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #fff;
+            position: relative;
+        }
+
+        .percent-circle small { font-size: 0.75rem; font-weight: 600; }
+
+        /* ========== WARNING BANNER ========== */
+        .warning-banner {
+            background: linear-gradient(135deg, #fef3cd, #ffeeba);
+            border-left: 4px solid var(--yellow);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .warning-banner i { font-size: 1.2rem; color: #856404; }
+        .warning-banner span { color: #856404; font-weight: 600; font-size: 0.85rem; }
+
+        /* ========== CLEARANCE CARDS ========== */
+        .clearance-card-cleared {
+            background: linear-gradient(135deg, #d5f5e3, #abebc6);
+            border: 2px solid #27ae60;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .clearance-card-cleared .check-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #27ae60;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2.2rem;
+        }
+
+        .clearance-card-not-cleared {
+            background: linear-gradient(135deg, #fadbd8, #f5b7b1);
+            border: 2px solid #e74c3c;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .clearance-card-not-cleared .x-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2.2rem;
+        }
+
+        /* ========== TABLE ========== */
+        .custom-table { border-radius: 10px; overflow: hidden; }
+
+        .custom-table thead {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: #fff;
+        }
+
+        .custom-table thead th { border: none; font-weight: 600; padding: 0.7rem 0.8rem; }
+        .custom-table tbody td { padding: 0.6rem 0.8rem; vertical-align: middle; }
+        .custom-table tbody tr:hover { background: #f8f9fa; }
+
+        .badge-present { background: #d5f5e3; color: #1e8449; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; }
+        .badge-absent { background: #fadbd8; color: #c0392b; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; }
+        .badge-leave { background: #fef9e7; color: #d68910; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; }
+
+
+
+        /* ========== RESULTS ON HOLD BANNER ========== */
+        .hold-banner {
+            background: linear-gradient(135deg, #fff7e0, #ffefc0);
+            border: 1px solid #f0d080;
+            border-radius: 14px;
+            padding: 1rem 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .hold-banner-inner { display: flex; align-items: center; gap: 1rem; }
+        .hold-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: #fff; flex-shrink: 0;
+        }
+        .hold-title { font-weight: 700; color: #8a6d00; margin: 0; font-size: 1rem; }
+        .hold-sub { font-size: 0.82rem; color: #8a7a40; margin: 2px 0; }
+        .hold-release { font-size: 0.75rem; color: #b8860b; font-weight: 600; }
+        body[data-theme="dark"] .hold-banner {
+            background: linear-gradient(135deg, #3a2a10, #2e2010);
+            border-color: #8a6d00;
+        }
+        body[data-theme="dark"] .hold-title { color: #f0d080; }
+        body[data-theme="dark"] .hold-sub { color: #c0a060; }
+        body[data-theme="dark"] .hold-release { color: #e0b040; }
+
+        /* ========== SUBJECT CARDS ========== */
+        .subject-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .subject-card:hover { transform: translateY(-3px); }
+        .subject-card h6 { font-weight: 700; color: var(--primary-dark); margin-bottom: 0.4rem; font-size: 0.9rem; }
+        .subject-card p { margin: 0.15rem 0; font-size: 0.8rem; color: #555; }
+        .subject-card i { color: var(--primary); margin-right: 0.3rem; }
+
+        /* ========== REPORT CARD ========== */
+        .report-card { max-width: 800px; margin: 0 auto; }
+
+        .report-card .rc-header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-dark);
+            margin-bottom: 1.2rem;
+        }
+
+        .report-card .rc-header img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 0.6rem;
+        }
+
+        .report-card .rc-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .report-card .rc-info div { padding: 0.25rem 0; font-size: 0.9rem; }
+        .report-card .rc-info strong { color: #555; }
+
+        /* ========== CHART ========== */
+        .chart-container { position: relative; height: 280px; }
+
+        /* ========== RESULT CARDS ========== */
+        .result-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .result-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); }
+
+        .result-card-header {
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-card-header h5 { margin: 0; font-weight: 700; color: var(--primary-dark); font-size: 1rem; }
+
+        .result-card-header .subject-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .result-card-body { padding: 1rem 1.2rem; }
+
+        .score-row { display: flex; align-items: center; margin-bottom: 0.7rem; }
+        .score-row:last-child { margin-bottom: 0; }
+
+        .score-label { width: 80px; font-size: 0.78rem; font-weight: 600; color: #555; flex-shrink: 0; }
+
+        .score-bar-wrapper {
+            flex: 1;
+            height: 20px;
+            background: #f0f2f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease-out;
+        }
+
+        .score-bar.quiz { background: linear-gradient(90deg, #3498db, #2980b9); }
+        .score-bar.semester { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .score-bar.midterm { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        .score-bar.final { background: linear-gradient(90deg, #e67e22, #d35400); }
+
+        .score-value {
+            width: 60px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #333;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .score-value .max-score { color: #999; font-weight: 400; font-size: 0.75rem; }
+
+        .result-card-footer {
+            padding: 0.8rem 1.2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .total-score { font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); }
+        .total-score .total-max { font-size: 0.85rem; font-weight: 500; color: #999; }
+
+        .grade-badge { padding: 0.35rem 0.8rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
+        .grade-a { background: #d5f5e3; color: #1e8449; }
+        .grade-b { background: #d6eaf8; color: #2471a3; }
+        .grade-c { background: #fef9e7; color: #d68910; }
+        .grade-d { background: #fadbd8; color: #c0392b; }
+        .grade-f { background: #f5b7b1; color: #922b21; }
+
+        .summary-stat {
+            text-align: center;
+            padding: 0.6rem 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-width: 90px;
+        }
+
+        .summary-label { display: block; font-size: 0.7rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.2rem; }
+        .summary-value { display: block; font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state { text-align: center; padding: 2rem 1rem; color: #aaa; }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .empty-state p { font-size: 0.95rem; font-weight: 600; }
+
+        /* ========== LOADING ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-dark);
+        }
+
+        /* ========== PRINT ========== */
+        @media print {
+            body * { visibility: hidden; }
+            #results-view, #results-view * { visibility: visible; }
+            #results-view { position: absolute; left: 0; top: 0; width: 100%; }
+            .dash-header, .tab-nav-wrapper, .btn-logout, .btn-print, .no-print, .bottom-nav { display: none !important; }
+            .section-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+
+        @media print and (min-width: 1px) {
+            .print-only { display: block !important; }
+            .no-print { display: none !important; }
+        }
+
+        .print-only { display: none; }
+
+        /* ========== DARK THEME ========== */
+        body[data-theme="dark"] { background: #1a1d1a; }
+        body[data-theme="dark"] .section-card,
+        body[data-theme="dark"] .stat-card,
+        body[data-theme="dark"] .subject-card,
+        body[data-theme="dark"] .custom-table,
+        body[data-theme="dark"] .login-card,
+        body[data-theme="dark"] .action-btn,
+        body[data-theme="dark"] .stat-mini-card,
+        body[data-theme="dark"] .announcement-item {
+            background: #252825 !important;
+            color: #e8f8e8 !important;
+        }
+        body[data-theme="dark"] .stat-card .stat-value,
+        body[data-theme="dark"] .section-card h5,
+        body[data-theme="dark"] .subject-card h6,
+        body[data-theme="dark"] .action-btn .action-label,
+        body[data-theme="dark"] .stat-mini-card .stat-val,
+        body[data-theme="dark"] .announcement-item .ann-text h6 {
+            color: #e8f8e8 !important;
+        }
+        body[data-theme="dark"] .bottom-nav { background: #252825; border-color: #3a3d3a; }
+        body[data-theme="dark"] .bottom-nav .nav-item { color: #888; }
+        body[data-theme="dark"] .bottom-nav .nav-item.active { color: #1dd91d; }
+        body[data-theme="dark"] .custom-table tbody tr { background: #252825; color: #e8f8e8; }
+        body[data-theme="dark"] .custom-table tbody tr:hover { background: #2a3a2a !important; }
+
+        body[data-theme="dark"] .warning-banner { background: linear-gradient(135deg, #3a2a10, #2e2010); }
+        body[data-theme="dark"] .clearance-card-cleared { background: linear-gradient(135deg, #1a2e1a, #153513) !important; border-color: #1dd91d !important; }
+        body[data-theme="dark"] .clearance-card-not-cleared { background: linear-gradient(135deg, #2e1a1a, #3a1515) !important; border-color: #e74c3c !important; }
+        body[data-theme="dark"] .greeting-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium)); }
+        body[data-theme="dark"] .profile-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium)); }
+
+        body[data-theme="dark"] .result-card,
+        body[data-theme="dark"] .att-stat-card,
+        body[data-theme="dark"] .att-rate-card,
+        body[data-theme="dark"] .att-chart-card,
+        body[data-theme="dark"] .att-history-card,
+        body[data-theme="dark"] .exam-header-card,
+        body[data-theme="dark"] .exam-card,
+        body[data-theme="dark"] .perf-summary-card {
+            background: #252825 !important;
+        }
+        body[data-theme="dark"] .rc-top,
+        body[data-theme="dark"] .rc-footer,
+        body[data-theme="dark"] .att-history-header {
+            border-color: #3a3d3a;
+        }
+        body[data-theme="dark"] .rc-top h5,
+        body[data-theme="dark"] .rc-total,
+        body[data-theme="dark"] .rc-score-val,
+        body[data-theme="dark"] .att-stat-num,
+        body[data-theme="dark"] .att-rate-text span,
+        body[data-theme="dark"] .exam-h-title,
+        body[data-theme="dark"] .exam-card .exam-info h6,
+        body[data-theme="dark"] .perf-title,
+        body[data-theme="dark"] .perf-stat-value,
+        body[data-theme="dark"] .perf-summary-card {
+            color: #e8f8e8 !important;
+        }
+        body[data-theme="dark"] .rc-score-bar-wrap,
+        body[data-theme="dark"] .rc-score-label,
+        body[data-theme="dark"] .rc-score-val .rc-max,
+        body[data-theme="dark"] .att-stat-lbl,
+        body[data-theme="dark"] .att-rate-text small,
+        body[data-theme="dark"] .exam-h-sub,
+        body[data-theme="dark"] .exam-card .exam-info .exam-meta,
+        body[data-theme="dark"] .exam-card .exam-date-box .exam-month,
+        body[data-theme="dark"] .perf-sub,
+        body[data-theme="dark"] .perf-stat-label,
+        body[data-theme="dark"] .att-history-count {
+            color: #999 !important;
+        }
+        body[data-theme="dark"] .rc-score-bar-wrap { background: #3a3d3a; }
+        body[data-theme="dark"] .att-table thead { background: #1a2e1a; }
+        body[data-theme="dark"] .att-table thead th { color: #ccc; border-color: #3a3d3a; }
+        body[data-theme="dark"] .att-table tbody td { color: #e8f8e8; border-color: #2a3a2a; }
+        body[data-theme="dark"] .att-table tbody tr:hover { background: #2a3a2a; }
+        body[data-theme="dark"] .att-ring-bg { stroke: #2a3a2a; }
+        body[data-theme="dark"] .exam-room-badge { background: #2a3a2a; color: #ccc; }
+        body[data-theme="dark"] .tt-hero { box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        body[data-theme="dark"] .tt-hero-weekdays .tt-hero-day { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); }
+        body[data-theme="dark"] .tt-hero-weekdays .tt-hero-day.today { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+        body[data-theme="dark"] .tt-pgrid { border-color: #2a3a2a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell { background: #252825; border-color: #2a3a2a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell:hover { background: #2a3a2a; box-shadow: inset 0 0 0 1px rgba(29,217,29,0.2); }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time { background: #1a2e1a; color: #ccc; border-color: #2a3a2a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-start { color: #1dd91d; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-divider { background: #3a5a3a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-subject { background: rgba(29,217,29,0.12); color: #1dd91d; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-teacher { color: #aaa; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-room { background: #2a3a2a; color: #888; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty { background: #1a1d1a; color: #444; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty:hover { background: #1a1d1a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell { background: #1a2e1a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell:hover { background: #1a351a; }
+        body[data-theme="dark"] .perf-summary-card { border-color: #2a3a2a; }
+        body[data-theme="dark"] .perf-divider { background: #3a3d3a; }
+        body[data-theme="dark"] .exam-card { border-left-color: #1dd91d; }
+        body[data-theme="dark"] .exam-h-count { background: #1a2e1a; }
+        body[data-theme="dark"] .rc-footer { background: #1a1d1a; }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .section-card { padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; }
+            .stat-card { padding: 0.8rem; }
+            .stat-card .stat-icon { width: 38px; height: 38px; font-size: 1rem; }
+            .stat-card .stat-value { font-size: 1.3rem; }
+            .percent-circle { width: 110px; height: 110px; font-size: 1.5rem; }
+            .chart-container { height: 230px; }
+
+            .timetable-grid { font-size: 0.7rem; }
+            .timetable-grid .tt-header { padding: 0.4rem; font-size: 0.7rem; }
+            .timetable-grid .tt-time { padding: 0.3rem; font-size: 0.65rem; min-height: 50px; }
+            .timetable-grid .tt-cell { min-height: 50px; padding: 0.3rem; }
+            .timetable-grid .tt-subject { font-size: 0.7rem; }
+            .timetable-grid .tt-teacher, .timetable-grid .tt-room { font-size: 0.6rem; }
+
+            .report-card .rc-info { grid-template-columns: 1fr; gap: 0.3rem; }
+
+            .clearance-card-cleared, .clearance-card-not-cleared { padding: 1.5rem; border-radius: 14px; }
+            .clearance-card-cleared .check-icon, .clearance-card-not-cleared .x-icon { width: 56px; height: 56px; font-size: 1.8rem; }
+
+            .result-card-header { padding: 0.8rem 1rem; }
+            .result-card-header h5 { font-size: 0.9rem; }
+            .result-card-header .subject-icon { width: 34px; height: 34px; font-size: 0.9rem; }
+            .result-card-body { padding: 0.8rem 1rem; }
+            .score-label { width: 65px; font-size: 0.72rem; }
+            .score-bar-wrapper { height: 18px; }
+            .score-value { width: 50px; font-size: 0.75rem; }
+            .result-card-footer { padding: 0.7rem 1rem; flex-direction: column; gap: 0.6rem; }
+            .total-score { font-size: 1.1rem; }
+
+            .custom-table thead th { padding: 0.5rem 0.5rem; font-size: 0.75rem; }
+            .custom-table tbody td { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            .form-control { padding: 0.6rem 0.8rem; font-size: 0.9rem; }
+            .btn-login { padding: 0.7rem; font-size: 0.95rem; }
+
+            .container-fluid { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+
+            .stat-card .stat-icon { width: 34px; height: 34px; font-size: 0.9rem; border-radius: 8px; }
+            .stat-card .stat-value { font-size: 1.15rem; }
+            .percent-circle { width: 90px; height: 90px; font-size: 1.2rem; }
+
+            .clearance-card-cleared, .clearance-card-not-cleared { padding: 1.2rem; }
+            .clearance-card-cleared .check-icon, .clearance-card-not-cleared .x-icon { width: 50px; height: 50px; font-size: 1.5rem; margin-bottom: 0.8rem; }
+
+            .score-label { width: 55px; font-size: 0.68rem; }
+            .score-bar-wrapper { height: 16px; }
+            .score-value { width: 45px; font-size: 0.7rem; }
+        }
+
+        @media (max-width: 400px) {
+            #tab-timetable .section-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+
+        /* ========== SEARCH ========== */
+        #search-input:focus { box-shadow: none; border-color: var(--primary); }
+        #search-results { border:1px solid #e0e0e0; }
+        #search-results div:last-child { border-bottom: none !important; }
+        #search-results div:hover { background: #f0f9f0; }
+
+        /* =================================================================
+           PROFESSIONAL RESULTS
+           ================================================================= */
+
+        .report-card-header {
+            background: linear-gradient(135deg, #0f510e 0%, #1dd91d 100%);
+            border-radius: 18px;
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 1.2rem;
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(15,81,14,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .report-card-header::after {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .rch-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 0.2rem 0.9rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+        .rch-title { font-weight: 800; font-size: 1.5rem; margin: 0 0 0.15rem; }
+        .rch-sub { opacity: 0.8; font-size: 0.85rem; margin: 0 0 1rem; }
+        .rch-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        .rch-item { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 0.4rem 0.7rem; }
+        .rch-label { display: block; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; font-weight: 600; }
+        .rch-value { font-size: 0.85rem; font-weight: 700; }
+
+        .result-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        .result-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        .result-card .rc-top {
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .result-card .rc-top h5 { margin: 0; font-weight: 700; color: var(--primary-dark); font-size: 0.95rem; }
+        .result-card .rc-top .rc-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1rem; flex-shrink: 0;
+        }
+        .result-card .rc-body { padding: 0.8rem 1.2rem; }
+        .result-card .rc-score-row {
+            display: flex; align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .result-card .rc-score-row:last-child { margin-bottom: 0; }
+        .rc-score-label { width: 65px; font-size: 0.72rem; font-weight: 600; color: #666; flex-shrink: 0; }
+        .rc-score-bar-wrap {
+            flex: 1; height: 8px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .rc-score-bar {
+            height: 100%; border-radius: 4px;
+            transition: width 1s ease-out;
+        }
+        .rc-score-bar.q { background: linear-gradient(90deg, #3498db, #2980b9); }
+        .rc-score-bar.s { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .rc-score-bar.m { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        .rc-score-bar.f { background: linear-gradient(90deg, #e67e22, #d35400); }
+        .rc-score-val {
+            width: 48px; text-align: right;
+            font-weight: 700; font-size: 0.75rem; color: #333; flex-shrink: 0;
+            margin-left: 6px;
+        }
+        .rc-score-val .rc-max { color: #aaa; font-weight: 400; font-size: 0.68rem; }
+        .result-card .rc-footer {
+            padding: 0.7rem 1.2rem;
+            background: #f8f9fa;
+            display: flex; align-items: center; justify-content: space-between;
+            border-top: 1px solid #f0f0f0;
+        }
+        .rc-total { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); }
+        .rc-total .rc-total-max { font-size: 0.75rem; font-weight: 500; color: #999; }
+        .rc-grade { padding: 0.25rem 0.7rem; border-radius: 20px; font-weight: 700; font-size: 0.8rem; }
+
+        .empty-modern { text-align: center; padding: 3rem 1rem; }
+        .empty-modern .empty-icon {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: #e8f5e8;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem; color: var(--primary);
+        }
+        .empty-modern h5 { font-weight: 700; color: #333; margin-bottom: 0.3rem; }
+        .empty-modern p { color: #888; font-size: 0.85rem; }
+
+        .perf-summary-card {
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border: 1px solid #e8f5e8;
+            margin-bottom: 1rem;
+        }
+        .perf-left { display: flex; align-items: center; gap: 0.8rem; }
+        .perf-icon {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.2rem;
+        }
+        .perf-title { font-weight: 700; color: var(--primary-dark); margin: 0; font-size: 1rem; }
+        .perf-sub { font-size: 0.72rem; color: #888; margin: 0; }
+        .perf-stats { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+        .perf-stat { text-align: center; }
+        .perf-stat-value { display: block; font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); }
+        .perf-stat-label { display: block; font-size: 0.65rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .perf-divider { width: 1px; height: 36px; background: #ddd; }
+        .btn-print {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            border: none;
+            border-radius: 12px;
+            padding: 0.7rem 2rem;
+            font-weight: 700;
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(15,81,14,0.3); color: #fff; }
+
+        /* =================================================================
+           PROFESSIONAL ATTENDANCE
+           ================================================================= */
+
+        .att-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width:600px) { .att-stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+        .att-stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            transition: transform 0.2s;
+        }
+        .att-stat-card:hover { transform: translateY(-2px); }
+
+        .att-stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: #fff; flex-shrink: 0;
+        }
+        .att-icon-calendar { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+        .att-icon-present { background: linear-gradient(135deg, #1e8449, #27ae60); }
+        .att-icon-absent { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .att-icon-leave { background: linear-gradient(135deg, #d68910, #f39c12); }
+
+        .att-stat-body { display: flex; flex-direction: column; }
+        .att-stat-num { font-size: 1.3rem; font-weight: 800; color: #333; line-height: 1; }
+        .att-stat-lbl { font-size: 0.65rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+
+        .att-chart-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width:700px) { .att-chart-row { grid-template-columns: 1fr; } }
+
+        .att-rate-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        .att-rate-inner { position: relative; width: 120px; height: 120px; }
+        .att-ring { width: 100%; height: 100%; }
+        .att-ring-bg { stroke: #e8f5e8; }
+        .att-ring-fill { transition: stroke-dashoffset 1.5s ease-out; }
+        .att-rate-text {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .att-rate-text span { font-size: 1.4rem; font-weight: 800; color: #333; line-height: 1; }
+        .att-rate-text small { font-size: 0.6rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .att-chart-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        .att-chart-header h5 { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 0.6rem; }
+
+        .att-history-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .att-history-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .att-history-header h5 { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin: 0; }
+        .att-history-count { font-size: 0.72rem; color: #888; font-weight: 600; }
+
+        .att-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .att-table thead { background: #f8f9fa; }
+        .att-table thead th {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .att-table tbody td {
+            padding: 0.55rem 1.2rem;
+            font-size: 0.82rem;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .att-table tbody tr:hover { background: #f8f9fa; }
+        .att-table tbody tr:last-child td { border-bottom: none; }
+        .att-badge {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .att-badge-present { background: #d5f5e3; color: #1e8449; }
+        .att-badge-absent { background: #fadbd8; color: #c0392b; }
+        .att-badge-leave { background: #fef9e7; color: #d68910; }
+
+        /* =================================================================
+           PROFESSIONAL EXAM SCHEDULE
+           ================================================================= */
+
+        .exam-header-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            margin-bottom: 0.7rem;
+        }
+        .exam-h-left { display: flex; align-items: center; gap: 0.8rem; }
+        .exam-h-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.2rem;
+        }
+        .exam-h-title { font-weight: 700; color: var(--primary-dark); margin: 0; font-size: 1rem; }
+        .exam-h-sub { font-size: 0.72rem; color: #888; margin: 0; }
+        .exam-h-count {
+            background: #e8f5e8;
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .exam-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 0.9rem 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid var(--primary);
+        }
+        .exam-card:hover { transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .exam-card .exam-date-box {
+            text-align: center;
+            min-width: 56px;
+            flex-shrink: 0;
+        }
+        .exam-card .exam-date-box .exam-day { display: block; font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); line-height: 1; }
+        .exam-card .exam-date-box .exam-month { display: block; font-size: 0.55rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .exam-card .exam-info { flex: 1; }
+        .exam-card .exam-info h6 { margin: 0; font-weight: 700; color: #333; font-size: 0.85rem; }
+        .exam-card .exam-info .exam-meta { font-size: 0.72rem; color: #888; margin: 2px 0 0; }
+        .exam-card .exam-info .exam-meta i { width: 16px; margin-right: 4px; }
+        .exam-card .exam-room-badge {
+            background: #f0f2f5;
+            padding: 0.3rem 0.7rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        /* =================================================================
+           PROFESSIONAL TIMETABLE — PREMIUM DESIGN
+           ================================================================= */
+
+        .tt-hero {
+            background: linear-gradient(135deg, #0f510e 0%, #1b9e1b 50%, #1dd91d 100%);
+            border-radius: 18px;
+            padding: 1.4rem 1.6rem 1rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(15,81,14,0.2);
+        }
+        .tt-hero-bg {
+            position: absolute;
+            top: -30%; right: -10%;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+        .tt-hero-bg::after {
+            content: '';
+            position: absolute;
+            bottom: -40%; left: -20%;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .tt-hero-content {
+            display: flex; align-items: center;
+            gap: 0.9rem;
+            position: relative; z-index: 1;
+            margin-bottom: 0.8rem;
+        }
+        .tt-hero-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .tt-hero-title { font-weight: 800; font-size: 1.2rem; margin: 0; }
+        .tt-hero-sub { opacity: 0.8; font-size: 0.78rem; margin: 2px 0 0; }
+        .tt-hero-weekdays {
+            display: flex;
+            gap: 0.4rem;
+            position: relative; z-index: 1;
+        }
+        .tt-hero-weekdays .tt-hero-day {
+            flex: 1;
+            text-align: center;
+            padding: 0.35rem 0.2rem;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: background 0.2s;
+        }
+        .tt-hero-weekdays .tt-hero-day.today {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        /* ---- Timetable Grid ---- */
+        .tt-pgrid {
+            display: grid;
+            gap: 0;
+            background: transparent;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e8f5e8;
+        }
+        .tt-pgrid .tt-p-header {
+            background: linear-gradient(135deg, #0f510e, #1b9e1b);
+            color: #fff;
+            padding: 0.7rem 0.5rem;
+            font-weight: 800;
+            text-align: center;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .tt-pgrid .tt-p-header:last-child { border-right: none; }
+
+        .tt-pgrid .tt-p-time {
+            background: #f4f7f4;
+            padding: 0.6rem 0.4rem;
+            font-weight: 700;
+            font-size: 0.68rem;
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 76px;
+            border-bottom: 1px solid #e8f5e8;
+            border-right: 1px solid #e8f5e8;
+            line-height: 1.3;
+        }
+        .tt-pgrid .tt-p-time .tt-p-time-start {
+            font-size: 0.82rem;
+            color: var(--primary-dark);
+        }
+        .tt-pgrid .tt-p-time .tt-p-time-end {
+            font-size: 0.6rem;
+            color: #999;
+        }
+        .tt-pgrid .tt-p-time .tt-p-time-divider {
+            width: 16px;
+            height: 2px;
+            background: #c8dcc8;
+            border-radius: 1px;
+            margin: 3px 0;
+        }
+
+        .tt-pgrid .tt-p-cell {
+            background: #fff;
+            padding: 0.5rem 0.4rem;
+            min-height: 76px;
+            border-bottom: 1px solid #f0f4f0;
+            border-right: 1px solid #f0f4f0;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: default;
+        }
+        .tt-pgrid .tt-p-cell:hover {
+            background: #f5fbf5;
+            box-shadow: inset 0 0 0 1px rgba(29,217,29,0.15);
+        }
+        .tt-pgrid .tt-p-cell:last-child { border-right: none; }
+
+        .tt-pgrid .tt-p-cell .tt-p-subject {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            background: rgba(29,217,29,0.08);
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 3px;
+        }
+        .tt-pgrid .tt-p-cell .tt-p-teacher {
+            font-size: 0.62rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tt-pgrid .tt-p-cell .tt-p-teacher .tt-p-avatar {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .tt-pgrid .tt-p-cell .tt-p-room {
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: #999;
+            background: #f0f2f5;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            margin-top: 3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .tt-pgrid .tt-p-cell .tt-p-room i { font-size: 0.5rem; }
+        .tt-pgrid .tt-p-cell.empty {
+            background: #fafcfa;
+            color: #dde8dd;
+            font-size: 0.7rem;
+        }
+        .tt-pgrid .tt-p-cell.empty:hover {
+            background: #fafcfa;
+            box-shadow: none;
+        }
+
+        /* ---- today highlight ---- */
+        .tt-pgrid .tt-p-cell.today-cell {
+            background: #f0faf0;
+        }
+        .tt-pgrid .tt-p-cell.today-cell:hover {
+            background: #e8f5e8;
+        }
+        .tt-pgrid .tt-p-header.today-header {
+            background: linear-gradient(135deg, #1b9e1b, #2ecc71);
+            box-shadow: inset 0 -2px 0 rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .tt-hero { padding: 1rem; }
+            .tt-hero-title { font-size: 1rem; }
+            .tt-hero-weekdays { gap: 0.2rem; }
+            .tt-hero-weekdays .tt-hero-day { font-size: 0.55rem; padding: 0.25rem 0.1rem; letter-spacing: 0; }
+            .tt-pgrid .tt-p-header { font-size: 0.6rem; padding: 0.5rem 0.2rem; }
+            .tt-pgrid .tt-p-time { min-height: 64px; font-size: 0.6rem; }
+            .tt-pgrid .tt-p-cell { min-height: 64px; padding: 0.3rem 0.2rem; }
+            .tt-pgrid .tt-p-cell .tt-p-subject { font-size: 0.65rem; padding: 0.1rem 0.3rem; }
+            .tt-pgrid .tt-p-cell .tt-p-teacher { font-size: 0.55rem; }
+            .tt-pgrid .tt-p-cell .tt-p-room { font-size: 0.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .report-card-header { padding: 1.2rem; }
+            .rch-title { font-size: 1.2rem; }
+            .rch-info { grid-template-columns: 1fr; }
+            .perf-summary-card { flex-direction: column; align-items: flex-start; }
+            .perf-stats { width: 100%; justify-content: space-around; }
+            .att-stat-num { font-size: 1.1rem; }
+            .exam-card { flex-wrap: wrap; }
+            .exam-card .exam-room-badge { margin-left: auto; }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .login-container { padding: 0.5rem; }
+        }
+
+        /* =========================================
+            TOP 3 CLASS LEADERS - OLYMPIC PODIUM & CHIPS
+        ========================================= */
+        .class-leaders-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fdf7 100%);
+            border: 1px solid #dcf2dc;
+            border-radius: 22px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 81, 14, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .class-leaders-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(29, 217, 29, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+        .leaders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .leaders-title-group h4 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary-dark, #0f510e);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .leaders-title-group p {
+            margin: 2px 0 0;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        /* Podium Grid */
+        .podium-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr 1fr;
+            gap: 12px;
+            align-items: end;
+            padding: 1rem 0.5rem 0;
+        }
+
+        /* Individual Podium Card */
+        .podium-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 1.2rem 0.8rem 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+        .podium-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        /* 1st Place - Gold Champion */
+        .podium-card.rank-1 {
+            border-color: #f1c40f;
+            background: linear-gradient(180deg, #fffcf0 0%, #ffffff 100%);
+            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.22);
+            padding-top: 1.5rem;
+            z-index: 2;
+        }
+        .podium-card.rank-1 .crown-icon {
+            position: absolute;
+            top: -16px;
+            font-size: 1.6rem;
+            color: #f39c12;
+            animation: crownFloat 2.5s ease-in-out infinite;
+        }
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-4px) rotate(2deg); }
+        }
+
+        /* 2nd Place - Silver */
+        .podium-card.rank-2 {
+            border-color: #cbd5e1;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            box-shadow: 0 4px 18px rgba(148, 163, 184, 0.18);
+        }
+
+        /* 3rd Place - Bronze */
+        .podium-card.rank-3 {
+            border-color: #fed7aa;
+            background: linear-gradient(180deg, #fffaf5 0%, #ffffff 100%);
+            box-shadow: 0 4px 18px rgba(217, 119, 6, 0.15);
+        }
+
+        /* Avatar with medal ring - strictly constrained to prevent huge logo display */
+        .podium-avatar-wrap {
+            position: relative;
+            margin-bottom: 0.6rem;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .podium-card.rank-1 .podium-avatar-wrap {
+            width: 76px;
+            height: 76px;
+        }
+        .podium-avatar {
+            width: 64px !important;
+            height: 64px !important;
+            max-width: 64px !important;
+            max-height: 64px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            background: #ffffff !important;
+            border: 3px solid #cbd5e1 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            display: block !important;
+            margin: 0 auto !important;
+        }
+        .podium-card.rank-1 .podium-avatar {
+            width: 76px !important;
+            height: 76px !important;
+            max-width: 76px !important;
+            max-height: 76px !important;
+            border-color: #f1c40f !important;
+            box-shadow: 0 6px 16px rgba(241, 196, 15, 0.35) !important;
+        }
+        .podium-card.rank-2 .podium-avatar { border-color: #94a3b8 !important; }
+        .podium-card.rank-3 .podium-avatar { border-color: #d97706 !important; }
+
+        .podium-rank-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid #fff;
+        }
+        .podium-card.rank-1 .podium-rank-badge {
+            width: 30px;
+            height: 30px;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #f1c40f, #d4ac0d);
+        }
+        .podium-card.rank-2 .podium-rank-badge { background: linear-gradient(135deg, #94a3b8, #64748b); }
+        .podium-card.rank-3 .podium-rank-badge { background: linear-gradient(135deg, #d97706, #b45309); }
+
+        .podium-student-name {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #1e293b;
+            margin-bottom: 2px;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .podium-card.rank-1 .podium-student-name { font-size: 1.05rem; color: #0f172a; }
+
+        .podium-id-tag {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+
+        .podium-score-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #0f510e;
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+        .podium-card.rank-1 .podium-score-pill {
+            background: #fef9c3;
+            border-color: #fde047;
+            color: #854d0e;
+            font-weight: 800;
+        }
+        .podium-card.rank-2 .podium-score-pill { background: #f1f5f9; color: #334155; }
+        .podium-card.rank-3 .podium-score-pill { background: #ffedd5; color: #9a3412; }
+
+        .podium-you-badge {
+            background: linear-gradient(135deg, #0f510e, #1dd91d);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(29, 217, 29, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(29, 217, 29, 0); }
+        }
+
+        .podium-pedestal {
+            width: 100%;
+            margin-top: auto;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 1px;
+        }
+        .podium-card.rank-1 .podium-pedestal {
+            height: 52px;
+            background: linear-gradient(180deg, #fef08a, #facc15);
+            color: #713f12;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+        }
+        .podium-card.rank-2 .podium-pedestal {
+            height: 40px;
+            background: linear-gradient(180deg, #e2e8f0, #cbd5e1);
+            color: #334155;
+        }
+        .podium-card.rank-3 .podium-pedestal {
+            height: 30px;
+            background: linear-gradient(180deg, #fed7aa, #fdba74);
+            color: #7c2d12;
+        }
+
+        /* Exam Pills Scroll & Chips */
+        .exam-chips-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+        }
+        .exam-chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .exam-chip-btn:hover {
+            border-color: var(--primary, #1dd91d);
+            color: var(--primary-dark, #0f510e);
+            background: #f0fdf4;
+        }
+        .exam-chip-btn.active {
+            background: var(--primary-dark, #0f510e);
+            border-color: var(--primary-dark, #0f510e);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(15, 81, 14, 0.25);
+        }
+        .exam-chip-btn .chip-badge {
+            background: rgba(0,0,0,0.08);
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+        }
+        .exam-chip-btn.active .chip-badge {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .podium-grid {
+                gap: 6px;
+                padding: 0.5rem 0 0;
+            }
+            .podium-card {
+                padding: 0.8rem 0.4rem 0.6rem;
+                border-radius: 14px;
+            }
+            .podium-avatar-wrap,
+            .podium-avatar { width: 50px !important; height: 50px !important; max-width: 50px !important; max-height: 50px !important; }
+            .podium-card.rank-1 .podium-avatar-wrap,
+            .podium-card.rank-1 .podium-avatar { width: 60px !important; height: 60px !important; max-width: 60px !important; max-height: 60px !important; }
+            .podium-student-name { font-size: 0.75rem; }
+            .podium-card.rank-1 .podium-student-name { font-size: 0.82rem; }
+            .podium-score-pill { font-size: 0.68rem; padding: 2px 6px; }
+            .podium-card.rank-1 .podium-pedestal { height: 44px; }
+            .podium-card.rank-2 .podium-pedestal { height: 34px; }
+            .podium-card.rank-3 .podium-pedestal { height: 26px; }
+        }
+
+        body[data-theme="dark"] .class-leaders-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        body[data-theme="dark"] .leaders-title-group h4 { color: #86efac; }
+        body[data-theme="dark"] .podium-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body[data-theme="dark"] .podium-card.rank-1 {
+            background: linear-gradient(180deg, #2d2a17 0%, #1e293b 100%);
+            border-color: #f1c40f;
+        }
+        body[data-theme="dark"] .podium-student-name { color: #f1f5f9; }
+        body[data-theme="dark"] .podium-id-tag { background: #334155; color: #94a3b8; }
+        body[data-theme="dark"] .exam-chip-btn {
+            background: #1e293b;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+        body[data-theme="dark"] .exam-chip-btn.active {
+            background: var(--primary, #1dd91d);
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============ LOGIN VIEW ============ -->
+    <div id="login-view" class="login-container">
+        <div class="card login-card shadow-lg">
+            <div class="login-header">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo" class="login-logo" style="width: 80px; height: 80px; object-fit: contain; border-radius: 12px; margin-bottom: 0.6rem; background: #fff; padding: 4px;">
+                <h3>Student Dashboard</h3>
+                <p>Baidoa Bedrock ICT Campus</p>
+            </div>
+            <div class="login-body">
+                <div id="login-alert"></div>
+                <form id="login-form" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="inputStudentId" class="form-label">
+                            <i class="fas fa-id-card me-1 text-primary"></i>Student ID
+                        </label>
+                        <input type="text" class="form-control" id="inputStudentId"
+                            placeholder="e.g. BB260001" required>
+                        <div class="form-text">Format: BB followed by 6 digits (e.g. BB260001)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">
+                            <i class="fas fa-lock me-1 text-primary"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="inputPassword" placeholder="Enter student password" required autocomplete="current-password">
+                            <button class="btn btn-outline-secondary" type="button" id="btnToggleLoginPwd" onclick="toggleStudentLoginPwd()"><i class="fas fa-eye" id="loginEyeIcon"></i></button>
+                        </div>
+                        <div class="form-text">Contact your administrator if you forgot your password.</div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-login" id="btn-login">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                    </div>
+                </form>
+                <div class="login-footer">
+                    <a href="/HTML/index.html">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Website
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ DASHBOARD VIEW ============ -->
+    <div id="dashboard-view" class="d-none">
+
+        <!-- Header -->
+        <header class="dash-header no-print">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="greeting" id="header-greeting">Hi, Student!</h1>
+                    <p class="greeting-date" id="header-date"></p>
+                </div>
+                <div class="header-icons">
+                    <button class="header-icon-btn" type="button" onclick="openStudentNav()" title="Navigation Menu" id="btn-toggle-menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="header-icon-btn" title="Search" onclick="toggleSearch()">
+                        <i class="fas fa-search" id="searchIcon"></i>
+                    </button>
+                    <button class="header-icon-btn" title="Notifications" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-dot"></span>
+                    </button>
+                    <button class="header-icon-btn" onclick="toggleTheme()" title="Settings">
+                        <i class="fas fa-cog" id="themeIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="d-none no-print" id="search-bar" style="padding:0.5rem 1rem;background:#fff;border-bottom:1px solid #e0e0e0;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" class="form-control border-start-0" id="search-input" placeholder="Search results, subjects, exams..." oninput="handleSearch(this.value)">
+                <button class="btn btn-outline-secondary" onclick="toggleSearch()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="search-results" class="mt-2 d-none" style="max-height:300px;overflow-y:auto;background:#fff;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:absolute;left:1rem;right:1rem;z-index:999;"></div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card no-print">
+            <button class="eye-toggle" onclick="toggleProfileVisibility()" title="Toggle visibility">
+                <i class="fas fa-eye" id="eyeIcon"></i>
+            </button>
+            <div class="badge-elif">BEDROCK STUDENT</div>
+            <h2 class="student-name" id="profile-name">Student Name</h2>
+            <div class="info-grid" id="profile-info">
+                <div class="info-item">
+                    <div class="info-label">ID Number</div>
+                    <p class="info-value" id="profile-id">BB------</p>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Class</div>
+                    <p class="info-value" id="profile-class">--</p>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Department</div>
+                    <p class="info-value" id="profile-dept">--</p>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Period</div>
+                    <p class="info-value" id="profile-period">--</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Action Grid -->
+        <div class="quick-actions no-print">
+            <div class="section-title">Quick Actions</div>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="switchToTab('results')">
+                    <div class="action-icon icon-green"><i class="fas fa-book"></i></div>
+                    <span class="action-label">Results</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('timetable')">
+                    <div class="action-icon icon-blue"><i class="fas fa-calendar"></i></div>
+                    <span class="action-label">Timetable</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('exams')">
+                    <div class="action-icon icon-orange"><i class="fas fa-file-alt"></i></div>
+                    <span class="action-label">Exams</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('attendance')">
+                    <div class="action-icon icon-teal"><i class="fas fa-check-circle"></i></div>
+                    <span class="action-label">Attendance</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('analytics')">
+                    <div class="action-icon icon-purple"><i class="fas fa-chart-pie"></i></div>
+                    <span class="action-label">Analytics</span>
+                </button>
+                <button class="action-btn" onclick="openDigitalId()">
+                    <div class="action-icon icon-blue"><i class="fas fa-id-card"></i></div>
+                    <span class="action-label">Digital ID</span>
+                </button>
+                <button class="action-btn" onclick="openStudentChangePasswordModal()">
+                    <div class="action-icon icon-orange"><i class="fas fa-key"></i></div>
+                    <span class="action-label">Password</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('clearance')">
+                    <div class="action-icon icon-red"><i class="fas fa-id-card"></i></div>
+                    <span class="action-label">Clearance</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('subjects')">
+                    <div class="action-icon icon-purple"><i class="fas fa-book-open"></i></div>
+                    <span class="action-label">Subjects</span>
+                </button>
+                <button class="action-btn" onclick="openStudentNav()" title="Navigation Menu">
+                    <div class="action-icon icon-orange-light"><i class="fas fa-bars"></i></div>
+                    <span class="action-label">More</span>
+                </button>
+                <button class="action-btn" id="btn-logout">
+                    <div class="action-icon icon-gray"><i class="fas fa-sign-out-alt"></i></div>
+                    <span class="action-label">Sign Out</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Greeting Card -->
+        <div class="greeting-card no-print" id="greeting-card">
+            <div class="greet-text">
+                <h3 id="greeting-text">Good evening!</h3>
+                <p id="greeting-date"></p>
+            </div>
+            <div class="greet-icon"><i class="fas fa-hand-peace"></i></div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row no-print">
+            <div class="stat-mini-card">
+                <div class="stat-icon-mini bg-primary-grad"><i class="fas fa-calendar"></i></div>
+                <div class="stat-val" id="stat-classes">--</div>
+                <div class="stat-lbl">Today's Classes</div>
+            </div>
+            <div class="stat-mini-card">
+                <div class="stat-icon-mini bg-success-grad"><i class="fas fa-check"></i></div>
+                <div class="stat-lbl" id="stat-attendance" style="font-size:1.3rem;font-weight:700;color:#333;">--%</div>
+                <div class="stat-lbl">Attendance</div>
+            </div>
+            <div class="stat-mini-card">
+                <div class="stat-icon-mini bg-primary-grad"><i class="fas fa-book"></i></div>
+                <div class="stat-val" id="stat-courses">--</div>
+                <div class="stat-lbl">Courses Enrolled</div>
+            </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="announcements-section no-print" id="announcements-section">
+            <div class="section-title">Announcements</div>
+            <div id="announcements-list"></div>
+        </div>
+
+        <!-- Main Content (tab panes) -->
+        <div class="container-fluid px-3 px-md-4 py-3">
+
+            <!-- Hidden Tab Nav for JS -->
+            <div class="tab-nav-wrapper no-print">
+                <ul class="nav nav-pills" id="dashboard-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-tab="results" type="button"><i class="fas fa-chart-bar"></i>Results</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="attendance" type="button"><i class="fas fa-calendar-check"></i>Attendance</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="exams" type="button"><i class="fas fa-file-alt"></i>Exams</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="timetable" type="button"><i class="fas fa-clock"></i>Timetable</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="subjects" type="button"><i class="fas fa-book"></i>Subjects</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="clearance" type="button"><i class="fas fa-check-circle"></i>Clearance</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="analytics" type="button"><i class="fas fa-chart-pie"></i>Analytics</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- TAB 1: RESULTS -->
+            <div class="tab-pane-content" id="tab-results">
+                <div id="results-clearance-warning" class="warning-banner d-none">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Your results are restricted. Please clear your fees to view full results.</span>
+                </div>
+                <div id="results-hold-banner" class="hold-banner d-none">
+                    <div class="hold-banner-inner">
+                        <div class="hold-icon"><i class="fas fa-lock"></i></div>
+                        <div>
+                            <h5 class="hold-title">Results on Hold</h5>
+                            <p class="hold-sub">Your results are currently under review by administration.</p>
+                            <p class="hold-release mb-0" id="hold-release-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Card Header -->
+                <div class="report-card-header">
+                    <div class="rch-badge">BAIDOA BEDROCK ICT CAMPUS</div>
+                    <h3 class="rch-title">Academic Report Card</h3>
+                    <p class="rch-sub">Student Performance Summary</p>
+                    <div class="rch-info">
+                        <div class="rch-item"><span class="rch-label">Student ID</span><span class="rch-value" id="rc-student-id">--</span></div>
+                        <div class="rch-item"><span class="rch-label">Name</span><span class="rch-value" id="rc-student-name">--</span></div>
+                        <div class="rch-item"><span class="rch-label">Grade</span><span class="rch-value" id="rc-student-grade">--</span></div>
+                        <div class="rch-item"><span class="rch-label">Enrolled</span><span class="rch-value" id="rc-enrollment-date">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Exam Selector & Navigation -->
+                <div class="section-card no-print mb-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success-subtle text-success p-2 rounded-circle"><i class="fas fa-medal fs-6"></i></span>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Select Academic Term / Examination</h6>
+                                <small class="text-muted">Choose an exam to see your marks and class leaders</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="exam-type-select" class="form-select form-select-sm" style="min-width:210px;">
+                                <option value="">All Exams (Overall Report)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Quick Pill Chips Navigation for Exams -->
+                    <div class="exam-chips-scroll mt-2" id="exam-chips-container">
+                        <button class="exam-chip-btn active" data-exam=""><i class="fas fa-layer-group"></i> All Exams <span class="chip-badge">Overall</span></button>
+                    </div>
+                </div>
+
+                <!-- TOP 3 CLASS LEADERS PODIUM SHOWCASE -->
+                <div class="class-leaders-card mb-4" id="class-leaders-section">
+                    <div class="leaders-header">
+                        <div class="leaders-title-group">
+                            <h4><i class="fas fa-trophy text-warning"></i> Class Honor Roll — Top 3 Leaders</h4>
+                            <p id="leaders-subtitle">Class standings for published examination results</p>
+                        </div>
+                        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold" id="leaders-exam-badge">
+                            <i class="fas fa-check-circle me-1"></i> Officially Published
+                        </span>
+                    </div>
+
+                    <!-- Podium Container -->
+                    <div id="podium-display" class="podium-grid">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+
+                    <!-- Hold / Unpublished State Message -->
+                    <div id="leaders-unreleased" class="text-center py-4 d-none">
+                        <div class="mb-2" style="font-size:2.2rem;opacity:0.6;"><i class="fas fa-hourglass-half text-warning"></i></div>
+                        <h6 class="fw-bold text-dark">Class Rankings Pending Verification</h6>
+                        <p class="text-muted small mb-0">Official class rankings will be revealed once all subject marks for this examination are approved and published by administration.</p>
+                    </div>
+                </div>
+
+                <!-- Results Cards -->
+                <div id="results-cards-container" class="row g-3 mb-3"></div>
+
+                <div id="results-empty" class="d-none">
+                    <div class="empty-modern">
+                        <div class="empty-icon"><i class="fas fa-chart-bar"></i></div>
+                        <h5>No results available yet</h5>
+                        <p>Results will appear here once approved by admin.</p>
+                    </div>
+                </div>
+
+                <!-- Overall Performance Summary -->
+                <div id="results-summary" class="d-none">
+                    <div class="perf-summary-card">
+                        <div class="perf-left">
+                            <div class="perf-icon"><i class="fas fa-trophy"></i></div>
+                            <div>
+                                <h5 class="perf-title">Overall Performance</h5>
+                                <p class="perf-sub">Across all subjects</p>
+                            </div>
+                        </div>
+                        <div class="perf-stats">
+                            <div class="perf-stat">
+                                <span class="perf-stat-value" id="summary-subjects">0</span>
+                                <span class="perf-stat-label">Subjects</span>
+                            </div>
+                            <div class="perf-divider"></div>
+                            <div class="perf-stat">
+                                <span class="perf-stat-value" id="summary-average">0%</span>
+                                <span class="perf-stat-label">Average</span>
+                            </div>
+                            <div class="perf-divider"></div>
+                            <div class="perf-stat">
+                                <span class="perf-stat-value" id="summary-gpa">N/A</span>
+                                <span class="perf-stat-label">GPA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center no-print mt-3">
+                    <button class="btn btn-print" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report Card
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: ATTENDANCE -->
+            <div class="tab-pane-content d-none" id="tab-attendance">
+                <!-- Stat cards -->
+                <div class="att-stats-row">
+                    <div class="att-stat-card">
+                        <div class="att-stat-icon att-icon-calendar"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="att-stat-body">
+                            <span class="att-stat-num" id="att-total">0</span>
+                            <span class="att-stat-lbl">Total Days</span>
+                        </div>
+                    </div>
+                    <div class="att-stat-card">
+                        <div class="att-stat-icon att-icon-present"><i class="fas fa-check-circle"></i></div>
+                        <div class="att-stat-body">
+                            <span class="att-stat-num" id="att-present">0</span>
+                            <span class="att-stat-lbl">Present</span>
+                        </div>
+                    </div>
+                    <div class="att-stat-card">
+                        <div class="att-stat-icon att-icon-absent"><i class="fas fa-times-circle"></i></div>
+                        <div class="att-stat-body">
+                            <span class="att-stat-num" id="att-absent">0</span>
+                            <span class="att-stat-lbl">Absent</span>
+                        </div>
+                    </div>
+                    <div class="att-stat-card">
+                        <div class="att-stat-icon att-icon-leave"><i class="fas fa-clock"></i></div>
+                        <div class="att-stat-body">
+                            <span class="att-stat-num" id="att-leave">0</span>
+                            <span class="att-stat-lbl">On Leave</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart + Rate -->
+                <div class="att-chart-row">
+                    <div class="att-rate-card">
+                        <div class="att-rate-inner">
+                            <svg class="att-ring" viewBox="0 0 120 120" id="att-ring-svg">
+                                <circle class="att-ring-bg" cx="60" cy="60" r="52" fill="none" stroke="#e8f5e8" stroke-width="8"/>
+                                <circle class="att-ring-fill" id="att-ring-fill" cx="60" cy="60" r="52" fill="none" stroke="#27ae60" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                            </svg>
+                            <div class="att-rate-text">
+                                <span id="att-percent-value">0%</span>
+                                <small>Attendance</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="att-chart-card">
+                        <div class="att-chart-header">
+                            <h5><i class="fas fa-chart-line me-2"></i>Monthly Trend</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="att-history-card">
+                    <div class="att-history-header">
+                        <h5><i class="fas fa-history me-2"></i>Attendance History</h5>
+                        <span class="att-history-count" id="att-history-count">0 records</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="att-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="att-history-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: EXAM SCHEDULE -->
+            <div class="tab-pane-content d-none" id="tab-exams">
+                <div id="exams-clearance-warning" class="warning-banner d-none">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Clearance required to enter exams. Please clear your fees.</span>
+                </div>
+                <div class="exam-header-card">
+                    <div class="exam-h-left">
+                        <div class="exam-h-icon"><i class="fas fa-file-alt"></i></div>
+                        <div>
+                            <h4 class="exam-h-title">Exam Schedule</h4>
+                            <p class="exam-h-sub">Upcoming examinations</p>
+                        </div>
+                    </div>
+                    <div class="exam-h-count" id="exam-count-badge">0 exams</div>
+                </div>
+                <div id="exams-content"></div>
+            </div>
+
+            <!-- TAB 4: TIMETABLE -->
+            <div class="tab-pane-content d-none" id="tab-timetable">
+                <div class="tt-hero">
+                    <div class="tt-hero-bg"></div>
+                    <div class="tt-hero-content">
+                        <div class="tt-hero-icon"><i class="fas fa-calendar-week"></i></div>
+                        <div>
+                            <h3 class="tt-hero-title">Weekly Timetable</h3>
+                            <p class="tt-hero-sub">Your class schedule at a glance</p>
+                        </div>
+                    </div>
+                    <div class="tt-hero-weekdays" id="tt-hero-days"></div>
+                </div>
+                <div id="timetable-content"></div>
+            </div>
+
+            <!-- TAB 5: SUBJECTS & TEACHERS -->
+            <div class="tab-pane-content d-none" id="tab-subjects">
+                <div class="section-card">
+                    <h5>My Subjects & Teachers</h5>
+                    <div id="subjects-content"></div>
+                </div>
+            </div>
+
+            <!-- TAB 6: CLEARANCE -->
+            <div class="tab-pane-content d-none" id="tab-clearance">
+                <div class="section-card">
+                    <h5>Clearance Card</h5>
+                    <div id="clearance-content"></div>
+                </div>
+                <div class="section-card" id="fee-tracking-card">
+                    <h5><i class="fas fa-credit-card me-2"></i>Fee Tracking</h5>
+                    <div id="fee-tracking-content"></div>
+                </div>
+            </div>
+
+            <!-- TAB 7: ANALYTICS -->
+            <div class="tab-pane-content d-none" id="tab-analytics">
+                <div class="section-card">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Subject Performance Comparison</h5>
+                    <div class="chart-container" style="height:320px;">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="section-card text-center">
+                            <h5>Attendance vs Performance</h5>
+                            <div class="chart-container" style="height:260px;">
+                                <canvas id="perfChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-card text-center">
+                            <h5>Quick Actions</h5>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+                                <button class="btn btn-outline-success" onclick="openWhatIfModal()"><i class="fas fa-calculator me-1"></i>What-If GPA</button>
+                                <button class="btn btn-outline-primary" onclick="openDigitalId()"><i class="fas fa-id-card me-1"></i>Digital ID</button>
+                                <button class="btn btn-outline-info" onclick="exportResultsCSV()"><i class="fas fa-download me-1"></i>Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-bell me-2"></i>Notifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="notification-body">
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-check-circle mb-2" style="font-size:2rem;"></i>
+                        <p class="fw-bold mb-0">No new notifications</p>
+                        <small>You're all caught up!</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Digital ID Modal -->
+    <div class="modal fade" id="digitalIdModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-id-card me-2"></i>Digital Student ID</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div id="qrcode-container" class="mb-3" style="display:flex;justify-content:center;"></div>
+                    <h6 class="fw-bold mb-1" id="did-name">--</h6>
+                    <p class="mb-1 text-muted small" id="did-id">--</p>
+                    <p class="mb-0 text-muted small" id="did-class">--</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button class="btn btn-success btn-sm" onclick="printDigitalId()"><i class="fas fa-print me-1"></i>Print</button>
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What-If GPA Modal -->
+    <div class="modal fade" id="whatIfModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-calculator me-2"></i>What-If GPA Calculator</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Adjust scores to see how they affect your overall grade.</p>
+                    <div id="whatif-body"></div>
+                    <div class="alert alert-info text-center mt-3 mb-0" id="whatif-result">
+                        <strong>Current Average:</strong> <span id="whatif-current">--</span> &nbsp;|&nbsp;
+                        <strong>What-If Average:</strong> <span id="whatif-projected">--</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm" onclick="applyWhatIf()"><i class="fas fa-check me-1"></i>Apply</button>
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Offcanvas Navigation Menu -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="studentNavOffcanvas" aria-labelledby="studentNavOffcanvasLabel" style="max-width:280px; z-index:1060;">
+        <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));">
+            <h5 class="offcanvas-title fw-bold" id="studentNavOffcanvasLabel"><i class="fas fa-graduation-cap me-2"></i>Student Portal</h5>
+            <button type="button" class="btn-close btn-close-white" onclick="closeStudentNav()" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('results'); closeStudentNav();">
+                    <i class="fas fa-poll text-success fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Exam Results & Honor Roll</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('timetable'); closeStudentNav();">
+                    <i class="fas fa-clock text-primary fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Timetable & Classes</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('exams'); closeStudentNav();">
+                    <i class="fas fa-file-alt text-warning fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Exam Schedule</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('attendance'); closeStudentNav();">
+                    <i class="fas fa-user-check text-info fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Attendance Record</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('analytics'); closeStudentNav();">
+                    <i class="fas fa-chart-pie fs-5" style="width:24px;color:#7c3aed;"></i>
+                    <span class="fw-semibold">Academic Analytics</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="openDigitalId(); closeStudentNav();">
+                    <i class="fas fa-id-card text-danger fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Digital ID Card</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('clearance'); closeStudentNav();">
+                    <i class="fas fa-check-circle text-success fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Exam Clearance</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('subjects'); closeStudentNav();">
+                    <i class="fas fa-book-open text-secondary fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Registered Subjects</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3 text-danger" onclick="closeStudentNav(); document.getElementById('btn-logout').click();">
+                    <i class="fas fa-sign-out-alt fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav d-none" id="bottom-nav">
+        <button type="button" class="nav-item active" data-bottom-tab="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </button>
+        <button type="button" class="nav-item" data-bottom-tab="results">
+            <i class="fas fa-poll"></i>
+            <span>Results</span>
+        </button>
+        <button type="button" class="nav-item" data-bottom-tab="attendance">
+            <i class="fas fa-user-check"></i>
+            <span>Attendance</span>
+        </button>
+        <button type="button" class="nav-item" data-bottom-tab="exams">
+            <i class="fas fa-file-alt"></i>
+            <span>Exams</span>
+        </button>
+        <button type="button" class="nav-item" data-bottom-tab="more" onclick="openStudentNav()">
+            <i class="fas fa-bars"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="spinner-border mb-3" role="status"></div>
+        <p class="fw-bold text-muted">Loading dashboard...</p>
+    </div>
+
+    <!-- Student Change Password Modal -->
+    <div class="modal fade" id="studentChangePasswordModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form id="studentChangePasswordForm">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-key me-2"></i>Change Password</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div id="changePwdAlert"></div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Current Password</label>
+                            <input type="password" class="form-control" id="oldPasswordInput" required placeholder="Enter your current password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">New Password</label>
+                            <input type="password" class="form-control" id="newPasswordInput" required placeholder="At least 4 characters" minlength="4">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPasswordInput" required placeholder="Re-enter new password">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitChangePwd">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleStudentLoginPwd() {
+            var inp = document.getElementById('inputPassword');
+            var icon = document.getElementById('loginEyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                if (icon) icon.className = 'fas fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                if (icon) icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Register Service Worker for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(() => console.log('SW registered'))
+                    .catch((err) => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+
+    <script>
+        (function () {
+            const API_BASE = '/api/student-dashboard';
+            const STORAGE_KEY = 'viewingStudent';
+
+            const loginView = document.getElementById('login-view');
+            const dashboardView = document.getElementById('dashboard-view');
+            const loginForm = document.getElementById('login-form');
+            const loginAlert = document.getElementById('login-alert');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const btnLogout = document.getElementById('btn-logout');
+            const bottomNav = document.getElementById('bottom-nav');
+
+            let dashboardData = null;
+            let attendanceChartInstance = null;
+
+            // ========== HELPERS ==========
+
+            function showLoading() {
+                loadingOverlay.classList.remove('d-none');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.add('d-none');
+            }
+
+            function showAlert(message, type) {
+                loginAlert.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                    message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+            }
+
+            function formatBirthdate(dateStr) {
+                if (!dateStr) return '';
+                if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+                    return dateStr.substring(0, 10);
+                }
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '';
+                var year = d.getFullYear();
+                var month = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                return year + '-' + month + '-' + day;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return 'N/A';
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                var options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return d.toLocaleDateString('en-US', options);
+            }
+
+            function formatTime(timeStr) {
+                if (!timeStr) return '';
+                var parts = timeStr.split(':');
+                var h = parseInt(parts[0], 10);
+                var m = parts[1] || '00';
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                return h + ':' + m + ' ' + ampm;
+            }
+
+            function getDayName(dateStr) {
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '';
+                return d.toLocaleDateString('en-US', { weekday: 'long' });
+            }
+
+            function parseElpId(input) {
+                if (!input) return null;
+                var cleaned = String(input).trim().toUpperCase().replace(/^(BB|ELP|SA)/i, '');
+                var num = parseInt(cleaned, 10);
+                if (isNaN(num)) return null;
+                if (num > 260000) return num - 260000;
+                if (num > 250000) return num - 250000;
+                if (num > 0) return num;
+                return null;
+            }
+
+            function getAttendanceBadgeClass(status) {
+                if (!status) return 'badge-leave';
+                var s = status.toLowerCase();
+                if (s === 'present') return 'badge-present';
+                if (s === 'absent') return 'badge-absent';
+                return 'badge-leave';
+            }
+
+            function getGreetingTime() {
+                var h = new Date().getHours();
+                if (h < 12) return 'Good morning';
+                if (h < 17) return 'Good afternoon';
+                return 'Good evening';
+            }
+
+            function getFormattedDate() {
+                return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+
+            // ========== TAB SWITCHING ==========
+
+            function initTabs() {
+                var tabButtons = document.querySelectorAll('#dashboard-tabs .nav-link');
+                tabButtons.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        tabButtons.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        var tabId = btn.getAttribute('data-tab');
+                        var panes = document.querySelectorAll('.tab-pane-content');
+                        panes.forEach(function (p) { p.classList.add('d-none'); });
+                        var target = document.getElementById('tab-' + tabId);
+                        if (target) target.classList.remove('d-none');
+                        if (tabId === 'analytics' && dashboardData) loadAnalytics(dashboardData);
+                    });
+                });
+            }
+
+            window.switchToTab = function (tabId) {
+                var tabButtons = document.querySelectorAll('#dashboard-tabs .nav-link');
+                tabButtons.forEach(function (b) { b.classList.remove('active'); });
+                var targetBtn = document.querySelector('#dashboard-tabs .nav-link[data-tab="' + tabId + '"]');
+                if (targetBtn) targetBtn.classList.add('active');
+                var panes = document.querySelectorAll('.tab-pane-content');
+                panes.forEach(function (p) { p.classList.add('d-none'); });
+                var target = document.getElementById('tab-' + tabId);
+                if (target) target.classList.remove('d-none');
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            window.openStudentNav = function () {
+                var offEl = document.getElementById('studentNavOffcanvas');
+                if (!offEl) return;
+                try {
+                    var oc = bootstrap.Offcanvas.getOrCreateInstance(offEl);
+                    oc.show();
+                } catch (e) {
+                    offEl.classList.add('show');
+                    offEl.style.visibility = 'visible';
+                }
+            };
+
+            window.closeStudentNav = function () {
+                var offEl = document.getElementById('studentNavOffcanvas');
+                if (!offEl) return;
+                try {
+                    var oc = bootstrap.Offcanvas.getInstance(offEl);
+                    if (oc) oc.hide();
+                    else {
+                        offEl.classList.remove('show');
+                        offEl.style.visibility = 'hidden';
+                    }
+                } catch (e) {
+                    offEl.classList.remove('show');
+                    offEl.style.visibility = 'hidden';
+                }
+            };
+
+            // ========== BOTTOM NAV ==========
+
+            function initBottomNav() {
+                if (!bottomNav) return;
+                bottomNav.classList.remove('d-none');
+                var navItems = bottomNav.querySelectorAll('.nav-item');
+                navItems.forEach(function (item) {
+                    item.addEventListener('click', function () {
+                        navItems.forEach(function (n) { n.classList.remove('active'); });
+                        item.classList.add('active');
+                        var tab = item.getAttribute('data-bottom-tab');
+                        if (tab === 'home') {
+                            var panes = document.querySelectorAll('.tab-pane-content');
+                            panes.forEach(function (p) { p.classList.add('d-none'); });
+                            var resultsPane = document.getElementById('tab-results');
+                            resultsPane.classList.remove('d-none');
+                            var firstTab = document.querySelector('#dashboard-tabs .nav-link');
+                            if (firstTab) firstTab.classList.add('active');
+                            if (resultsPane) resultsPane.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        } else if (tab === 'more') {
+                            openStudentNav();
+                        } else {
+                            if (tab === 'analytics') {
+                                switchToTab('analytics');
+                                if (dashboardData) loadAnalytics(dashboardData);
+                            } else {
+                                switchToTab(tab);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // ========== PROFILE VISIBILITY ==========
+
+            var profileVisible = true;
+            window.toggleProfileVisibility = function () {
+                var infoGrid = document.getElementById('profile-info');
+                var eyeIcon = document.getElementById('eyeIcon');
+                profileVisible = !profileVisible;
+                if (profileVisible) {
+                    infoGrid.classList.remove('masked');
+                    infoGrid.classList.add('unmasked');
+                    eyeIcon.className = 'fas fa-eye';
+                } else {
+                    infoGrid.classList.remove('unmasked');
+                    infoGrid.classList.add('masked');
+                    eyeIcon.className = 'fas fa-eye-slash';
+                }
+            };
+
+            // ========== NOTIFICATIONS ==========
+
+            window.showNotifications = function () {
+                var modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                var body = document.getElementById('notification-body');
+                var data = dashboardData;
+                if (!data) {
+                    body.innerHTML = '<div class="text-center text-muted py-3"><p>Please log in first.</p></div>';
+                    modal.show();
+                    return;
+                }
+                var html = '';
+                var clearance = data.clearance;
+                if (clearance) {
+                    if (clearance.isCleared) {
+                        html += '<div class="alert alert-success mb-2"><i class="fas fa-check-circle me-2"></i>You are cleared for exams.</div>';
+                    } else {
+                        html += '<div class="alert alert-warning mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Clearance pending — please clear your fees.</div>';
+                    }
+                }
+                var att = data.attendance || {};
+                if (att.percentage !== undefined) {
+                    if (att.percentage < 75) {
+                        html += '<div class="alert alert-danger mb-2"><i class="fas fa-exclamation-circle me-2"></i>Attendance is ' + att.percentage + '% — below 75% minimum.</div>';
+                    } else if (att.percentage >= 75) {
+                        html += '<div class="alert alert-success mb-2"><i class="fas fa-check-circle me-2"></i>Attendance is ' + att.percentage + '% — good standing.</div>';
+                    }
+                }
+                var fees = data.fees || [];
+                var overdue = fees.filter(function (f) { return f.status === 'Pending' && new Date(f.duedate) < new Date(); });
+                if (overdue.length > 0) {
+                    html += '<div class="alert alert-danger mb-2"><i class="fas fa-clock me-2"></i>' + overdue.length + ' overdue fee payment(s).</div>';
+                }
+                if (!html) {
+                    html = '<div class="text-center text-muted py-3"><i class="fas fa-check-circle mb-2" style="font-size:2rem;"></i><p class="fw-bold mb-0">No new notifications</p><small>You\'re all caught up!</small></div>';
+                }
+                body.innerHTML = html;
+                modal.show();
+            };
+
+            // ========== LOGIN ==========
+
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                var studentIdInput = document.getElementById('inputStudentId').value.trim().toUpperCase();
+                var passwordInput = document.getElementById('inputPassword').value;
+
+                var realDbId = parseElpId(studentIdInput);
+                if (realDbId === null || realDbId < 1) {
+                    showAlert('Invalid Student ID format. Use BB followed by 6 digits (e.g. BB260001).', 'danger');
+                    return;
+                }
+
+                loginAlert.innerHTML = '';
+                showLoading();
+
+                try {
+                    var formattedBBId = 'BB' + String(260000 + realDbId).padStart(6, '0');
+                    // Authenticate via /api/student-auth/login
+                    var authRes = await fetch('/api/student-auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bbId: formattedBBId,
+                            password: passwordInput
+                        })
+                    });
+
+                    var authResult = await authRes.json();
+                    if (!authRes.ok) {
+                        throw new Error(authResult.error || 'WRONG_PASSWORD');
+                    }
+
+                    // Fetch full student dashboard details
+                    var response = await fetch(API_BASE + '/' + realDbId);
+                    if (!response.ok) {
+                        throw new Error('NOT_FOUND');
+                    }
+                    var data = await response.json();
+
+                    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        dbId: realDbId,
+                        bbId: formattedBBId,
+                        elpId: formattedBBId,
+                        data: data
+                    }));
+
+                    hideLoading();
+                    loadDashboard(data);
+
+                    if (authResult.mustChange) {
+                        setTimeout(() => openStudentChangePasswordModal('Please set a new password for your account.'), 600);
+                    }
+
+                } catch (err) {
+                    hideLoading();
+                    if (err.message === 'NOT_FOUND') {
+                        showAlert('Student ID record not found in system.', 'danger');
+                    } else if (err.message.includes('password') || err.message === 'WRONG_PASSWORD' || err.message.includes('Invalid')) {
+                        showAlert('Invalid Student ID or password. Please check your credentials or contact school admin.', 'danger');
+                    } else {
+                        showAlert(err.message || 'An error occurred. Please try again later.', 'danger');
+                    }
+                }
+            });
+
+            // ========== CHANGE PASSWORD ==========
+
+            window.openStudentChangePasswordModal = function(note) {
+                var modalEl = document.getElementById('studentChangePasswordModal');
+                if (!modalEl) return;
+                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                var alertBox = document.getElementById('changePwdAlert');
+                if (alertBox) {
+                    alertBox.innerHTML = note ? '<div class="alert alert-info py-2">' + note + '</div>' : '';
+                }
+                var form = document.getElementById('studentChangePasswordForm');
+                if (form) form.reset();
+                modal.show();
+            };
+
+            const changePwdForm = document.getElementById('studentChangePasswordForm');
+            if (changePwdForm) {
+                changePwdForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+                    if (!stored || !stored.dbId) {
+                        alert('Session expired. Please log in again.');
+                        return;
+                    }
+                    var oldPassword = document.getElementById('oldPasswordInput').value;
+                    var newPassword = document.getElementById('newPasswordInput').value;
+                    var confirmPassword = document.getElementById('confirmPasswordInput').value;
+                    var alertBox = document.getElementById('changePwdAlert');
+
+                    if (newPassword !== confirmPassword) {
+                        alertBox.innerHTML = '<div class="alert alert-danger py-2">New passwords do not match.</div>';
+                        return;
+                    }
+                    if (newPassword.length < 4) {
+                        alertBox.innerHTML = '<div class="alert alert-danger py-2">Password must be at least 4 characters.</div>';
+                        return;
+                    }
+
+                    try {
+                        var res = await fetch('/api/student-auth/change-password', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                studentId: stored.dbId,
+                                bbId: stored.bbId || ('BB' + (260000 + stored.dbId)),
+                                oldPassword: oldPassword,
+                                newPassword: newPassword
+                            })
+                        });
+                        var data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to change password.');
+                        alertBox.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check-circle me-1"></i>Password changed successfully!</div>';
+                        setTimeout(function() {
+                            bootstrap.Modal.getInstance(document.getElementById('studentChangePasswordModal')).hide();
+                        }, 1200);
+                    } catch (err) {
+                        alertBox.innerHTML = '<div class="alert alert-danger py-2">' + err.message + '</div>';
+                    }
+                });
+            }
+
+            // ========== LOGOUT ==========
+
+            btnLogout.addEventListener('click', function () {
+                sessionStorage.removeItem(STORAGE_KEY);
+                dashboardData = null;
+                if (attendanceChartInstance) {
+                    attendanceChartInstance.destroy();
+                    attendanceChartInstance = null;
+                }
+                dashboardView.classList.add('d-none');
+                loginView.classList.remove('d-none');
+                if (bottomNav) bottomNav.classList.add('d-none');
+                loginForm.reset();
+                loginAlert.innerHTML = '';
+            });
+
+            // ========== LOAD DASHBOARD ==========
+
+            function loadDashboard(data) {
+                dashboardData = data;
+                loginView.classList.add('d-none');
+                dashboardView.classList.remove('d-none');
+                if (bottomNav) bottomNav.classList.remove('d-none');
+
+                var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+                var elpId = stored ? (stored.bbId || stored.elpId) : 'BB' + String(260000 + data.student.id).padStart(6, '0');
+
+                // Header
+                document.getElementById('header-greeting').textContent = 'Hi, ' + (data.student.name || 'Student') + '!';
+                document.getElementById('header-date').textContent = getFormattedDate();
+
+                // Profile Card
+                document.getElementById('profile-name').textContent = data.student.name || 'Student Name';
+                document.getElementById('profile-id').textContent = elpId;
+                document.getElementById('profile-class').textContent = data.student.grade || '--';
+                document.getElementById('profile-dept').textContent = data.student.department || '--';
+                document.getElementById('profile-period').textContent = data.student.period || '--';
+
+                // Greeting Card
+                document.getElementById('greeting-text').textContent = getGreetingTime() + ', ' + (data.student.name || 'Student') + '!';
+                document.getElementById('greeting-date').textContent = getFormattedDate();
+
+                // Stats
+                var timetable = data.timetable || [];
+                document.getElementById('stat-classes').textContent = timetable.length > 0 ? timetable.length : '--';
+                document.getElementById('stat-attendance').textContent = (data.attendance && data.attendance.percentage) ? data.attendance.percentage + '%' : '--%';
+                var subjects = data.subjects || [];
+                document.getElementById('stat-courses').textContent = subjects.length > 0 ? subjects.length : '--';
+
+                initTabs();
+                initBottomNav();
+                loadAnnouncements(data);
+                setupExamDefs(data);
+                loadResults(data, elpId);
+                loadAttendance(data);
+                loadExams(data);
+                loadTimetable(data);
+                loadSubjects(data);
+                loadClearance(data, elpId);
+                loadFeeTracking(data);
+                loadAnalytics(data);
+
+                var firstTab = document.querySelector('#dashboard-tabs .nav-link');
+                if (firstTab) firstTab.click();
+            }
+
+            // ========== ANNOUNCEMENTS ==========
+
+            function loadAnnouncements(data) {
+                var container = document.getElementById('announcements-list');
+                var items = [];
+                // Admin announcements (sent from the Admin panel)
+                (data.announcements || []).forEach(function (a) {
+                    items.push({ icon: 'fa-bullhorn', title: a.title || 'Announcement', desc: (a.message || '') + (a.created_at ? ' <small class="text-muted">' + formatDate(a.created_at) + '</small>' : '') });
+                });
+                var att = data.attendance || {};
+                if (att.percentage !== undefined && att.percentage < 75) {
+                    items.push({ icon: 'fa-exclamation-triangle', title: 'Low Attendance Warning', desc: 'Your attendance is ' + att.percentage + '%. Please maintain at least 75%.' });
+                }
+                var fees = data.fees || [];
+                var overdue = fees.filter(function (f) { return f.status === 'Pending' && new Date(f.duedate) < new Date(); });
+                if (overdue.length > 0) {
+                    items.push({ icon: 'fa-clock', title: 'Overdue Fees', desc: 'You have ' + overdue.length + ' overdue fee payment(s). Please clear them soon.' });
+                }
+                var clearance = data.clearance;
+                if (clearance && clearance.isCleared) {
+                    items.push({ icon: 'fa-check-circle', title: 'Clearance Approved', desc: 'You are cleared for exams. You can download your clearance card.' });
+                } else {
+                    items.push({ icon: 'fa-id-card', title: 'Clearance Required', desc: 'Clear your fees to receive clearance for exams.' });
+                }
+                var exams = data.examSchedule || [];
+                if (exams.length > 0) {
+                    var nextExam = exams[0];
+                    items.push({ icon: 'fa-file-alt', title: 'Upcoming Exam', desc: (nextExam.subject || 'Exam') + ' on ' + formatDate(nextExam.exam_date) + ' at ' + formatTime(nextExam.start_time) + '.' });
+                }
+                var html = items.map(function (item) {
+                    return '<div class="announcement-item"><div class="ann-icon"><i class="fas ' + item.icon + '"></i></div><div class="ann-text"><h6>' + item.title + '</h6><p>' + item.desc + '</p></div></div>';
+                }).join('');
+                container.innerHTML = html;
+            }
+
+            // ========== TAB 1: RESULTS ==========
+
+            function getGradeBadge(percentage) {
+                if (percentage >= 90) return { text: 'A+', class: 'grade-a' };
+                if (percentage >= 80) return { text: 'A', class: 'grade-a' };
+                if (percentage >= 70) return { text: 'B+', class: 'grade-b' };
+                if (percentage >= 60) return { text: 'B', class: 'grade-b' };
+                if (percentage >= 50) return { text: 'C', class: 'grade-c' };
+                if (percentage >= 40) return { text: 'D', class: 'grade-d' };
+                return { text: 'F', class: 'grade-f' };
+            }
+
+            function getSubjectColor(index) {
+                var colors = [
+                    { bg: 'linear-gradient(135deg, #3498db, #2980b9)', icon: 'fa-book' },
+                    { bg: 'linear-gradient(135deg, #2ecc71, #27ae60)', icon: 'fa-calculator' },
+                    { bg: 'linear-gradient(135deg, #9b59b6, #8e44ad)', icon: 'fa-flask' },
+                    { bg: 'linear-gradient(135deg, #e67e22, #d35400)', icon: 'fa-globe' },
+                    { bg: 'linear-gradient(135deg, #1abc9c, #16a085)', icon: 'fa-microscope' },
+                    { bg: 'linear-gradient(135deg, #e74c3c, #c0392b)', icon: 'fa-palette' },
+                    { bg: 'linear-gradient(135deg, #f39c12, #f1c40f)', icon: 'fa-music' },
+                    { bg: 'linear-gradient(135deg, #34495e, #2c3e50)', icon: 'fa-language' }
+                ];
+                return colors[index % colors.length];
+            }
+
+            // Exam definitions used for the report card (dynamic — admin can change anytime)
+            var EXAM_DEFS = [
+                { key: 'quiz1', label: 'Quiz 1', max: 5, barClass: 'q' },
+                { key: 'quiz2', label: 'Quiz 2', max: 5, barClass: 'q' },
+                { key: 'sem1', label: 'Sem 1', max: 5, barClass: 's' },
+                { key: 'sem2', label: 'Sem 2', max: 5, barClass: 's' },
+                { key: 'midterm', label: 'Midterm', max: 40, barClass: 'm' },
+                { key: 'final', label: 'Final', max: 40, barClass: 'f' }
+            ];
+            var BAR_CLASSES = ['q', 'q', 's', 's', 'm', 'f'];
+
+            // Override EXAM_DEFS + dropdown + interactive chips from the exams the student's class is assigned
+            function setupExamDefs(data) {
+                var exams = (data && data.exams) || [];
+                if (!exams || exams.length === 0) return;
+                var defs = exams.map(function (e, i) {
+                    return { key: e.exam_key, label: e.name, max: parseFloat(e.max_score) || 100, barClass: BAR_CLASSES[i % BAR_CLASSES.length] };
+                });
+                EXAM_DEFS = defs;
+                var sel = document.getElementById('exam-type-select');
+                var chipsWrap = document.getElementById('exam-chips-container');
+                sel.innerHTML = '<option value="">All Exams (Overall Report)</option>';
+                if (chipsWrap) {
+                    chipsWrap.innerHTML = '<button type="button" class="exam-chip-btn active" data-exam=""><i class="fas fa-layer-group"></i> All Exams <span class="chip-badge">Overall</span></button>';
+                }
+                defs.forEach(function (d) {
+                    sel.innerHTML += '<option value="' + d.key + '">' + d.label + ' (/' + d.max + ')</option>';
+                    if (chipsWrap) {
+                        chipsWrap.innerHTML += '<button type="button" class="exam-chip-btn" data-exam="' + d.key + '"><i class="fas fa-pen-nib"></i> ' + d.label + ' <span class="chip-badge">/' + d.max + '</span></button>';
+                    }
+                });
+
+                // Attach click listeners to chips
+                if (chipsWrap) {
+                    chipsWrap.querySelectorAll('.exam-chip-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            chipsWrap.querySelectorAll('.exam-chip-btn').forEach(function (b) { b.classList.remove('active'); });
+                            btn.classList.add('active');
+                            sel.value = btn.getAttribute('data-exam') || '';
+                            var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+                            var elpId = stored ? (stored.bbId || stored.elpId) : 'BB' + String(260000 + dashboardData.student.id).padStart(6, '0');
+                            loadResults(dashboardData, elpId);
+                        });
+                    });
+                }
+            }
+
+            // Load and render the Top 3 Class Leaders Honor Roll
+            async function loadClassLeaders(data, examType) {
+                var podiumEl = document.getElementById('podium-display');
+                var unreleasedEl = document.getElementById('leaders-unreleased');
+                var badgeEl = document.getElementById('leaders-exam-badge');
+                var subtitleEl = document.getElementById('leaders-subtitle');
+                if (!podiumEl) return;
+
+                var className = (data.class && data.class.name) ? data.class.name : 'Class';
+                var examDef = getExamDef(examType);
+                var examLabel = examDef ? examDef.label : 'Overall Academic Standing';
+
+                if (subtitleEl) {
+                    subtitleEl.textContent = 'Top performers in ' + className + ' for ' + examLabel;
+                }
+
+                if (data.resultsOnHold) {
+                    podiumEl.innerHTML = '';
+                    if (unreleasedEl) unreleasedEl.classList.remove('d-none');
+                    if (badgeEl) {
+                        badgeEl.className = 'badge bg-warning-subtle text-warning px-3 py-2 rounded-pill fw-bold';
+                        badgeEl.innerHTML = '<i class="fas fa-lock me-1"></i> Under Review';
+                    }
+                    return;
+                }
+
+                var classId = data.class ? data.class.id : null;
+                if (!classId) {
+                    podiumEl.innerHTML = '<div class="col-12 text-center text-muted py-3">Class assignment required to view honor roll.</div>';
+                    return;
+                }
+
+                try {
+                    var url = '/api/results/class-leaders/' + classId + (examType ? '?examType=' + encodeURIComponent(examType) : '');
+                    var res = await fetch(url);
+                    var json = await res.json();
+                    var leaders = json.leaders || [];
+
+                    if (!json.isPublished && leaders.length === 0) {
+                        podiumEl.innerHTML = '';
+                        if (unreleasedEl) unreleasedEl.classList.remove('d-none');
+                        if (badgeEl) {
+                            badgeEl.className = 'badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold';
+                            badgeEl.innerHTML = '<i class="fas fa-clock me-1"></i> Awaiting Publication';
+                        }
+                        return;
+                    }
+
+                    if (unreleasedEl) unreleasedEl.classList.add('d-none');
+                    if (badgeEl) {
+                        badgeEl.className = 'badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold';
+                        badgeEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Officially Published';
+                    }
+
+                    if (leaders.length === 0) {
+                        podiumEl.innerHTML = '<div class="col-12 text-center text-muted py-3"><i class="fas fa-award me-1"></i> No approved exam records published yet for this selection.</div>';
+                        return;
+                    }
+
+                    var currentStudentId = data.student ? data.student.id : null;
+
+                    var first = leaders.find(function (l) { return l.rank === 1; });
+                    var second = leaders.find(function (l) { return l.rank === 2; });
+                    var third = leaders.find(function (l) { return l.rank === 3; });
+
+                    function renderPodiumCard(item, rankNum, labelText, medalIcon, baseText) {
+                        if (!item) {
+                            return '<div class="podium-card rank-' + rankNum + ' opacity-50">' +
+                                '<div class="podium-student-name">Vacant</div>' +
+                                '<div class="podium-pedestal">' + baseText + '</div>' +
+                                '</div>';
+                        }
+                        var isCurrent = currentStudentId && (item.studentId === currentStudentId);
+                        var avatarUrl = item.image || '/images/BEDRCOK LOGO.JPG';
+                        var youHtml = isCurrent ? '<div class="podium-you-badge"><i class="fas fa-star me-1"></i>That\'s You!</div>' : '';
+                        var crownHtml = rankNum === 1 ? '<i class="fas fa-crown crown-icon"></i>' : '';
+
+                        return '<div class="podium-card rank-' + rankNum + (isCurrent ? ' border-primary' : '') + '">' +
+                            crownHtml +
+                            '<div class="podium-avatar-wrap">' +
+                                '<img src="' + avatarUrl + '" alt="' + item.name + '" class="podium-avatar" onerror="this.src=\'/images/BEDRCOK LOGO.JPG\'">' +
+                                '<div class="podium-rank-badge">' + medalIcon + '</div>' +
+                            '</div>' +
+                            '<div class="podium-student-name" title="' + item.name + '">' + item.name + '</div>' +
+                            '<div class="podium-id-tag">' + (item.bbId || item.elpId) + '</div>' +
+                            '<div class="podium-score-pill"><i class="fas fa-star text-warning me-1"></i>' + item.totalScore + ' pts (' + item.percentage + '%)</div>' +
+                            youHtml +
+                            '<div class="podium-pedestal">' + baseText + '</div>' +
+                            '</div>';
+                    }
+
+                    var html = '';
+                    html += renderPodiumCard(second, 2, '2nd Place', '🥈', '2nd');
+                    html += renderPodiumCard(first, 1, '1st Champion', '🥇', '1st');
+                    html += renderPodiumCard(third, 3, '3rd Place', '🥉', '3rd');
+
+                    podiumEl.innerHTML = html;
+                } catch (e) {
+                    podiumEl.innerHTML = '<div class="col-12 text-center text-muted py-2">Could not load honor roll.</div>';
+                }
+            }
+
+            function getExamDef(examType) {
+                return EXAM_DEFS.find(function (d) { return d.key === examType; }) || null;
+            }
+
+            function scoreToGpaPoints(percentage) {
+                if (percentage >= 90) return 4.0;
+                if (percentage >= 80) return 3.0;
+                if (percentage >= 70) return 2.0;
+                if (percentage >= 60) return 1.0;
+                return 0.0;
+            }
+
+            function buildScoreRow(score, def) {
+                var pct = def.max > 0 ? Math.round((score / def.max) * 100) : 0;
+                return '<div class="rc-score-row">' +
+                    '<span class="rc-score-label">' + def.label + '</span>' +
+                    '<div class="rc-score-bar-wrap"><div class="rc-score-bar ' + def.barClass + '" style="width: ' + pct + '%;"></div></div>' +
+                    '<span class="rc-score-val">' + score + '<span class="rc-max">/' + def.max + '</span></span>' +
+                    '</div>';
+            }
+
+            function loadResults(data, elpId) {
+                document.getElementById('rc-student-id').textContent = elpId;
+                document.getElementById('rc-student-name').textContent = data.student.name || 'N/A';
+                document.getElementById('rc-student-grade').textContent = data.student.grade || 'N/A';
+                document.getElementById('rc-enrollment-date').textContent = formatDate(data.student.enrollmentdate);
+
+                var container = document.getElementById('results-cards-container');
+                var emptyState = document.getElementById('results-empty');
+                var summaryEl = document.getElementById('results-summary');
+                var holdBanner = document.getElementById('results-hold-banner');
+                var holdReleaseText = document.getElementById('hold-release-text');
+
+                var examType = document.getElementById('exam-type-select').value;
+                loadClassLeaders(data, examType);
+
+                // Check if results are on hold
+                if (data.resultsOnHold) {
+                    container.innerHTML = '';
+                    emptyState.classList.add('d-none');
+                    summaryEl.classList.add('d-none');
+                    holdBanner.classList.remove('d-none');
+                    if (data.releaseAt) {
+                        holdReleaseText.textContent = 'Scheduled release: ' + formatDate(data.releaseAt) + ' ' + formatTime(data.releaseAt);
+                    } else {
+                        holdReleaseText.textContent = 'Awaiting admin release.';
+                    }
+                    return;
+                }
+                holdBanner.classList.add('d-none');
+
+                var examType = document.getElementById('exam-type-select').value;
+                var examDef = getExamDef(examType);
+
+                var results = data.results || {};
+                var subjects = Object.keys(results);
+
+                if (subjects.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('d-none');
+                    summaryEl.classList.add('d-none');
+                    return;
+                }
+
+                emptyState.classList.add('d-none');
+                summaryEl.classList.remove('d-none');
+
+                var html = '';
+                var totalScore = 0;
+                var totalMax = 0;
+
+                subjects.forEach(function (subject, index) {
+                    var subjectData = results[subject];
+                    var color = getSubjectColor(index);
+
+                    var subjectTotal = 0;
+                    var subjectMax = 0;
+                    var rowsHtml = '';
+
+                    if (examDef) {
+                        // Single-exam view: show only the selected exam's score for this subject
+                        var sc = parseFloat(subjectData.scores[examType]) || 0;
+                        var mx = (subjectData.maxScores && subjectData.maxScores[examType]) ? parseFloat(subjectData.maxScores[examType]) : examDef.max;
+                        rowsHtml = buildScoreRow(sc, { key: examDef.key, label: examDef.label, max: mx, barClass: examDef.barClass });
+                        subjectTotal = sc;
+                        subjectMax = mx;
+                    } else {
+                        // Overall view: show every exam the subject has
+                        EXAM_DEFS.forEach(function (def) {
+                            var sc = parseFloat(subjectData.scores[def.key]) || 0;
+                            var mx = (subjectData.maxScores && subjectData.maxScores[def.key]) ? parseFloat(subjectData.maxScores[def.key]) : def.max;
+                            rowsHtml += buildScoreRow(sc, { key: def.key, label: def.label, max: mx, barClass: def.barClass });
+                            subjectTotal += sc;
+                            subjectMax += mx;
+                        });
+                    }
+
+                    totalScore += subjectTotal;
+                    totalMax += subjectMax;
+
+                    var percentage = subjectMax > 0 ? Math.round((subjectTotal / subjectMax) * 100) : 0;
+                    var grade = getGradeBadge(percentage);
+
+                    html += '<div class="col-md-6 col-lg-4">';
+                    html += '<div class="result-card">';
+                    html += '<div class="rc-top">';
+                    html += '<h5>' + subject + '</h5>';
+                    html += '<div class="rc-icon" style="background: ' + color.bg + ';">';
+                    html += '<i class="fas ' + color.icon + '"></i>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="rc-body">';
+                    html += rowsHtml;
+                    html += '</div>';
+                    html += '<div class="rc-footer">';
+                    html += '<div class="rc-total">' + subjectTotal + '<span class="rc-total-max">/' + subjectMax + '</span></div>';
+                    html += '<span class="rc-grade ' + grade.class + '">' + grade.text + '</span>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+
+                container.innerHTML = html;
+
+                var overallPercentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+
+                // GPA: per-exam GPA from selected exam scores, otherwise the student's stored overall GPA
+                var gpa = data.student.gpa || 'N/A';
+                if (examDef) {
+                    var points = [];
+                    subjects.forEach(function (subject) {
+                        var sd = results[subject];
+                        var sc = parseFloat(sd.scores[examType]) || 0;
+                        var mx = (sd.maxScores && sd.maxScores[examType]) ? parseFloat(sd.maxScores[examType]) : examDef.max;
+                        var pct = mx > 0 ? (sc / mx) * 100 : 0;
+                        points.push(scoreToGpaPoints(pct));
+                    });
+                    if (points.length > 0) gpa = (points.reduce(function (a, b) { return a + b; }, 0) / points.length).toFixed(2);
+                }
+
+                document.getElementById('summary-subjects').textContent = subjects.length;
+                document.getElementById('summary-average').textContent = overallPercentage + '%';
+                document.getElementById('summary-gpa').textContent = gpa;
+
+                var warningEl = document.getElementById('results-clearance-warning');
+                if (data.clearance && data.clearance.isCleared === false) {
+                    warningEl.classList.remove('d-none');
+                } else {
+                    warningEl.classList.add('d-none');
+                }
+            }
+
+            // ========== TAB 2: ATTENDANCE ==========
+
+            function loadAttendance(data) {
+                var att = data.attendance || {};
+                var total = att.totalDays || 0;
+                var present = att.presentCount || 0;
+                var absent = att.absentCount || 0;
+                var leave = att.leaveCount || 0;
+                var pct = att.percentage || 0;
+
+                document.getElementById('att-total').textContent = total;
+                document.getElementById('att-present').textContent = present;
+                document.getElementById('att-absent').textContent = absent;
+                document.getElementById('att-leave').textContent = leave;
+                document.getElementById('att-percent-value').textContent = pct + '%';
+                document.getElementById('att-history-count').textContent = (data.attendanceHistory || []).length + ' records';
+
+                // Animate ring
+                var ring = document.getElementById('att-ring-fill');
+                var circumference = 326.7;
+                var offset = circumference - (pct / 100) * circumference;
+                var color = pct >= 75 ? '#27ae60' : pct >= 50 ? '#f39c12' : '#e74c3c';
+                ring.style.stroke = color;
+                setTimeout(function () { ring.style.strokeDashoffset = offset; }, 100);
+
+                var historyBody = document.getElementById('att-history-body');
+                var history = data.attendanceHistory || [];
+                if (history.length > 0) {
+                    var histHtml = '';
+                    history.forEach(function (item) {
+                        var dayName = getDayName(item.date);
+                        var badgeClass = item.status === 'Present' ? 'att-badge-present' : item.status === 'Absent' ? 'att-badge-absent' : 'att-badge-leave';
+                        histHtml += '<tr>';
+                        histHtml += '<td>' + formatDate(item.date) + '</td>';
+                        histHtml += '<td>' + dayName + '</td>';
+                        histHtml += '<td><span class="att-badge ' + badgeClass + '">' + (item.status || 'N/A') + '</span></td>';
+                        histHtml += '</tr>';
+                    });
+                    historyBody.innerHTML = histHtml;
+                } else {
+                    historyBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No attendance history available.</td></tr>';
+                }
+
+                buildAttendanceChart(history);
+            }
+
+            function buildAttendanceChart(history) {
+                var monthlyData = {};
+                history.forEach(function (item) {
+                    var d = new Date(item.date);
+                    if (isNaN(d.getTime())) return;
+                    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[key]) {
+                        monthlyData[key] = { present: 0, absent: 0, leave: 0, total: 0 };
+                    }
+                    monthlyData[key].total++;
+                    var s = (item.status || '').toLowerCase();
+                    if (s === 'present') monthlyData[key].present++;
+                    else if (s === 'absent') monthlyData[key].absent++;
+                    else monthlyData[key].leave++;
+                });
+
+                var labels = Object.keys(monthlyData).sort();
+                var pctData = labels.map(function (k) {
+                    var m = monthlyData[k];
+                    return m.total > 0 ? Math.round((m.present / m.total) * 100) : 0;
+                });
+                var labelNames = labels.map(function (k) {
+                    var parts = k.split('-');
+                    var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return monthNames[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+                });
+
+                if (attendanceChartInstance) attendanceChartInstance.destroy();
+
+                var ctx = document.getElementById('attendanceChart').getContext('2d');
+                attendanceChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labelNames,
+                        datasets: [{
+                            label: 'Attendance %',
+                            data: pctData,
+                            borderColor: '#1dd91d',
+                            backgroundColor: 'rgba(29, 217, 29, 0.08)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#1dd91d',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                min: 0, max: 100,
+                                ticks: { callback: function (v) { return v + '%'; }, stepSize: 25 },
+                                grid: { color: 'rgba(0,0,0,0.04)' }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ========== TAB 3: EXAM SCHEDULE ==========
+
+            function loadExams(data) {
+                var warningEl = document.getElementById('exams-clearance-warning');
+                if (data.clearance && data.clearance.isCleared === false) {
+                    warningEl.classList.remove('d-none');
+                } else {
+                    warningEl.classList.add('d-none');
+                }
+
+                var contentEl = document.getElementById('exams-content');
+                var countBadge = document.getElementById('exam-count-badge');
+                var exams = data.examSchedule || [];
+
+                if (exams.length === 0) {
+                    countBadge.textContent = '0 exams';
+                    contentEl.innerHTML = '<div class="empty-modern"><div class="empty-icon"><i class="fas fa-calendar-times"></i></div><h5>No exams scheduled</h5><p>Your exam schedule will appear here once published.</p></div>';
+                    return;
+                }
+
+                countBadge.textContent = exams.length + ' exam' + (exams.length > 1 ? 's' : '');
+
+                var html = '';
+                exams.forEach(function (exam) {
+                    var d = new Date(exam.exam_date);
+                    var day = d.getDate();
+                    var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    var month = monthNames[d.getMonth()];
+
+                    html += '<div class="exam-card">';
+                    html += '<div class="exam-date-box"><span class="exam-day">' + day + '</span><span class="exam-month">' + month + '</span></div>';
+                    html += '<div class="exam-info">';
+                    html += '<h6>' + (exam.subject || 'N/A') + '</h6>';
+                    html += '<div class="exam-meta">';
+                    html += '<i class="fas fa-clock"></i>' + formatTime(exam.start_time) + ' - ' + formatTime(exam.end_time);
+                    html += ' &nbsp; <i class="fas fa-calendar-day"></i>' + formatDate(exam.exam_date);
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="exam-room-badge"><i class="fas fa-door-open me-1"></i>' + (exam.room || 'TBA') + '</div>';
+                    html += '</div>';
+                });
+
+                contentEl.innerHTML = html;
+            }
+
+            // ========== TAB 4: TIMETABLE — PREMIUM ==========
+
+            function getTeacherInitials(name) {
+                if (!name) return '?';
+                return name.split(' ').map(function (w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
+            }
+
+            var TEACHER_COLORS = [
+                '#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12',
+                '#1abc9c','#e67e22','#34495e','#16a085','#c0392b',
+                '#2980b9','#8e44ad','#27ae60','#d35400','#2c3e50'
+            ];
+
+            function getTeacherColor(name) {
+                if (!name) return '#888';
+                var hash = 0;
+                for (var i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+                return TEACHER_COLORS[Math.abs(hash) % TEACHER_COLORS.length];
+            }
+
+            function loadTimetable(data) {
+                var contentEl = document.getElementById('timetable-content');
+                var timetable = data.timetable || [];
+
+                // today day index
+                var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                var todayIdx = new Date().getDay(); // 0=Sun
+                var todayName = dayNames[todayIdx];
+
+                // hero day badges
+                var allDays = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                var heroDaysEl = document.getElementById('tt-hero-days');
+                if (heroDaysEl) {
+                    heroDaysEl.innerHTML = allDays.map(function (d) {
+                        var isToday = d === todayName;
+                        return '<div class="tt-hero-day' + (isToday ? ' today' : '') + '">' + d.substring(0, 3) + '</div>';
+                    }).join('');
+                }
+
+                if (timetable.length === 0) {
+                    contentEl.innerHTML = '<div class="empty-modern"><div class="empty-icon"><i class="fas fa-calendar-alt"></i></div><h5>No timetable available</h5><p>Your class schedule will appear here once assigned.</p></div>';
+                    return;
+                }
+
+                var days = allDays;
+
+                var slots = {};
+                timetable.forEach(function (item) {
+                    var key = item.start_time + '-' + item.end_time;
+                    if (!slots[key]) {
+                        slots[key] = { start: item.start_time, end: item.end_time, entries: {} };
+                    }
+                    slots[key].entries[item.day_of_week] = item;
+                });
+
+                var slotKeys = Object.keys(slots).sort(function (a, b) {
+                    return slots[a].start.localeCompare(slots[b].start);
+                });
+
+                var html = '<div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">';
+                html += '<div class="tt-pgrid" style="grid-template-columns: 80px repeat(' + days.length + ', 1fr); min-width: 500px;">';
+
+                html += '<div class="tt-p-header">Time</div>';
+                days.forEach(function (day) {
+                    var isToday = day === todayName;
+                    html += '<div class="tt-p-header' + (isToday ? ' today-header' : '') + '">' + day.substring(0, 3) + '</div>';
+                });
+
+                slotKeys.forEach(function (slotKey) {
+                    var slot = slots[slotKey];
+                    html += '<div class="tt-p-time"><span class="tt-p-time-start">' + formatTime(slot.start) + '</span><span class="tt-p-time-divider"></span><span class="tt-p-time-end">' + formatTime(slot.end) + '</span></div>';
+
+                    days.forEach(function (day) {
+                        var entry = slot.entries[day];
+                        var isToday = day === todayName;
+                        var cellClass = 'tt-p-cell' + (isToday ? ' today-cell' : '');
+                        if (entry) {
+                            var teacherName = entry.teacher_name || '';
+                            var initials = getTeacherInitials(teacherName);
+                            var tColor = getTeacherColor(teacherName);
+                            html += '<div class="' + cellClass + '">';
+                            html += '<div class="tt-p-subject">' + (entry.subject || '') + '</div>';
+                            if (teacherName) {
+                                html += '<div class="tt-p-teacher"><span class="tt-p-avatar" style="background:' + tColor + ';">' + initials + '</span>' + teacherName + '</div>';
+                            }
+                            if (entry.room) {
+                                html += '<div class="tt-p-room"><i class="fas fa-map-pin"></i>' + entry.room + '</div>';
+                            }
+                            html += '</div>';
+                        } else {
+                            html += '<div class="' + cellClass + ' empty">—</div>';
+                        }
+                    });
+                });
+
+                html += '</div>';
+                html += '</div>';
+                contentEl.innerHTML = html;
+            }
+
+            // ========== TAB 5: SUBJECTS & TEACHERS ==========
+
+            function loadSubjects(data) {
+                var contentEl = document.getElementById('subjects-content');
+                var subjects = data.subjects || [];
+                var classInfo = data.class;
+
+                var html = '';
+
+                if (classInfo) {
+                    html += '<div class="row g-3 mb-3">';
+                    html += '<div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-primary-grad"><i class="fas fa-users"></i></div><div class="stat-value" style="font-size:1.1rem;">' + (classInfo.name || 'N/A') + '</div><div class="stat-label">Class</div></div></div>';
+                    html += '<div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-success-grad"><i class="fas fa-door-open"></i></div><div class="stat-value" style="font-size:1.1rem;">' + (classInfo.room || 'N/A') + '</div><div class="stat-label">Room</div></div></div>';
+                    html += '<div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-warning-grad"><i class="fas fa-chalkboard-teacher"></i></div><div class="stat-value" style="font-size:1.1rem;">' + (classInfo.teacherName || 'N/A') + '</div><div class="stat-label">Class Teacher</div></div></div>';
+                    html += '</div>';
+                }
+
+                if (subjects.length === 0) {
+                    html += '<div class="empty-state">';
+                    html += '<i class="fas fa-book-open"></i>';
+                    html += '<p>No class assigned yet.</p>';
+                    html += '</div>';
+                    contentEl.innerHTML = html;
+                    return;
+                }
+
+                html += '<div class="row g-3">';
+                subjects.forEach(function (subj) {
+                    html += '<div class="col-md-6 col-lg-4">';
+                    html += '<div class="subject-card">';
+                    html += '<h6><i class="fas fa-book me-1"></i>' + (subj.subject || 'N/A') + '</h6>';
+                    html += '<p><i class="fas fa-user-tie"></i>' + (subj.teacherName || 'N/A') + '</p>';
+                    html += '<p><i class="fas fa-envelope"></i>' + (subj.teacherEmail || 'N/A') + '</p>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+
+                contentEl.innerHTML = html;
+            }
+
+            // ========== TAB 6: CLEARANCE ==========
+
+            function loadClearance(data, elpId) {
+                var contentEl = document.getElementById('clearance-content');
+                var clearance = data.clearance;
+
+                if (clearance && clearance.isCleared) {
+                    var html = '<div class="clearance-card-cleared">';
+                    html += '<div class="check-icon"><i class="fas fa-check"></i></div>';
+                    html += '<h4 style="color: #1e8449; font-weight: 700;">Cleared</h4>';
+                    html += '<p class="mb-1"><strong>' + (data.student.name || '') + '</strong></p>';
+                    html += '<p class="mb-1">Student ID: ' + elpId + '</p>';
+                    html += '<p class="mb-1">Semester: ' + (clearance.semester || 'N/A') + '</p>';
+                    html += '<p class="mb-1">Released by: ' + (clearance.released_by || 'Admin') + '</p>';
+                    html += '<p class="mb-3"><small>' + formatDate(clearance.released_at) + '</small></p>';
+                    html += '<button class="btn btn-success no-print" onclick="printClearanceCard()"><i class="fas fa-print me-1"></i>Print Clearance Card</button>';
+                    html += '</div>';
+                    contentEl.innerHTML = html;
+                } else {
+                    var html = '<div class="clearance-card-not-cleared">';
+                    html += '<div class="x-icon"><i class="fas fa-times"></i></div>';
+                    html += '<h4 style="color: #c0392b; font-weight: 700;">Not Cleared</h4>';
+                    html += '<p class="mb-3" style="color: #7b241c;">You have not been cleared. Please pay your fees to receive clearance for exams.</p>';
+                    html += '</div>';
+                    contentEl.innerHTML = html;
+                }
+            }
+
+            // ========== PRINT CLEARANCE ==========
+
+            window.printClearanceCard = function () {
+                var clearanceContent = document.getElementById('clearance-content');
+                var printWindow = window.open('', '_blank', 'width=600,height=400');
+                printWindow.document.write('<!DOCTYPE html><html><head><title>Clearance Card</title>');
+                printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">');
+                printWindow.document.write('<style>body{padding:2rem;font-family:Segoe UI,sans-serif;}.clearance-card-cleared{background:linear-gradient(135deg,#d5f5e3,#abebc6);border:2px solid #27ae60;border-radius:16px;padding:2.5rem;text-align:center;max-width:500px;margin:0 auto;}.check-icon{width:80px;height:80px;border-radius:50%;background:#27ae60;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2.5rem;}</style>');
+                printWindow.document.write('</head><body>');
+                printWindow.document.write('<div class="clearance-card-cleared">');
+                printWindow.document.write('<div class="check-icon"><i class="fas fa-check"></i></div>');
+                printWindow.document.write(clearanceContent.querySelector('.clearance-card-cleared').innerHTML);
+                printWindow.document.write('</div>');
+                printWindow.document.write('<script>window.onload=function(){window.print();window.close();}<\/script>');
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+            };
+
+            // ========== SEARCH ==========
+
+            var searchVisible = false;
+            window.toggleSearch = function () {
+                var bar = document.getElementById('search-bar');
+                searchVisible = !searchVisible;
+                bar.classList.toggle('d-none');
+                if (searchVisible) {
+                    document.getElementById('search-input').focus();
+                } else {
+                    document.getElementById('search-results').classList.add('d-none');
+                    document.getElementById('search-input').value = '';
+                }
+            };
+
+            window.handleSearch = function (query) {
+                var resultsEl = document.getElementById('search-results');
+                if (!query || query.length < 2) {
+                    resultsEl.classList.add('d-none');
+                    return;
+                }
+                var q = query.toLowerCase();
+                var data = dashboardData;
+                if (!data) return;
+                var html = '';
+                var results = data.results || {};
+                Object.keys(results).forEach(function (subj) {
+                    if (subj.toLowerCase().includes(q)) {
+                        var s = results[subj];
+                        html += '<div class="p-2 border-bottom" style="cursor:pointer;" onclick="switchToTab(\'results\');toggleSearch();"><i class="fas fa-book text-success me-2"></i><strong>' + subj + '</strong> — ' + (s.total || 0) + '/' + (s.maxTotal || 100) + '</div>';
+                    }
+                });
+                var subjects = data.subjects || [];
+                subjects.forEach(function (s) {
+                    if (s.subject && s.subject.toLowerCase().includes(q)) {
+                        html += '<div class="p-2 border-bottom" style="cursor:pointer;" onclick="switchToTab(\'subjects\');toggleSearch();"><i class="fas fa-chalkboard-teacher text-primary me-2"></i>' + s.subject + ' — ' + (s.teacherName || '') + '</div>';
+                    }
+                });
+                var exams = data.examSchedule || [];
+                exams.forEach(function (e) {
+                    if (e.subject && e.subject.toLowerCase().includes(q)) {
+                        html += '<div class="p-2 border-bottom" style="cursor:pointer;" onclick="switchToTab(\'exams\');toggleSearch();"><i class="fas fa-file-alt text-warning me-2"></i>' + e.subject + ' — ' + formatDate(e.exam_date) + '</div>';
+                    }
+                });
+                if (!html) {
+                    html = '<div class="p-3 text-center text-muted small">No results found.</div>';
+                }
+                resultsEl.innerHTML = html;
+                resultsEl.classList.remove('d-none');
+            };
+
+            // ========== FEE TRACKING ==========
+
+            function loadFeeTracking(data) {
+                var container = document.getElementById('fee-tracking-content');
+                var fees = data.fees || [];
+                if (fees.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-credit-card mb-2" style="font-size:2rem;"></i><p class="mb-0">No fee records available.</p></div>';
+                    return;
+                }
+                var total = fees.length;
+                var paid = fees.filter(function (f) { return f.status === 'Paid'; }).length;
+                var pending = fees.filter(function (f) { return f.status === 'Pending'; }).length;
+                var overdue = fees.filter(function (f) { return f.status === 'Pending' && new Date(f.duedate) < new Date(); }).length;
+                var pct = total > 0 ? Math.round((paid / total) * 100) : 0;
+                var html = '<div class="row g-3 mb-3"><div class="col-4"><div class="text-center"><div class="fw-bold fs-4 text-success">' + paid + '</div><small class="text-muted">Paid</small></div></div><div class="col-4"><div class="text-center"><div class="fw-bold fs-4 text-warning">' + pending + '</div><small class="text-muted">Pending</small></div></div><div class="col-4"><div class="text-center"><div class="fw-bold fs-4 text-danger">' + overdue + '</div><small class="text-muted">Overdue</small></div></div></div>';
+                html += '<div class="progress mb-3" style="height:12px;border-radius:8px;"><div class="progress-bar bg-success" style="width:' + pct + '%;border-radius:8px;" role="progressbar"></div></div>';
+                html += '<small class="text-muted">' + pct + '% of fees paid</small>';
+                html += '<div class="table-responsive mt-3"><table class="table table-sm custom-table"><thead><tr><th>Amount</th><th>Due Date</th><th>Status</th></tr></thead><tbody>';
+                fees.forEach(function (f) {
+                    var badge = f.status === 'Paid' ? 'badge-present' : (new Date(f.duedate) < new Date() ? 'badge-absent' : 'badge-leave');
+                    html += '<tr><td>$' + (parseFloat(f.amount) || 0).toFixed(2) + '</td><td>' + formatDate(f.duedate) + '</td><td><span class="' + badge + '">' + f.status + '</span></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
+
+            // ========== ANALYTICS ==========
+
+            var radarChartInstance = null;
+            var perfChartInstance = null;
+
+            function loadAnalytics(data) {
+                var results = data.results || {};
+                var subjects = Object.keys(results);
+                if (subjects.length === 0) return;
+
+                // Radar chart
+                var labels = subjects;
+                var scores = subjects.map(function (s) {
+                    var sd = results[s];
+                    return sd.maxTotal > 0 ? Math.round((sd.total / sd.maxTotal) * 100) : 0;
+                });
+                var radarCtx = document.getElementById('radarChart');
+                if (radarCtx) {
+                    if (radarChartInstance) radarChartInstance.destroy();
+                    radarChartInstance = new Chart(radarCtx.getContext('2d'), {
+                        type: 'radar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Score %',
+                                data: scores,
+                                backgroundColor: 'rgba(29, 217, 29, 0.2)',
+                                borderColor: '#1dd91d',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#0f510e',
+                                pointRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: { min: 0, max: 100, ticks: { stepSize: 20, callback: function (v) { return v + '%'; } } }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
+
+                // Performance vs Attendance chart
+                var att = data.attendance || {};
+                var attPct = att.percentage || 0;
+                var avgScore = subjects.length > 0 ? Math.round(scores.reduce(function (a, b) { return a + b; }, 0) / subjects.length) : 0;
+                var perfCtx = document.getElementById('perfChart');
+                if (perfCtx) {
+                    if (perfChartInstance) perfChartInstance.destroy();
+                    perfChartInstance = new Chart(perfCtx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Attendance', 'Average Score'],
+                            datasets: [{
+                                label: 'Percentage',
+                                data: [attPct, avgScore],
+                                backgroundColor: ['rgba(39, 174, 96, 0.7)', 'rgba(52, 152, 219, 0.7)'],
+                                borderColor: ['#27ae60', '#3498db'],
+                                borderWidth: 2,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; } } }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // ========== DIGITAL ID ==========
+
+            window.openDigitalId = function () {
+                var data = dashboardData;
+                if (!data) return;
+                var bbId = 'BB' + String(260000 + data.student.id).padStart(6, '0');
+                document.getElementById('did-name').textContent = data.student.name || '--';
+                document.getElementById('did-id').textContent = bbId;
+                document.getElementById('did-class').textContent = data.student.grade || '--';
+                var container = document.getElementById('qrcode-container');
+                container.innerHTML = '';
+                new QRCode(container, {
+                    text: JSON.stringify({ id: data.student.id, bbId: bbId, name: data.student.name, grade: data.student.grade, school: 'Baidoa Bedrock ICT Campus' }),
+                    width: 140,
+                    height: 140,
+                    colorDark: '#0d4f8c',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
+            };
+
+            window.printDigitalId = function () {
+                var name = document.getElementById('did-name').textContent;
+                var id = document.getElementById('did-id').textContent;
+                var cls = document.getElementById('did-class').textContent;
+                var qrEl = document.querySelector('#qrcode-container img');
+                var qrSrc = qrEl ? qrEl.src : '';
+                var win = window.open('', '_blank', 'width=400,height=600');
+                win.document.write('<!DOCTYPE html><html><head><title>Digital ID - Baidoa Bedrock ICT Campus</title><style>body{font-family:Segoe UI,sans-serif;padding:2rem;text-align:center;}img{width:180px;height:180px;}.card{border:2px solid #0d4f8c;border-radius:20px;padding:2rem;max-width:350px;margin:0 auto;box-shadow:0 4px 15px rgba(0,0,0,0.1);}.badge{background:#0d4f8c;color:#fff;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.75rem;display:inline-block;margin-bottom:1rem;font-weight:700;}.name{font-size:1.3rem;font-weight:700;color:#0d4f8c;}.info{color:#555;margin:0.2rem 0;}</style></head><body><div class="card"><div class="badge">BEDROCK STUDENT</div>' + (qrSrc ? '<div><img src="' + qrSrc + '"></div>' : '') + '<div class="name">' + name + '</div><p class="info"><strong>' + id + '</strong></p><p class="info">' + cls + '</p><p class="info" style="font-size:0.85rem;color:#0d4f8c;font-weight:600;margin-top:0.8rem;">Baidoa Bedrock ICT Campus</p></div><script>window.onload=function(){window.print();window.close();}<\/script></body></html>');
+                win.document.close();
+            };
+
+            // ========== WHAT-IF GPA ==========
+
+            window.openWhatIfModal = function () {
+                var data = dashboardData;
+                if (!data) return;
+                var results = data.results || {};
+                var subjects = Object.keys(results);
+                var body = document.getElementById('whatif-body');
+                if (subjects.length === 0) {
+                    body.innerHTML = '<div class="text-center text-muted py-3">No results to calculate.</div>';
+                    new bootstrap.Modal(document.getElementById('whatIfModal')).show();
+                    return;
+                }
+                var html = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Subject</th><th>Score</th><th>What-If</th></tr></thead><tbody>';
+                var totalActual = 0, totalMax = 0;
+                subjects.forEach(function (subj) {
+                    var sd = results[subj];
+                    var actual = sd.total || 0;
+                    var maxS = sd.maxTotal || 100;
+                    totalActual += actual;
+                    totalMax += maxS;
+                    html += '<tr><td>' + subj + '</td><td>' + actual + '/' + maxS + '</td><td><input type="number" class="form-control form-control-sm whatif-input" data-subject="' + subj + '" data-max="' + maxS + '" value="' + actual + '" min="0" max="' + maxS + '" style="width:100px;" onchange="updateWhatIf()"></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                body.innerHTML = html;
+                document.getElementById('whatif-current').textContent = totalMax > 0 ? Math.round((totalActual / totalMax) * 100) + '%' : '--';
+                document.getElementById('whatif-projected').textContent = totalMax > 0 ? Math.round((totalActual / totalMax) * 100) + '%' : '--';
+                new bootstrap.Modal(document.getElementById('whatIfModal')).show();
+            };
+
+            window.updateWhatIf = function () {
+                var inputs = document.querySelectorAll('.whatif-input');
+                var totalProjected = 0, totalMax = 0;
+                inputs.forEach(function (inp) {
+                    var maxS = parseFloat(inp.dataset.max) || 100;
+                    var val = parseFloat(inp.value) || 0;
+                    if (val > maxS) { val = maxS; inp.value = maxS; }
+                    if (val < 0) { val = 0; inp.value = 0; }
+                    totalProjected += val;
+                    totalMax += maxS;
+                });
+                document.getElementById('whatif-projected').textContent = totalMax > 0 ? Math.round((totalProjected / totalMax) * 100) + '%' : '--';
+                var diff = totalProjected - (dashboardData ? Object.values(dashboardData.results || {}).reduce(function (s, r) { return s + (r.total || 0); }, 0) : 0);
+                document.getElementById('whatif-projected').style.color = diff >= 0 ? '#1e8449' : '#c0392b';
+            };
+
+            window.applyWhatIf = function () {
+                var inputs = document.querySelectorAll('.whatif-input');
+                var changed = [];
+                inputs.forEach(function (inp) {
+                    var subj = inp.dataset.subject;
+                    var val = parseFloat(inp.value) || 0;
+                    var orig = dashboardData.results[subj] ? dashboardData.results[subj].total : 0;
+                    if (val !== orig) changed.push(subj + ': ' + orig + ' → ' + val);
+                });
+                if (changed.length === 0) {
+                    alert('No changes made to the scores.');
+                    return;
+                }
+                alert('Projected changes:\n' + changed.join('\n') + '\n\nNote: This is a simulation. Actual scores can only be changed by teachers.');
+                bootstrap.Modal.getInstance(document.getElementById('whatIfModal')).hide();
+            };
+
+            // ========== EXPORT CSV ==========
+
+            window.exportResultsCSV = function () {
+                var data = dashboardData;
+                if (!data) return;
+                var results = data.results || {};
+                var subjects = Object.keys(results);
+                if (subjects.length === 0) {
+                    alert('No results to export.');
+                    return;
+                }
+                var csv = 'Subject,Total Score,Max Score,Percentage\n';
+                subjects.forEach(function (subj) {
+                    var sd = results[subj];
+                    var total = sd.total || 0;
+                    var maxS = sd.maxTotal || 100;
+                    var pct = maxS > 0 ? Math.round((total / maxS) * 100) : 0;
+                    csv += '"' + subj + '",' + total + ',' + maxS + ',' + pct + '%\n';
+                });
+                var totalT = subjects.reduce(function (s, subj) { return s + (results[subj].total || 0); }, 0);
+                var maxT = subjects.reduce(function (s, subj) { return s + (results[subj].maxTotal || 100); }, 0);
+                csv += '\nOverall,' + totalT + ',' + maxT + ',' + (maxT > 0 ? Math.round((totalT / maxT) * 100) : 0) + '%\n';
+                var blob = new Blob([csv], { type: 'text/csv' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'results_' + data.student.name.replace(/\s+/g, '_') + '.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            // ========== EXAM SELECTOR ==========
+
+            document.getElementById('exam-type-select').addEventListener('change', function () {
+                if (!dashboardData) return;
+                var currentVal = this.value;
+                var chips = document.querySelectorAll('#exam-chips-container .exam-chip-btn');
+                chips.forEach(function (b) {
+                    b.classList.toggle('active', (b.getAttribute('data-exam') || '') === currentVal);
+                });
+                var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+                var elpId = stored ? (stored.bbId || stored.elpId) : 'BB' + String(260000 + dashboardData.student.id).padStart(6, '0');
+                loadResults(dashboardData, elpId);
+            });
+
+            // ========== CHECK STORED SESSION ==========
+
+            function checkStoredSession() {
+                var stored = sessionStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        var parsed = JSON.parse(stored);
+                        if (parsed.data && parsed.data.student) {
+                            loadDashboard(parsed.data);
+                            return;
+                        }
+                    } catch (e) {
+                        sessionStorage.removeItem(STORAGE_KEY);
+                    }
+                }
+
+                // Support direct launch from admin panel (via viewingStudentId)
+                var viewingStudentId = sessionStorage.getItem('viewingStudentId');
+                if (viewingStudentId) {
+                    var realId = parseElpId(viewingStudentId);
+                    if (realId && realId > 0) {
+                        showLoading();
+                        fetch(API_BASE + '/' + realId)
+                            .then(function (res) {
+                                if (!res.ok) throw new Error('Not found');
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                hideLoading();
+                                var formattedBBId = 'BB' + String(260000 + realId).padStart(6, '0');
+                                sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                                    dbId: realId,
+                                    bbId: formattedBBId,
+                                    elpId: formattedBBId,
+                                    data: data
+                                }));
+                                loadDashboard(data);
+                            })
+                            .catch(function () {
+                                hideLoading();
+                                sessionStorage.removeItem('viewingStudentId');
+                            });
+                    }
+                }
+            }
+
+            checkStoredSession();
+
+        })();
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('elif-theme', next);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-cog';
+        }
+        // Load saved theme
+        (function() {
+            const saved = localStorage.getItem('elif-theme') || 'light';
+            document.body.setAttribute('data-theme', saved);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-cog';
+        })();
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

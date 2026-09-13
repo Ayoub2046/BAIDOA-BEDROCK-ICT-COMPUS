@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Your Custom CSS file -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+
+<style>
+    .navbar.container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+</style>
+
+
+<body>
+
+    <!-- [CORRECTED] Navbar with functional mobile toggle -->
+    <!-- <nav class="navbar navbar-expand-lg sticky-top" style="background-color: #ffffff;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Logo"
+                    style="width: 50px; height: 50px; border-radius: 50px; margin-right: 20px;">
+                <span>Baidoa Bedrock ICT Campus</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="/HTML/index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/academics.html">Academics</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/admision.html">Admissions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="newsevents.html">News & Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-primary" href="/HTML/Student Results.html">Check
+                        Results</a></li>
+                </ul>
+                <a class="btn btn-portal ms-lg-3" href="portal_login.html">Portal Login</a>
+            </div>
+        </div>
+        <link rel="stylesheet" href="/css/style.css">
+    </nav> -->
+
+
+
+
+    <!-- THIS IS THE CORRECT NAVBAR TO COPY -->
+    <!-- <nav class="navbar navbar-expand-lg sticky-top" style="background-color: #ffffff;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/HTML/index.html">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Logo"
+                    style="width: 50px; height: 50px; border-radius: 50px; margin-right: 20px;">
+                <span>Baidoa Bedrock ICT Campus</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/HTML/index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/academics.html">Academics</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/admision.html">Admissions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/news.html">News & Events</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/HTML/gallery.html">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-primary"
+                            href="/HTML/Student Results.html">Check Results</a></li>
+                </ul>
+                <a class="btn btn-portal ms-lg-3" href="/HTML/portal_login.html">Portal Login</a>
+            </div>
+        </div>
+    </nav> -->
+
+    <!-- THIS IS THE CORRECT NAVBAR TO COPY -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <!-- Brand/Logo on the left -->
+            <a class="navbar-brand d-flex align-items-center" href="/HTML/index.html">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Logo"
+                    style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                <span class="fw-bold">Baidoa Bedrock ICT Campus</span>
+            </a>
+
+            <!-- Toggler/Hamburger Button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible Menu Items -->
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/HTML/index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/about.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/academics.html">Academics</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/admision.html">Admissions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/news.html">News & Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/gallery.html">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-primary"
+                            href="/HTML/Student Results.html">Check Results</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/HTML/student-library.html">Student Library</a>
+                </ul>
+                <a class="btn btn-primary ms-lg-3" href="/HTML/portal_login.html">Portal Login</a>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <!-- Hero Section with IDs for dynamic content -->
+    <header class="hero-section" id="hero-section">
+        <div class="container">
+            <h1 class="display-4" id="hero-title-display" style="color: white; font-size: 35px; font-weight: bolder;">
+                Welcome to BAIDOA BEDROCK ICT CAMPUS</h1>
+            <p class="lead" id="hero-subtitle-display">Nurturing Minds, Shaping Futures. Excellence in Education Since
+                2000.</p>
+            <a class="btn btn-secondary ms-2" href="admision.html">Apply Now</a>
+            <a class="btn btn-outline-primary ms-2" href="about.html">Learn More</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5">
+        <!-- Highlights Section with IDs for dynamic content -->
+        <section class="mb-5">
+            <div class="text-center mb-4">
+                <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 mb-2 rounded-pill">Campus Excellence</span>
+                <h2 class="fw-bold">Why Choose Us?</h2>
+                <p class="text-muted">Discover what makes Baidoa Bedrock ICT Campus the premier destination for technological education</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 card-hover shadow-sm border-0 overflow-hidden">
+                        <div id="feature1-img-wrapper" style="display:none; height:200px; overflow:hidden;">
+                            <img id="feature1-img-display" src="" alt="Feature 1" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3" id="feature1-icon-display"><i class="fas fa-rocket"></i></div>
+                            <h5 class="card-title fw-bold" id="feature1-title-display">Innovative Curriculum</h5>
+                            <p class="card-text text-muted" id="feature1-text-display">Our curriculum is designed to foster creativity and critical thinking.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 card-hover shadow-sm border-0 overflow-hidden">
+                        <div id="feature2-img-wrapper" style="display:none; height:200px; overflow:hidden;">
+                            <img id="feature2-img-display" src="" alt="Feature 2" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3" id="feature2-icon-display"><i class="fas fa-user-friends"></i></div>
+                            <h5 class="card-title fw-bold" id="feature2-title-display">Dedicated Faculty</h5>
+                            <p class="card-text text-muted" id="feature2-text-display">Experienced and passionate teachers dedicated to student success.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 card-hover shadow-sm border-0 overflow-hidden">
+                        <div id="feature3-img-wrapper" style="display:none; height:200px; overflow:hidden;">
+                            <img id="feature3-img-display" src="" alt="Feature 3" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3" id="feature3-icon-display"><i class="fas fa-trophy"></i></div>
+                            <h5 class="card-title fw-bold" id="feature3-title-display">Vibrant Student Life</h5>
+                            <p class="card-text text-muted" id="feature3-text-display">A wide range of extracurricular activities, clubs, and sports.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- News & Announcements -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 mb-2 rounded-pill">Daily Updates</span>
+                    <h2 class="fw-bold m-0">Latest News & Announcements</h2>
+                </div>
+                <a href="news.html" class="btn btn-outline-primary rounded-pill px-3"><i class="fas fa-newspaper me-1"></i>View All News</a>
+            </div>
+            <div class="row g-4" id="homepage-announcements-container">
+                <div class="col-12 text-center py-5 text-muted">
+                    <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                    Loading latest announcements...
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+
+
+
+        <section class="bg-light p-5 rounded">
+            <h2 class="text-center mb-4">What Our Community Says</h2>
+            <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                <!-- The ID added here is very important -->
+                <div class="carousel-inner text-center" id="testimonial-carousel-inner">
+                    <!-- This content will be replaced by JavaScript -->
+                    <div class="carousel-item active">
+                        <p class="lead fst-italic">Loading testimonials...</p>
+                    </div>
+                </div>
+                <!-- These are the navigation buttons for the carousel -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Announcement Details Modal -->
+    <div class="modal fade" id="announcementDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header border-0 pb-0">
+                    <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill" id="modal-ann-date">Date</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="modal-ann-img-wrapper" class="mb-4 text-center" style="display:none; max-height:360px; overflow:hidden; border-radius:12px;">
+                        <img id="modal-ann-img" src="" class="img-fluid" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <h3 class="fw-bold mb-3 text-dark" id="modal-ann-title"></h3>
+                    <div class="text-secondary" id="modal-ann-message" style="white-space: pre-wrap; font-size:1.05rem; line-height:1.7;"></div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="lib-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand d-flex align-items-center mb-3">
+                        <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo">
+                        <div>
+                            <p class="fb-name">Baidoa Bedrock ICT Campus</p>
+                            <p class="fb-tag">Nurturing Minds, Shaping Futures</p>
+                        </div>
+                    </div>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.75);">
+                        A tradition of excellence in education — nurturing minds and shaping futures.
+                        Explore academics, news, and student portals all in one place.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6>Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/index.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Home</a></li>
+                        <li><a href="/HTML/about.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>About Us</a></li>
+                        <li><a href="/HTML/academics.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Academics</a></li>
+                        <li><a href="/HTML/admision.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Admissions</a></li>
+                        <li><a href="/HTML/news.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>News &amp; Events</a></li>
+                        <li><a href="/HTML/contact.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Portals</h6>
+                    <ul class="footer-links">
+                        <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Portal Login</a></li>
+                        <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Check Results</a></li>
+                        <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance</a></li>
+                        <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Digital Library</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6>Contact Us</h6>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-map-marker-alt"></i>123 Education Lane, Mogadishu</p>
+                        <p><i class="fas fa-phone"></i>+252 618972046</p>
+                        <p><i class="fas fa-envelope"></i>info@bbict.edu.so</p>
+                        <p><i class="fas fa-clock"></i>Mon - Fri: 8:00 AM - 4:00 PM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="mb-0">© <span id="year"></span> Baidoa Bedrock ICT Campus. All Rights Reserved. | Developed By <span class="dev">ENG AYUOB ADAN ABDI</span></p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- [CORRECTED] Dynamic Content Script -->
+    <!-- The script at the bottom of index.html -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Fetch the dynamic content from our new API
+                const response = await fetch('/api/content');
+                if (!response.ok) return; // If it fails, just show the default HTML content
+
+                const savedContent = await response.json();
+
+                // Update Hero Section
+                if (savedContent.heroTitle) document.getElementById('hero-title-display').textContent = savedContent.heroTitle;
+                if (savedContent.heroSubtitle) document.getElementById('hero-subtitle-display').textContent = savedContent.heroSubtitle;
+                const heroSection = document.getElementById('hero-section');
+                function setHeroBg(url) {
+                    if (!url) return;
+                    const img = new Image();
+                    img.onload = () => {
+                        heroSection.style.backgroundImage = `url('${url}')`;
+                        heroSection.style.backgroundSize = 'cover';
+                        heroSection.style.backgroundPosition = 'center center';
+                        heroSection.style.backgroundRepeat = 'no-repeat';
+                    };
+                    img.onerror = () => {
+                        const idx = validGallery.indexOf(url);
+                        if (idx > -1) validGallery.splice(idx, 1);
+                    };
+                    img.src = url;
+                }
+                let validGallery = [];
+                try {
+                    const raw = JSON.parse(savedContent.heroGallery || '[]');
+                    validGallery = raw.filter(u => u && u.trim());
+                    if (validGallery.length > 0) {
+                        let bgIndex = 0;
+                        setHeroBg(validGallery[0]);
+                        heroSection.style.transition = 'background 1.2s ease';
+                        setInterval(() => {
+                            if (validGallery.length === 0) return;
+                            bgIndex = (bgIndex + 1) % validGallery.length;
+                            setHeroBg(validGallery[bgIndex]);
+                        }, 5000);
+                    } else if (savedContent.heroBg) {
+                        setHeroBg(savedContent.heroBg);
+                    }
+                } catch {}
+                // Update "Why Choose Us" Section (with custom pictures)
+                function setFeature(num, title, text, imgUrl) {
+                    if (title) document.getElementById('feature' + num + '-title-display').textContent = title;
+                    if (text) document.getElementById('feature' + num + '-text-display').textContent = text;
+                    const wrapper = document.getElementById('feature' + num + '-img-wrapper');
+                    const img = document.getElementById('feature' + num + '-img-display');
+                    const icon = document.getElementById('feature' + num + '-icon-display');
+                    if (imgUrl && imgUrl.trim()) {
+                        if (img) img.src = imgUrl;
+                        if (wrapper) wrapper.style.display = 'block';
+                        if (icon) icon.style.display = 'none';
+                    } else {
+                        if (wrapper) wrapper.style.display = 'none';
+                        if (icon) icon.style.display = 'block';
+                    }
+                }
+                setFeature(1, savedContent.feature1Title, savedContent.feature1Text, savedContent.feature1Image);
+                setFeature(2, savedContent.feature2Title, savedContent.feature2Text, savedContent.feature2Image);
+                setFeature(3, savedContent.feature3Title, savedContent.feature3Text, savedContent.feature3Image);
+
+            } catch (error) {
+                console.error("Could not load dynamic homepage content:", error);
+            }
+        });
+
+        // --- DYNAMIC ANNOUNCEMENTS & TESTIMONIALS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentAnnouncements = [];
+
+            async function loadHomepageAnnouncements() {
+                const container = document.getElementById('homepage-announcements-container');
+                if (!container) return;
+                try {
+                    const res = await fetch('/api/announcements/latest?limit=6');
+                    let announcements = [];
+                    if (res.ok) {
+                        announcements = await res.json();
+                    }
+                    currentAnnouncements = announcements;
+                    if (!announcements || announcements.length === 0) {
+                        try {
+                            const newsRes = await fetch('/api/news');
+                            if (newsRes.ok) {
+                                const news = await newsRes.json();
+                                if (news && news.length > 0) {
+                                    renderNewsFallback(container, news.slice(0, 3));
+                                    return;
+                                }
+                            }
+                        } catch {}
+                        container.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <div class="p-4 bg-light rounded-4 d-inline-block shadow-sm">
+                                    <i class="fas fa-bullhorn fa-3x text-primary mb-3 opacity-50"></i>
+                                    <h5 class="fw-bold text-dark">No announcements yet</h5>
+                                    <p class="text-muted mb-0">Check back regularly for updates from Baidoa Bedrock ICT Campus.</p>
+                                </div>
+                            </div>`;
+                        return;
+                    }
+
+                    container.innerHTML = announcements.slice(0, 3).map((a, i) => {
+                        const rawDate = a.publish_date ? String(a.publish_date).split('T')[0] : (a.created_at ? String(a.created_at).split('T')[0] : '');
+                        let dateStr = rawDate;
+                        try {
+                            if (rawDate) {
+                                const d = new Date(rawDate);
+                                dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            }
+                        } catch {}
+                        const imgHtml = a.image_url 
+                            ? `<img src="${a.image_url}" class="card-img-top" alt="${a.title}" style="height:200px; object-fit:cover;">`
+                            : `<div class="card-img-top d-flex align-items-center justify-content-center bg-light text-primary" style="height:200px;"><i class="fas fa-bullhorn fa-3x opacity-50"></i></div>`;
+                        return `
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 card-hover shadow-sm border-0 overflow-hidden">
+                                    ${imgHtml}
+                                    <div class="card-body d-flex flex-column p-4">
+                                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary-subtle text-primary fw-semibold"><i class="far fa-calendar-alt me-1"></i>${dateStr}</span>
+                                            <span class="badge bg-secondary-subtle text-secondary">${a.audience === 'all' ? 'Campus' : a.audience}</span>
+                                        </div>
+                                        <h5 class="card-title fw-bold text-dark mb-2">${a.title}</h5>
+                                        <p class="card-text text-muted flex-grow-1" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${a.message || ''}</p>
+                                        <button type="button" class="btn btn-outline-primary rounded-pill mt-3 align-self-start view-ann-btn" data-index="${i}">
+                                            Read Details <i class="fas fa-arrow-right ms-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('');
+
+                    document.querySelectorAll('.view-ann-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const idx = parseInt(btn.dataset.index);
+                            const a = currentAnnouncements[idx];
+                            if (!a) return;
+                            document.getElementById('modal-ann-title').textContent = a.title;
+                            document.getElementById('modal-ann-message').textContent = a.message || '';
+                            const dateVal = a.publish_date ? String(a.publish_date).split('T')[0] : '';
+                            document.getElementById('modal-ann-date').textContent = dateVal || 'Announcement';
+                            const imgWrap = document.getElementById('modal-ann-img-wrapper');
+                            const img = document.getElementById('modal-ann-img');
+                            if (a.image_url) {
+                                img.src = a.image_url;
+                                imgWrap.style.display = 'block';
+                            } else {
+                                imgWrap.style.display = 'none';
+                            }
+                            const modal = new bootstrap.Modal(document.getElementById('announcementDetailModal'));
+                            modal.show();
+                        });
+                    });
+                } catch (err) {
+                    console.error('Error loading homepage announcements:', err);
+                }
+            }
+
+            function renderNewsFallback(container, newsItems) {
+                container.innerHTML = newsItems.map(n => `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 card-hover shadow-sm border-0 overflow-hidden">
+                            ${n.imageurl ? `<img src="${n.imageurl}" class="card-img-top" alt="${n.title}" style="height:200px; object-fit:cover;">` : `<div class="card-img-top d-flex align-items-center justify-content-center bg-light text-primary" style="height:200px;"><i class="fas fa-newspaper fa-3x opacity-50"></i></div>`}
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-2"><span class="badge bg-primary-subtle text-primary fw-semibold">${n.publishdate || 'News'}</span></div>
+                                <h5 class="card-title fw-bold text-dark mb-2">${n.title}</h5>
+                                <p class="card-text text-muted flex-grow-1">${n.summary || ''}</p>
+                                <a href="news.html" class="btn btn-outline-primary rounded-pill mt-3 align-self-start">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async function loadTestimonials() {
+                try {
+                    const response = await fetch('/api/testimonials');
+                    const testimonials = await response.json();
+                    const container = document.getElementById('testimonial-carousel-inner');
+                    if (!container) return;
+
+                    if (testimonials.length === 0) {
+                        container.innerHTML = `<div class="carousel-item active"><p class="lead fst-italic">Testimonials from our community will be featured here soon!</p></div>`;
+                        return;
+                    }
+
+                    container.innerHTML = testimonials.map((t, index) => `
+                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                            <p class="lead fst-italic">"${t.quote}"</p>
+                            <p class="fw-bold mt-3">- ${t.author}, ${t.relation}</p>
+                        </div>
+                    `).join('');
+                } catch (error) {
+                    console.error("Could not load testimonials:", error);
+                }
+            }
+
+            loadHomepageAnnouncements();
+            loadTestimonials();
+        });
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

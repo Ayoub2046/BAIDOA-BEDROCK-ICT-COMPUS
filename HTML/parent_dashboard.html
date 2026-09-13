@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body { background: var(--bg-body, #f0f1f0); font-family: 'Poppins', sans-serif; }
+        .pd-wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        .pd-header {
+            background: linear-gradient(135deg, #0f510e 0%, #1b9e1b 100%);
+            border-radius: 16px; padding: 1.5rem 2rem; color: #fff;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(15,81,14,0.15);
+        }
+        .pd-header h1 { font-weight: 700; font-size: 1.4rem; margin: 0; color: #fff; }
+        .pd-header p { opacity: 0.8; font-size: 0.85rem; margin: 2px 0 0; }
+        .pd-header-actions { display: flex; align-items: center; gap: 0.8rem; }
+        .pd-header-actions .btn-light { border-radius: 10px; font-weight: 600; font-size: 0.85rem; padding: 0.45rem 1rem; }
+        body[data-theme="dark"] .pd-header { background: linear-gradient(135deg, #153513, #1a2e1a); }
+
+        .child-tabs { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .child-tab {
+            background: var(--bg-card, #fff); border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 14px; padding: 0.8rem 1.2rem; cursor: pointer;
+            transition: all 0.2s; min-width: 160px; text-align: center;
+        }
+        .child-tab:hover { border-color: var(--primary, #1dd91d); transform: translateY(-1px); }
+        .child-tab.active { border-color: var(--primary, #1dd91d); background: rgba(29,217,29,0.06); }
+        .child-tab .ct-name { font-weight: 700; font-size: 0.9rem; color: var(--text-primary, #1a1a1a); }
+        .child-tab .ct-grade { font-size: 0.75rem; color: var(--text-secondary, #888); }
+        .child-tab .ct-gpa { font-size: 0.8rem; font-weight: 700; color: var(--primary-dark, #0f510e); margin-top: 2px; }
+
+        .pd-student-card {
+            background: var(--bg-card, #fff); border-radius: 14px;
+            border: 1px solid var(--border-color, #e0e0e0); padding: 1.2rem 1.5rem;
+            display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem;
+            box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,0.04));
+        }
+        .pd-student-avatar {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: linear-gradient(135deg, #0f510e, #1dd91d);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #fff; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .pd-student-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .pd-student-info h4 { font-weight: 700; font-size: 1.1rem; margin: 0; color: var(--text-primary, #1a1a1a); }
+        .pd-student-info p { font-size: 0.8rem; color: var(--text-secondary, #888); margin: 2px 0 0; }
+        .pd-student-badge {
+            margin-left: auto; background: var(--primary-lightest, #e8f8e8);
+            color: var(--primary-dark, #0f510e); font-weight: 700; font-size: 0.85rem;
+            padding: 0.4rem 1rem; border-radius: 20px; white-space: nowrap;
+        }
+        body[data-theme="dark"] .pd-student-badge { background: rgba(29,217,29,0.1); color: #1dd91d; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card, #fff); border-radius: 12px; padding: 1.2rem;
+            border: 1px solid var(--border-color, #e0e0e0); border-left: 4px solid;
+            box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,0.04)); text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .stat-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+        .stat-card h6 { font-size: 0.7rem; color: var(--text-secondary, #888); font-weight: 600; margin: 0 0 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-card .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-primary, #1a1a1a); margin: 0; }
+        .stat-card.b-primary { border-color: var(--primary, #1dd91d); } .stat-card.b-primary .stat-icon { color: var(--primary, #1dd91d); }
+        .stat-card.b-success { border-color: #28a745; } .stat-card.b-success .stat-icon { color: #28a745; }
+        .stat-card.b-warning { border-color: #f39c12; } .stat-card.b-warning .stat-icon { color: #f39c12; }
+        .stat-card.b-danger { border-color: #e74c3c; } .stat-card.b-danger .stat-icon { color: #e74c3c; }
+        .stat-card.b-info { border-color: #17a2b8; } .stat-card.b-info .stat-icon { color: #17a2b8; }
+        body[data-theme="dark"] .stat-card .stat-val { color: #e8f8e8; }
+
+        .pd-card { background: var(--bg-card, #fff); border-radius: 12px; border: 1px solid var(--border-color, #e0e0e0); box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,0.04)); margin-bottom: 1.2rem; overflow: hidden; }
+        .pd-card-header { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; justify-content: space-between; align-items: center; }
+        .pd-card-header h5 { font-weight: 700; font-size: 0.95rem; margin: 0; color: var(--text-primary, #1a1a1a); }
+        .pd-card-header .badge { font-size: 0.7rem; }
+        .pd-card-body { padding: 1.2rem; }
+
+        .result-subject { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--border-color, #f0f0f0); }
+        .result-subject:last-child { border-bottom: none; }
+        .result-subject .rs-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary, #1a1a1a); }
+        .result-subject .rs-score { font-weight: 700; }
+        .progress { height: 6px; border-radius: 3px; margin-top: 4px; background: var(--border-color, #e0e0e0); }
+        .progress-bar { border-radius: 3px; }
+
+        .fee-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color, #f0f0f0); font-size: 0.85rem; }
+        .fee-item:last-child { border-bottom: none; }
+
+        .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-secondary, #888); }
+        .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3; }
+        .empty-state p { font-size: 0.85rem; margin: 0; }
+
+        .tt-grid { display: grid; grid-template-columns: 100px repeat(5, 1fr); gap: 4px; font-size: 0.75rem; }
+        .tt-header { background: var(--primary, #1dd91d); color: #fff; padding: 6px; text-align: center; font-weight: 700; border-radius: 4px; }
+        body[data-theme="dark"] .tt-header { background: #1a6b1a; }
+        .tt-cell { background: var(--bg-body, #f8f9fa); padding: 6px; border-radius: 4px; min-height: 50px; }
+        body[data-theme="dark"] .tt-cell { background: #1a1e1a; }
+        .tt-cell .subj { font-weight: 600; display: block; }
+        .tt-cell .meta { font-size: 0.65rem; color: var(--text-secondary, #888); }
+        .tt-time { display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-secondary, #888); font-size: 0.7rem; }
+
+        .msg-item { padding: 0.7rem 0; border-bottom: 1px solid var(--border-color, #f0f0f0); }
+        .msg-item:last-child { border-bottom: none; }
+        .msg-item .msg-subject { font-weight: 600; font-size: 0.85rem; color: var(--text-primary, #1a1a1a); }
+        .msg-item .msg-body { font-size: 0.8rem; color: var(--text-secondary, #888); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .msg-item .msg-meta { font-size: 0.7rem; color: var(--text-secondary, #888); }
+
+        .chart-container { position: relative; height: 200px; }
+
+        @media (max-width: 768px) {
+            .pd-wrap { padding: 1rem; }
+            .pd-header { flex-direction: column; text-align: center; padding: 1.2rem; gap: 0.8rem; }
+            .pd-student-card { flex-wrap: wrap; justify-content: center; text-align: center; }
+            .pd-student-badge { margin: 0 auto; }
+            .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+            .child-tabs { justify-content: center; }
+            .child-tab { min-width: 120px; }
+            .tt-grid { grid-template-columns: 60px repeat(5, 1fr); font-size: 0.65rem; }
+        }
+        @media (max-width: 480px) {
+            .stat-grid { grid-template-columns: 1fr; }
+            .tt-grid { font-size: 0.6rem; grid-template-columns: 40px repeat(5, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="pd-wrap">
+        <div class="pd-header">
+            <div>
+                <h1 id="parent-name">Welcome!</h1>
+                <p>Your children's academic progress at a glance</p>
+            </div>
+            <div class="pd-header-actions">
+                <button id="parent-menu-toggle" class="btn btn-outline-light btn-sm d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#parentNavOffcanvas" aria-controls="parentNavOffcanvas" title="Toggle Navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="btn btn-light" onclick="window.print()"><i class="fas fa-download me-2"></i>Download Report</button>
+                <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <button id="logout-btn" class="btn btn-light"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+            </div>
+        </div>
+
+        <div id="child-tabs" class="child-tabs"></div>
+
+        <div id="dashboard-content"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const activeUser = JSON.parse(sessionStorage.getItem('activeUser'));
+            if (!activeUser || (activeUser.role || '').toLowerCase() !== 'parent') { window.location.replace('portal_login.html'); return; }
+
+            document.getElementById('logout-btn').addEventListener('click', () => { sessionStorage.removeItem('activeUser'); window.location.replace('portal_login.html'); });
+
+            let allData = [];
+            let currentChildIndex = 0;
+            let attChart = null;
+
+            const dc = document.getElementById('dashboard-content');
+            const ct = document.getElementById('child-tabs');
+
+            function fmtDate(d) { if (!d) return '\u2014'; const dt = new Date(d); return dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }); }
+            function fmtTime(t) { if (!t) return '\u2014'; const p = t.split(':'); const h = parseInt(p[0]), m = p[1]; return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'AM' : 'PM'); }
+
+            try {
+                const response = await fetch(`/api/parents/dashboard-details?email=${activeUser.email}`);
+                if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed to load.'); }
+                const data = await response.json();
+
+                document.getElementById('parent-name').textContent = `Welcome, ${data.parent.name}!`;
+
+                if (!data.children || data.children.length === 0) {
+                    dc.innerHTML = `<div class="pd-card"><div class="empty-state"><i class="fas fa-user-slash"></i><p>No student records linked to your account. Please contact administration.</p></div></div>`;
+                    return;
+                }
+
+                allData = data.children;
+
+                function buildTabs() {
+                    ct.innerHTML = allData.map((cd, i) => `
+                        <div class="child-tab ${i === 0 ? 'active' : ''}" data-index="${i}">
+                            <div class="ct-name">${cd.child.name}</div>
+                            <div class="ct-grade">Grade ${cd.child.grade || 'N/A'}</div>
+                            <div class="ct-gpa">GPA: ${cd.child.gpa || 'N/A'}</div>
+                        </div>
+                    `).join('');
+                    ct.querySelectorAll('.child-tab').forEach(el => {
+                        el.addEventListener('click', () => {
+                            ct.querySelectorAll('.child-tab').forEach(t => t.classList.remove('active'));
+                            el.classList.add('active');
+                            currentChildIndex = parseInt(el.dataset.index);
+                            renderDashboard(currentChildIndex);
+                        });
+                    });
+                }
+
+                function renderDashboard(idx) {
+                    const cd = allData[idx];
+                    if (!cd) { dc.innerHTML = ''; return; }
+                    const child = cd.child;
+                    const results = cd.results || {};
+                    const subjects = Object.keys(results);
+                    const att = cd.attendance || { totalDays: 0, presentCount: 0, percentage: 0 };
+                    const fees = cd.fees || [];
+                    const exams = cd.examSchedule || [];
+                    const timetable = cd.timetable || [];
+                    const messages = cd.messages || [];
+                    const trend = cd.attendanceTrend || [];
+                    const totalScore = subjects.reduce((sum, s) => sum + (results[s].total || 0), 0);
+                    const totalMax = subjects.reduce((sum, s) => sum + (results[s].maxTotal || 100), 0);
+                    const avgPct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+
+                    const paidFees = fees.filter(f => f.status === 'Paid').length;
+                    const pendingFees = fees.filter(f => f.status === 'Pending').length;
+                    const overdueFees = fees.filter(f => f.status === 'Pending' && new Date(f.duedate) < new Date()).length;
+
+                    let resultHtml = subjects.length === 0
+                        ? `<div class="empty-state"><i class="fas fa-chart-bar"></i><p>No results posted yet.</p></div>`
+                        : subjects.map(s => {
+                            const sd = results[s];
+                            const pct = sd.maxTotal > 0 ? Math.round((sd.total / sd.maxTotal) * 100) : 0;
+                            const color = pct >= 80 ? '#28a745' : pct >= 60 ? '#f39c12' : '#e74c3c';
+                            return `<div class="result-subject">
+                                <div><div class="rs-name">${s}</div><div class="progress"><div class="progress-bar" style="width:${pct}%;background:${color};"></div></div></div>
+                                <div class="rs-score" style="color:${color};">${sd.total}/${sd.maxTotal} <small style="color:var(--text-secondary,#888);font-weight:400;">(${pct}%)</small></div>
+                            </div>`;
+                        }).join('');
+
+                    let feeHtml = fees.length === 0
+                        ? `<div class="empty-state"><i class="fas fa-dollar-sign"></i><p>No fee records.</p></div>`
+                        : fees.slice(0, 5).map(f => {
+                            const isOverdue = f.status === 'Pending' && new Date(f.duedate) < new Date();
+                            return `<div class="fee-item"><span>${f.amount ? '$'+parseFloat(f.amount).toFixed(2) : '\u2014'} \u00b7 due ${fmtDate(f.duedate)}</span><span class="badge ${isOverdue ? 'bg-danger' : f.status === 'Paid' ? 'bg-success' : 'bg-warning text-dark'}">${isOverdue ? 'Overdue' : f.status}</span></div>`;
+                        }).join('') + (fees.length > 5 ? `<div class="text-center mt-2"><small class="text-muted">+${fees.length - 5} more</small></div>` : '');
+
+                    let examHtml = exams.length === 0
+                        ? `<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>No exams scheduled.</p></div>`
+                        : '<div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Room</th></tr></thead><tbody>'
+                        + exams.map(e => `<tr><td>${e.subject}</td><td>${fmtDate(e.exam_date)}</td><td>${fmtTime(e.start_time)}</td><td>${e.room || '\u2014'}</td></tr>`).join('')
+                        + '</tbody></table></div>';
+
+                    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                    let ttHtml = timetable.length === 0
+                        ? `<div class="empty-state"><i class="fas fa-clock"></i><p>No timetable set.</p></div>`
+                        : `<div class="tt-grid">
+                            <div class="tt-header">Time</div>
+                            ${days.map(d => `<div class="tt-header">${d.slice(0,3)}</div>`).join('')}
+                            ${['8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00'].map(slot => {
+                                const [sh, sm] = slot.split(':').map(Number);
+                                return `<div class="tt-time">${slot}</div>${days.map(day => {
+                                    const entry = timetable.find(t => t.day_of_week.toLowerCase() === day.toLowerCase() && parseInt(t.start_time) === sh);
+                                    return `<div class="tt-cell">${entry ? `<span class="subj">${entry.subject}</span><span class="meta">${entry.teacher_name || ''}${entry.room ? ' \u00b7 '+entry.room : ''}</span>` : ''}</div>`;
+                                }).join('')}`;
+                            }).join('')}
+                        </div>`;
+
+                    let msgHtml = messages.length === 0
+                        ? `<div class="empty-state"><i class="fas fa-comments"></i><p>No messages from teachers.</p></div>`
+                        : messages.map(m => `<div class="msg-item">
+                            <div class="msg-subject">${m.subject || 'No subject'}</div>
+                            <div class="msg-body">${m.body || ''}</div>
+                            <div class="msg-meta">${m.sender || ''} ${m.time ? '\u00b7 '+m.time : ''}</div>
+                        </div>`).join('');
+
+                    dc.innerHTML = `
+                        <!-- Student Card -->
+                        <div class="pd-student-card">
+                            <div class="pd-student-avatar">${child.image ? `<img src="${child.image}" alt="">` : '<i class="fas fa-user-graduate"></i>'}</div>
+                            <div class="pd-student-info">
+                                <h4>${child.name}</h4>
+                                <p>ID: ELP${String(250000 + child.id).slice(-6)} \u00b7 Grade: ${child.grade || 'N/A'} \u00b7 Enrolled: ${fmtDate(child.enrollmentdate)}</p>
+                            </div>
+                            <div class="pd-student-badge">GPA: ${child.gpa || 'N/A'}</div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="stat-grid">
+                            <div class="stat-card b-primary"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><h6>Average</h6><p class="stat-val">${avgPct}%</p></div>
+                            <div class="stat-card b-success"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><h6>Attendance</h6><p class="stat-val">${att.percentage}%</p></div>
+                            <div class="stat-card b-info"><div class="stat-icon"><i class="fas fa-book"></i></div><h6>Subjects</h6><p class="stat-val">${subjects.length}</p></div>
+                            <div class="stat-card ${overdueFees > 0 ? 'b-danger' : 'b-success'}"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><h6>Fees</h6><p class="stat-val" style="font-size:1.1rem;">${paidFees}/${fees.length} paid${overdueFees > 0 ? ' <small class="text-danger">('+overdueFees+' overdue)</small>' : ''}</p></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Results + Attendance Chart -->
+                            <div class="col-md-7">
+                                <div class="pd-card">
+                                    <div class="pd-card-header"><h5><i class="fas fa-chart-bar me-2"></i>Academic Results</h5></div>
+                                    <div class="pd-card-body">${resultHtml}</div>
+                                </div>
+                                <div class="pd-card">
+                                    <div class="pd-card-header"><h5><i class="fas fa-calendar-check me-2"></i>Attendance Trend</h5></div>
+                                    <div class="pd-card-body"><div class="chart-container"><canvas id="attendanceChart"></canvas></div></div>
+                                </div>
+                            </div>
+                            <!-- Fees + Messages -->
+                            <div class="col-md-5">
+                                <div class="pd-card">
+                                    <div class="pd-card-header"><h5><i class="fas fa-dollar-sign me-2"></i>Fee Status</h5></div>
+                                    <div class="pd-card-body">${feeHtml}</div>
+                                </div>
+                                <div class="pd-card">
+                                    <div class="pd-card-header"><h5><i class="fas fa-sticky-note me-2"></i>Teacher's Remarks</h5></div>
+                                    <div class="pd-card-body"><p class="fst-italic mb-0" style="font-size:0.85rem;color:var(--text-secondary,#888);">${child.remarks || 'No remarks provided.'}</p></div>
+                                </div>
+                                <div class="pd-card">
+                                    <div class="pd-card-header"><h5><i class="fas fa-comments me-2"></i>Messages <span class="badge bg-primary">${messages.length}</span></h5></div>
+                                    <div class="pd-card-body">${msgHtml}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exam Schedule -->
+                        <div class="pd-card">
+                            <div class="pd-card-header"><h5><i class="fas fa-calendar-alt me-2"></i>Exam Schedule</h5></div>
+                            <div class="pd-card-body p-0">${examHtml}</div>
+                        </div>
+
+                        <!-- Timetable -->
+                        <div class="pd-card">
+                            <div class="pd-card-header"><h5><i class="fas fa-clock me-2"></i>Weekly Timetable</h5></div>
+                            <div class="pd-card-body">${ttHtml}</div>
+                        </div>
+                    `;
+
+                    if (attChart) attChart.destroy();
+                    const canvas = document.getElementById('attendanceChart');
+                    if (canvas && trend.length > 0) {
+                        const labels = trend.map(r => fmtDate(r.date));
+                        const data = trend.map(r => r.status === 'Present' ? 1 : 0);
+                        const ctx = canvas.getContext('2d');
+                        attChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [{
+                                    label: 'Attendance',
+                                    data,
+                                    borderColor: '#1dd91d',
+                                    backgroundColor: 'rgba(29,217,29,0.1)',
+                                    tension: 0.3,
+                                    fill: true,
+                                    pointBackgroundColor: data.map(v => v ? '#28a745' : '#e74c3c'),
+                                    pointRadius: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: { min: 0, max: 1.2, ticks: { stepSize: 1, callback: v => v ? 'Present' : 'Absent' } },
+                                    x: { ticks: { maxTicksLimit: 10 } }
+                                },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    } else if (canvas) {
+                        canvas.parentElement.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>No attendance records yet.</p></div>';
+                    }
+                }
+
+                buildTabs();
+                renderDashboard(0);
+            } catch (error) {
+                console.error(error);
+                dc.innerHTML = `<div class="pd-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>${error.message}</p></div></div>`;
+            }
+        });
+
+        function toggleTheme() {
+            const body = document.body, next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next); localStorage.setItem('elif-theme', next);
+            document.getElementById('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        (function() { const saved = localStorage.getItem('elif-theme') || 'light'; document.body.setAttribute('data-theme', saved); document.getElementById('themeIcon').className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon'; })();
+    </script>
+
+    <!-- Parent Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="parentNavOffcanvas" aria-labelledby="parentNavOffcanvasLabel" style="max-width:290px;">
+        <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0f510e,#1b9e1b);">
+            <h5 class="offcanvas-title fw-bold" id="parentNavOffcanvasLabel"><i class="fas fa-user-friends me-2"></i>Parent Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="window.scrollTo({top:0,behavior:'smooth'}); bootstrap.Offcanvas.getInstance(document.getElementById('parentNavOffcanvas'))?.hide();">
+                    <i class="fas fa-home text-success fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Dashboard Overview</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="document.querySelector('.stat-grid')?.scrollIntoView({behavior:'smooth'}); bootstrap.Offcanvas.getInstance(document.getElementById('parentNavOffcanvas'))?.hide();">
+                    <i class="fas fa-chart-line text-primary fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Academic Stats</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="window.print(); bootstrap.Offcanvas.getInstance(document.getElementById('parentNavOffcanvas'))?.hide();">
+                    <i class="fas fa-file-download text-warning fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Download Report</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="toggleTheme();">
+                    <i class="fas fa-moon text-info fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Toggle Dark Mode</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3 text-danger" onclick="document.getElementById('logout-btn').click();">
+                    <i class="fas fa-sign-out-alt fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pMenuToggle = document.getElementById('parent-menu-toggle');
+            if (pMenuToggle) {
+                pMenuToggle.addEventListener('click', () => {
+                    const offEl = document.getElementById('parentNavOffcanvas');
+                    if (offEl) {
+                        const bsOff = bootstrap.Offcanvas.getOrCreateInstance(offEl);
+                        bsOff.toggle();
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>

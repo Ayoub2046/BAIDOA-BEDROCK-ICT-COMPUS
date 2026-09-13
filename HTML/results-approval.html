@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Approval | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .status-pending { background-color: #fff3cd; border-left: 4px solid #ffc107; }
+        .status-approved { background-color: #d4edda; border-left: 4px solid #28a745; }
+        .status-rejected { background-color: #f8d7da; border-left: 4px solid #dc3545; }
+        .status-on_hold { background-color: #d1ecf1; border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html" class="active"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <h4 class="mb-0 ms-3">Results Approval</h4>
+            </nav>
+            <div class="content-area">
+                <!-- Summary Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card border-warning">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Pending Review</h6>
+                                    <div class="fs-2 fw-bold text-warning" id="total-pending">0</div>
+                                </div>
+                                <div class="icon text-warning"><i class="fas fa-clock fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card border-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>On Hold</h6>
+                                    <div class="fs-2 fw-bold text-info" id="total-hold">0</div>
+                                </div>
+                                <div class="icon text-info"><i class="fas fa-pause-circle fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card border-success">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Approved</h6>
+                                    <div class="fs-2 fw-bold text-success" id="total-approved">0</div>
+                                </div>
+                                <div class="icon text-success"><i class="fas fa-check-circle fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card border-primary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>Total Results</h6>
+                                    <div class="fs-2 fw-bold text-primary" id="total-results">0</div>
+                                </div>
+                                <div class="icon text-primary"><i class="fas fa-file-alt fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="card main-table-card">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <h6>Exam Results Submission</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <select class="form-select form-select-sm" id="status-filter" style="width: auto;">
+                                <option value="all" selected>All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="on_hold">On Hold</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button class="btn btn-info btn-sm text-white" id="btn-hold-selected" disabled>
+                                <i class="fas fa-pause me-1"></i>Hold
+                            </button>
+                            <button class="btn btn-success btn-sm" id="btn-approve-selected" disabled>
+                                <i class="fas fa-check me-1"></i>Approve Selected
+                            </button>
+                            <button class="btn btn-danger btn-sm" id="btn-reject-selected" disabled>
+                                <i class="fas fa-times me-1"></i>Reject Selected
+                            </button>
+                            <button class="btn btn-primary btn-sm" id="btn-release-selected" disabled>
+                                <i class="fas fa-play me-1"></i>Release
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="select-all"></th>
+                                        <th>Student</th>
+                                        <th>Subject</th>
+                                        <th class="text-center">Quiz</th>
+                                        <th class="text-center">Semester</th>
+                                        <th class="text-center">Midterm</th>
+                                        <th class="text-center">Final</th>
+                                        <th class="text-center">Total</th>
+                                        <th>Submitted By</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="results-table-body">
+                                    <!-- JS will populate this -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hold Results Modal -->
+    <div class="modal fade" id="holdModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#17a2b8,#0d6efd);color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-pause-circle me-2"></i>Hold Results</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Selected results will be hidden from students until released.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Scheduled Release (optional)</label>
+                        <input type="datetime-local" class="form-control" id="hold-release-datetime">
+                        <div class="form-text">Leave empty to hold indefinitely until manually released.</div>
+                    </div>
+                    <p class="mb-1 fw-bold">Affected IDs: <span id="hold-id-count" class="text-info">0</span></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-info text-white" id="btn-confirm-hold"><i class="fas fa-pause me-1"></i>Hold Results</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let loadResults;
+        document.addEventListener('DOMContentLoaded', () => {
+            const RESULTS_API = '/api/results';
+            let allResults = [];
+            let holdModal = null;
+
+            loadResults = async function() {
+                const tbody = document.getElementById('results-table-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading results...</td></tr>`;
+                }
+                try {
+                    const response = await fetch(RESULTS_API);
+                    if (!response.ok) throw new Error(`Results API error (${response.status})`);
+                    allResults = await response.json();
+                    updateSummaryCards();
+                    renderTable();
+                } catch (error) {
+                    console.error('Error loading results:', error);
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr><td colspan="10" class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
+                                <span class="text-danger d-block mb-2">Error loading results: ${error.message}</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadResults()"><i class="fas fa-redo me-1"></i> Try Again</button>
+                            </td></tr>`;
+                    }
+                }
+            };
+            window.loadResults = loadResults;
+
+            function updateSummaryCards() {
+                const pending = allResults.filter(r => r.approval_status === 'pending').length;
+                const approved = allResults.filter(r => r.approval_status === 'approved').length;
+                const onHold = allResults.filter(r => r.approval_status === 'on_hold').length;
+                document.getElementById('total-pending').textContent = pending;
+                document.getElementById('total-approved').textContent = approved;
+                document.getElementById('total-hold').textContent = onHold;
+                document.getElementById('total-results').textContent = allResults.length;
+            }
+
+            function renderTable(filter = 'all') {
+                const tbody = document.getElementById('results-table-body');
+                let filtered = allResults;
+                if (filter !== 'all') filtered = allResults.filter(r => r.approval_status === filter);
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-5 text-muted">
+                        <i class="fas fa-poll fa-3x mb-2 d-block text-secondary"></i>
+                        <p class="mb-0">No exam results found.</p>
+                    </td></tr>`;
+                    return;
+                }
+
+                const statusBadge = {
+                    'pending': 'bg-warning text-dark',
+                    'approved': 'bg-success',
+                    'rejected': 'bg-danger',
+                    'on_hold': 'bg-info text-white'
+                };
+
+                const examTypeLabels = {
+                    'quiz1': 'Quiz 1', 'quiz2': 'Quiz 2',
+                    'sem1': 'Sem 1', 'sem2': 'Sem 2',
+                    'midterm': 'Midterm', 'final': 'Final'
+                };
+
+                // Group results by student_id + subject
+                const grouped = {};
+                filtered.forEach(r => {
+                    const key = `${r.student_id}-${r.subject}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            id: r.id,
+                            studentName: r.studentName,
+                            student_id: r.student_id,
+                            subject: r.subject,
+                            approval_status: r.approval_status,
+                            submitted_by: r.submitted_by,
+                            scores: {},
+                            ids: []
+                        };
+                    }
+                    grouped[key].scores[r.exam_type] = parseFloat(r.score);
+                    grouped[key].ids.push(r.id);
+                });
+
+                tbody.innerHTML = Object.values(grouped).map(g => {
+                    const quiz = (g.scores.quiz1 || 0) + (g.scores.quiz2 || 0);
+                    const sem = (g.scores.sem1 || 0) + (g.scores.sem2 || 0);
+                    const midterm = g.scores.midterm || 0;
+                    const finalScore = g.scores.final || 0;
+                    const total = quiz + sem + midterm + finalScore;
+                    const ids = g.ids.join(',');
+                    return `
+                    <tr class="status-${g.approval_status}">
+                        <td><input type="checkbox" class="result-checkbox" data-ids="${ids}" data-status="${g.approval_status}"></td>
+                        <td>${g.studentName}<br><small class="text-muted">ELP${String(250000 + g.student_id).slice(-6)}</small></td>
+                        <td>${g.subject}</td>
+                        <td class="text-center">${quiz}/10</td>
+                        <td class="text-center">${sem}/10</td>
+                        <td class="text-center">${midterm}/40</td>
+                        <td class="text-center">${finalScore}/40</td>
+                        <td class="text-center fw-bold ${total >= 60 ? 'text-success' : total >= 40 ? 'text-warning' : 'text-danger'}">${total}/100</td>
+                        <td>${g.submitted_by || 'N/A'}</td>
+                        <td><span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span></td>
+                    </tr>`;
+                }).join('');
+
+                updateButtonStates();
+            }
+
+            // Filter
+            document.getElementById('status-filter').addEventListener('change', (e) => {
+                renderTable(e.target.value);
+            });
+
+            // Select all checkbox
+            document.getElementById('select-all').addEventListener('change', (e) => {
+                document.querySelectorAll('.result-checkbox').forEach(cb => {
+                    cb.checked = e.target.checked;
+                });
+                updateButtonStates();
+            });
+
+            // Individual checkboxes
+            document.getElementById('results-table-body').addEventListener('change', (e) => {
+                if (e.target.classList.contains('result-checkbox')) {
+                    updateButtonStates();
+                }
+            });
+
+            function updateButtonStates() {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                const hasPending = Array.from(checked).some(cb => cb.dataset.status === 'pending');
+                const hasApproved = Array.from(checked).some(cb => cb.dataset.status === 'approved');
+                const hasOnHold = Array.from(checked).some(cb => cb.dataset.status === 'on_hold');
+                const hasRejected = Array.from(checked).some(cb => cb.dataset.status === 'rejected');
+
+                document.getElementById('btn-approve-selected').disabled = checked.length === 0 || hasApproved || hasOnHold;
+                document.getElementById('btn-reject-selected').disabled = checked.length === 0 || hasRejected;
+                document.getElementById('btn-hold-selected').disabled = checked.length === 0 || hasOnHold || hasRejected;
+                document.getElementById('btn-release-selected').disabled = checked.length === 0 || !hasOnHold;
+            }
+
+            // Approve selected
+            document.getElementById('btn-approve-selected').addEventListener('click', async () => {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                const pendingIds = Array.from(checked)
+                    .filter(cb => cb.dataset.status === 'pending')
+                    .flatMap(cb => cb.dataset.ids.split(',').map(Number));
+
+                if (pendingIds.length === 0) return;
+
+                if (!confirm(`Approve ${pendingIds.length} result(s)? Students will be able to see these results.`)) return;
+
+                try {
+                    const response = await fetch(`${RESULTS_API}/approve`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: pendingIds, status: 'approved' })
+                    });
+                    if (!response.ok) throw new Error('Approval failed');
+                    alert(`${pendingIds.length} result(s) approved successfully!`);
+                    loadResults();
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                }
+            });
+
+            // Hold selected — open modal
+            document.getElementById('btn-hold-selected').addEventListener('click', () => {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                document.getElementById('hold-id-count').textContent = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',')).length;
+                holdModal.show();
+            });
+
+            // Confirm hold
+            document.getElementById('btn-confirm-hold').addEventListener('click', async () => {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
+                if (ids.length === 0) return;
+                const dtInput = document.getElementById('hold-release-datetime');
+                const releaseAt = dtInput.value ? new Date(dtInput.value).toISOString() : null;
+                if (!confirm(`Put ${ids.length} result(s) on hold${releaseAt ? ' until ' + new Date(releaseAt).toLocaleString() : ''}?`)) return;
+                try {
+                    const response = await fetch(`${RESULTS_API}/hold`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids, releaseAt })
+                    });
+                    if (!response.ok) throw new Error('Hold failed');
+                    alert(`${ids.length} result(s) put on hold.`);
+                    dtInput.value = '';
+                    holdModal.hide();
+                    loadResults();
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                }
+            });
+
+            // Release selected immediately
+            document.getElementById('btn-release-selected').addEventListener('click', async () => {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
+                if (ids.length === 0) return;
+                if (!confirm(`Release ${ids.length} result(s) immediately? Students will be able to see them.`)) return;
+                try {
+                    const response = await fetch(`${RESULTS_API}/release`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids })
+                    });
+                    if (!response.ok) throw new Error('Release failed');
+                    alert(`${ids.length} result(s) released.`);
+                    loadResults();
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                }
+            });
+
+            // Reject selected
+            document.getElementById('btn-reject-selected').addEventListener('click', async () => {
+                const checked = document.querySelectorAll('.result-checkbox:checked');
+                const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
+
+                if (ids.length === 0) return;
+
+                if (!confirm(`Reject ${ids.length} result(s)? These results will not be visible to students.`)) return;
+
+                try {
+                    const response = await fetch(`${RESULTS_API}/approve`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids, status: 'rejected' })
+                    });
+                    if (!response.ok) throw new Error('Rejection failed');
+                    alert(`${ids.length} result(s) rejected.`);
+                    loadResults();
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                }
+            });
+
+            holdModal = new bootstrap.Modal(document.getElementById('holdModal'));
+            loadResults();
+        });
+
+        // Sidebar toggle & logout
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            if (sidebarToggler) sidebarToggler.addEventListener('click', () => sidebar.classList.toggle('toggled'));
+
+            if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') window.location.href = 'admin-login.html';
+
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.removeItem('isAdminLoggedIn');
+                sessionStorage.removeItem('adminProfile');
+                window.location.href = 'admin-login.html';
+            });
+        });
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "bedrock-ict-campus",
+  "version": "1.0.0",
+  "description": "Baidoa Bedrock ICT Campus Management Portal",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node Backend/server.js",
+    "vercel-build": "echo 'Build complete'"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "csv-parse": "^7.0.1",
+    "csv-stringify": "^6.8.1",
+    "dotenv": "^16.0.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^9.0.3",
+    "pg": "^8.11.0"
+  }
+}

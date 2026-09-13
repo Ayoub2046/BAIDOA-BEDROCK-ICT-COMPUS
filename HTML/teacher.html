@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <title>Teacher Management | Admin Panel</title>
+    <!-- ... (your head content) ... -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- ... (your full sidebar with 'Teacher Management' active) ... -->
+
+
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt=""><span
+                        style="font-size: 20px;">Baidoa Bedrock ICT Campus</span></h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html" class="active"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 ms-3">Teacher Management</h4>
+            </nav>
+            <div class="content-area p-4">
+                <div class="card main-table-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0">Teacher Roster & Details</h6>
+                        <button class="btn btn-primary btn-sm" id="btn-add-teacher"><i class="fas fa-plus me-1"></i> Add
+                            New Teacher</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">This page is for editing teacher-specific details like their
+                            subject. To add or remove a teacher's account, please use the <strong>User
+                                Management</strong> page.</div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Name</th>
+                                        <th>Subject</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teacher-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Edit Modal -->
+    <div class="modal fade" id="teacherModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="teacherForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Teacher Details</h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3"><label class="form-label">Full Name</label><input type="text" name="name"
+                                class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email"
+                                class="form-control" required></div>
+                        <hr>
+                        <div class="mb-3"><label class="form-label">Subject Taught</label><input type="text"
+                                name="subject" class="form-control"></div>
+                        <div class="mb-3"><label class="form-label">Photo</label><input type="file" id="teacher-image-file" class="form-control" accept="image/*"><input type="hidden" name="image"><div class="mt-2" id="teacher-image-preview" style="display:none;"><img src="" alt="Preview" style="max-height:120px;border-radius:6px;border:2px solid #dee2e6;"></div></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Save
+                            Changes</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- COMMON SCRIPT (Toggler, Logout, etc.) ---
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            if (sidebarToggler) { sidebarToggler.addEventListener('click', () => sidebar.classList.toggle('toggled')); }
+            if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') { window.location.href = 'admin-login.html'; }
+            const logout = () => { sessionStorage.clear(); window.location.href = 'admin-login.html'; };
+            document.querySelectorAll('#logout-link, #logout-link-dropdown').forEach(l => l.addEventListener('click', e => { e.preventDefault(); logout(); }));
+
+            // --- PAGE-SPECIFIC SCRIPT ---
+            const teacherModal = new bootstrap.Modal(document.getElementById('teacherModal'));
+            const teacherForm = document.getElementById('teacherForm');
+            const API_URL = '/api/teachers';
+            const UPLOAD_API = '/api/upload';
+            let teachers = [];
+
+            document.getElementById('teacher-image-file').addEventListener('change', async () => {
+                const input = document.getElementById('teacher-image-file');
+                const file = input.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('folder', 'teachers');
+                try {
+                    const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    teacherForm.elements.image.value = data.url;
+                    const preview = document.getElementById('teacher-image-preview');
+                    preview.style.display = 'block';
+                    preview.querySelector('img').src = data.url;
+                } catch (error) {
+                    alert('Upload failed: ' + error.message);
+                    input.value = '';
+                }
+            });
+
+            async function fetchTeachers() {
+                try {
+                    const response = await fetch(API_URL);
+                    teachers = await response.json();
+                    renderTeacherTable();
+                } catch (error) { console.error("Fetch Error:", error); }
+            }
+
+            function renderTeacherTable() {
+                const tbody = document.getElementById('teacher-table-body');
+                tbody.innerHTML = teachers.map(t => `
+            <tr>
+                <td>USER-${t.id}</td><td>${t.name}</td><td>${t.subject || 'N/A'}</td><td>${t.email}</td>
+                <td class="action-buttons"><button class="btn btn-sm btn-edit" data-id="${t.id}" title="Edit Details"><i class="fas fa-edit"></i></button></td>
+            </tr>`).join('') || `<tr><td colspan="5" class="text-center">No users with the 'Teacher' role found.</td></tr>`;
+            }
+
+            document.getElementById('btn-add-teacher').addEventListener('click', () => {
+                alert("To add a new teacher, please go to the 'User Management' page and create a new user with the 'Teacher' role.");
+                window.location.href = 'user.html';
+            });
+
+            document.getElementById('teacher-table-body').addEventListener('click', e => {
+                const button = e.target.closest('button.btn-edit');
+                if (!button) return;
+                const id = parseInt(button.dataset.id);
+                const teacher = teachers.find(t => t.id === id);
+                teacherForm.dataset.id = id;
+                teacherForm.elements.name.value = teacher.name;
+                teacherForm.elements.subject.value = teacher.subject || '';
+                teacherForm.elements.email.value = teacher.email;
+                teacherForm.elements.image.value = teacher.image || '';
+                const teacherPreview = document.getElementById('teacher-image-preview');
+                if (teacher.image) {
+                    teacherPreview.style.display = 'block';
+                    teacherPreview.querySelector('img').src = teacher.image;
+                } else {
+                    teacherPreview.style.display = 'none';
+                    teacherPreview.querySelector('img').src = '';
+                }
+                teacherModal.show();
+            });
+
+            teacherForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = teacherForm.dataset.id;
+                const data = {
+                    name: teacherForm.elements.name.value,
+                    subject: teacherForm.elements.subject.value,
+                    email: teacherForm.elements.email.value,
+                    image: teacherForm.elements.image.value,
+                };
+                try {
+                    const response = await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!response.ok) throw new Error('Save operation failed');
+                    await fetchTeachers();
+                    teacherModal.hide();
+                } catch (error) { alert(`Error: ${error.message}`); }
+            });
+            fetchTeachers();
+        });
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

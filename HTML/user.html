@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html" class="active"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 ms-3">User Management</h4>
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <div class="ms-auto d-flex align-items-center">
+                    <!-- Topbar items can go here -->
+                </div>
+            </nav>
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="card main-table-card">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <h6>User Accounts</h6>
+                        <div class="d-flex align-items-center">
+                            <select class="form-select form-select-sm me-2" id="user-role-filter" style="width: auto;">
+                                <option value="all" selected>Filter by Role</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Student">Student</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" id="btn-add-user"><i class="fas fa-plus me-1"></i>
+                                Add New User</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body">
+                                    <!-- JS will populate this -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="userForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalTitle">User Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="role" required>
+                                <option value="" disabled selected>Select a role...</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Student">Student</option>
+                            </select>
+                        </div>
+                        <!-- Password field for adding/editing users -->
+                        <div class="mb-3" id="password-group">
+                            <label class="form-label">Password</label>
+                            <div class="input-group">
+                                <input type="password" name="password" class="form-control" id="password-input">
+                                <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" id="password-hint"></small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Page Globals ---
+            const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            const userForm = document.getElementById('userForm');
+            const roleFilter = document.getElementById('user-role-filter');
+            const API_URL = '/api/users';
+            const AUTH_API_URL = '/api/auth/register'; // The registration endpoint
+            let users = [];
+
+            const roleColors = {
+                'Admin': 'bg-danger',
+                'Teacher': 'bg-success',
+                'Parent': 'bg-info'
+            };
+
+            // --- Core Functions ---
+            async function fetchUsers() {
+                const tbody = document.getElementById('user-table-body');
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading users...</td></tr>`;
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error(`Server error ${response.status}`);
+                    users = await response.json();
+                    renderUserTable(roleFilter.value);
+                } catch (error) {
+                    console.error('Error:', error);
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load users. <button class="btn btn-sm btn-outline-success ms-2" onclick="fetchUsers()"><i class="fas fa-redo me-1"></i>Retry</button></td></tr>`;
+                }
+            }
+
+            function renderUserTable(filter = 'all') {
+                const tbody = document.getElementById('user-table-body');
+                const filteredUsers = filter === 'all' ? users : users.filter(u => u.role === filter);
+
+                if (filteredUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No users found for this role.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = filteredUsers.map(u => `
+                    <tr>
+                        <td>USER-${String(u.id).padStart(4, '0')}</td>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge ${roleColors[u.role] || 'bg-secondary'}">${u.role}</span></td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-edit" data-id="${u.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-delete" data-id="${u.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`).join('');
+            }
+
+            // --- Event Listeners ---
+            roleFilter.addEventListener('change', () => {
+                renderUserTable(roleFilter.value);
+            });
+
+            document.getElementById('btn-add-user').addEventListener('click', () => {
+                document.getElementById('userModalTitle').textContent = 'Add New User';
+                userForm.reset();
+                // Show the password field for adding new users and make it required
+                document.getElementById('password-group').style.display = 'block';
+                document.getElementById('password-hint').textContent = '';
+                userForm.elements.password.required = true;
+                userForm.dataset.mode = 'add';
+                delete userForm.dataset.id;
+                userModal.show();
+            });
+
+            document.getElementById('user-table-body').addEventListener('click', e => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const id = parseInt(button.dataset.id);
+                const user = users.find(u => u.id === id);
+
+                if (button.classList.contains('btn-edit')) {
+                    document.getElementById('userModalTitle').textContent = 'Edit User';
+                    userForm.dataset.mode = 'edit';
+                    userForm.dataset.id = id;
+                    userForm.elements.name.value = user.name;
+                    userForm.elements.email.value = user.email;
+                    userForm.elements.role.value = user.role;
+                    // Show password field in edit mode but make it optional
+                    document.getElementById('password-group').style.display = 'block';
+                    document.getElementById('password-hint').textContent = 'Leave blank to keep current password.';
+                    userForm.elements.password.required = false;
+                    userForm.elements.password.value = '';
+                    userModal.show();
+                } else if (button.classList.contains('btn-delete')) {
+                    if (confirm(`Are you sure you want to delete user ${user.name}?`)) {
+                        fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+                            .then(res => {
+                                if (!res.ok) throw new Error('Deletion failed');
+                                fetchUsers(); // Refresh the list
+                            })
+                            .catch(err => alert('Error: Could not delete user.'));
+                    }
+                }
+            });
+
+            userForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const mode = userForm.dataset.mode;
+                const id = userForm.dataset.id;
+                let response;
+
+                try {
+                    if (mode === 'add') {
+                        // For adding, we call the registration endpoint which handles password hashing
+                        const data = {
+                            name: userForm.elements.name.value,
+                            email: userForm.elements.email.value,
+                            password: userForm.elements.password.value,
+                            role: userForm.elements.role.value,
+                        };
+                        response = await fetch(AUTH_API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    } else { // 'edit' mode
+                        const data = {
+                            name: userForm.elements.name.value,
+                            email: userForm.elements.email.value,
+                            role: userForm.elements.role.value,
+                            password: userForm.elements.password.value || '',
+                        };
+                        response = await fetch(`${API_URL}/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Save operation failed');
+                    }
+                    
+                    await fetchUsers();
+                    userModal.hide();
+
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            });
+
+            // --- Initial Load ---
+            fetchUsers();
+
+            // Password visibility toggle
+            document.getElementById('toggle-password').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password-input');
+                const icon = this.querySelector('i');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+        });
+
+
+
+
+
+        // Add this code inside your main <script> tag at the bottom of each admin page
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+
+    // 1. Responsive Sidebar Toggler Functionality
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggler = document.getElementById('sidebar-toggler');
+    if (sidebarToggler) {
+        sidebarToggler.addEventListener('click', () => {
+            sidebar.classList.toggle('toggled');
+        });
+    }
+
+    // 2. Security & Logout
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('adminProfile');
+            window.location.href = 'admin-login.html';
+        });
+    });
+
+    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+
+
+    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
+    // For example, on student.html, your code to fetch students starts here.
+    // On teacher.html, your code to fetch teachers starts here.
+    // etc.
+
+});
+    </script>
+    <script>
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+
+    <script>
+        // Apply theme on load
+        function applyAdminTheme() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            if (profile.theme) {
+                document.body.setAttribute('data-theme', profile.theme);
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+            }
+        }
+        window.addEventListener('DOMContentLoaded', applyAdminTheme);
+        
+        // Listen for theme changes from other tabs/windows
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'adminProfile') {
+                applyAdminTheme();
+            }
+        });
+        </script>
+
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Management | Admin Panel</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
+                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+                </h3>
+            </div>
+                    <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html" class="active"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                </div>
+                <h4 class="mb-0 ms-3">Results Management</h4>
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            </nav>
+            <div class="content-area">
+                <div id="save-alert" class="position-fixed top-0 end-0 p-3" style="z-index: 1056;"></div>
+                <div class="card main-table-card">
+                    <div class="card-header">
+                        <h6 class="m-0">Student Grade Entry</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Grade Level</th>
+                                        <th>Overall GPA</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="students-results-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Results Modal -->
+    <div class="modal fade" id="resultsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="resultsForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Results for <span id="modalStudentName"></span></h5><button
+                            type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="studentId">
+                        <h6>Subject Scores (%)</h6>
+                        <div id="subjects-container" class="row mb-3"></div>
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-success btn-sm" id="add-subject-btn"><i
+                                    class="fas fa-plus me-1"></i> Add New Subject</button>
+                        </div>
+                        <hr>
+                        <h6>Summary</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Overall GPA</label>
+                                <input type="text" name="gpa" class="form-control" readonly
+                                    title="GPA is calculated automatically">
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Teacher's Remarks</label>
+                                <textarea name="remarks" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Results</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/JS/admin.js"></script> <!-- Shared JS for sidebar and logout -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let fetchStudents;
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Page Globals ---
+            const resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
+            const resultsForm = document.getElementById('resultsForm');
+            const subjectsContainer = document.getElementById('subjects-container');
+            const addSubjectBtn = document.getElementById('add-subject-btn');
+            const STUDENTS_API_URL = '/api/students';
+            const RESULTS_API_URL = '/api/results';
+            let students = [];
+
+            // --- GPA Calculation Helper Functions ---
+            function scoreToGpaPoints(score) {
+                if (score >= 90) return 4.0;
+                if (score >= 80) return 3.0;
+                if (score >= 70) return 2.0;
+                if (score >= 60) return 1.0;
+                return 0.0;
+            }
+
+            function calculateAndSetGpa() {
+                const scoreInputs = subjectsContainer.querySelectorAll('.subject-score');
+                let totalPoints = 0;
+                let subjectCount = 0;
+                scoreInputs.forEach(input => {
+                    const score = parseFloat(input.value);
+                    if (!isNaN(score) && score >= 0) {
+                        totalPoints += scoreToGpaPoints(score);
+                        subjectCount++;
+                    }
+                });
+                if (subjectCount > 0) {
+                    resultsForm.elements.gpa.value = (totalPoints / subjectCount).toFixed(2);
+                } else {
+                    resultsForm.elements.gpa.value = '';
+                }
+            }
+
+            // --- Core Functions ---
+            fetchStudents = async function() {
+                const tbody = document.getElementById('students-results-tbody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading student list...</td></tr>`;
+                }
+                try {
+                    const response = await fetch(STUDENTS_API_URL);
+                    if (!response.ok) throw new Error(`Students API error (${response.status})`);
+                    students = await response.json();
+                    renderTable();
+                } catch (error) {
+                    console.error('Error loading student list:', error);
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr><td colspan="5" class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
+                                <span class="text-danger d-block mb-2">Error loading student list: ${error.message}</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="fetchStudents()"><i class="fas fa-redo me-1"></i> Try Again</button>
+                            </td></tr>`;
+                    }
+                }
+            };
+            window.fetchStudents = fetchStudents;
+
+            function renderTable() {
+                const tbody = document.getElementById('students-results-tbody');
+                if (!students || students.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-user-graduate fa-3x mb-2 d-block text-secondary"></i>
+                        <p class="mb-0">No students found.</p>
+                    </td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = students.map(student => `
+                <tr>
+                    <td>ELP${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.grade}</td>
+                    <td>${student.gpa || 'N/A'}</td>
+                    <td class="action-buttons"><button class="btn btn-sm btn-edit" data-id="${student.id}"><i class="fas fa-edit me-1"></i> Edit Results</button></td>
+                </tr>
+            `).join('');
+            }
+
+            function addNewSubjectField(subject = '', score = '') {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'col-md-6 mb-3';
+                colDiv.innerHTML = `
+                <div class="input-group">
+                    <input type="text" class="form-control subject-name" placeholder="Subject Name" value="${subject}">
+                    <input type="number" class="form-control subject-score" placeholder="Score %" value="${score}" min="0" max="100">
+                    <button type="button" class="btn btn-outline-danger remove-subject-btn" title="Remove Subject"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+                colDiv.querySelector('.subject-score').addEventListener('input', calculateAndSetGpa);
+                colDiv.querySelector('.remove-subject-btn').addEventListener('click', () => {
+                    colDiv.remove();
+                    calculateAndSetGpa();
+                });
+                subjectsContainer.appendChild(colDiv);
+            }
+
+            // --- Event Listeners ---
+            addSubjectBtn.addEventListener('click', () => {
+                addNewSubjectField();
+            });
+
+            document.getElementById('students-results-tbody').addEventListener('click', async (e) => {
+                const button = e.target.closest('button');
+                if (!button || !button.classList.contains('btn-edit')) return;
+                const studentId = button.dataset.id;
+
+                try {
+                    const response = await fetch(`${RESULTS_API_URL}/${studentId}`);
+                    if (!response.ok) throw new Error('Could not fetch results');
+                    const data = await response.json();
+
+                    document.getElementById('modalStudentName').textContent = data.name;
+                    resultsForm.elements.studentId.value = studentId;
+                    subjectsContainer.innerHTML = '';
+
+                    if (Object.keys(data.subjects).length > 0) {
+                        Object.entries(data.subjects).forEach(([subject, score]) => addNewSubjectField(subject, score));
+                    } else {
+                        addNewSubjectField();
+                    }
+
+                    resultsForm.elements.gpa.value = data.gpa || '';
+                    resultsForm.elements.remarks.value = data.remarks || '';
+                    resultsModal.show();
+
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            });
+
+            resultsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const studentId = resultsForm.elements.studentId.value;
+                const subjects = {};
+
+                subjectsContainer.querySelectorAll('.input-group').forEach(group => {
+                    const subjectName = group.querySelector('.subject-name').value.trim();
+                    const subjectScore = group.querySelector('.subject-score').value;
+                    if (subjectName && subjectScore) {
+                        subjects[subjectName] = parseInt(subjectScore);
+                    }
+                });
+
+                const dataToSave = {
+                    gpa: resultsForm.elements.gpa.value,
+                    remarks: resultsForm.elements.remarks.value,
+                    subjects: subjects
+                };
+
+                try {
+                    const response = await fetch(`${RESULTS_API_URL}/${studentId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dataToSave)
+                    });
+                    if (!response.ok) throw new Error('Failed to save results');
+                    resultsModal.hide();
+                    await fetchStudents();
+
+                    const alertDiv = document.getElementById('save-alert');
+                    alertDiv.innerHTML = `<div class="alert alert-success alert-dismissible fade show">Results for ${studentId} saved!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                    setTimeout(() => { const alert = bootstrap.Alert.getOrCreateInstance(alertDiv.querySelector('.alert')); if (alert) alert.close(); }, 3000);
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            });
+
+            // --- Initial Load ---
+            fetchStudents();
+        });
+
+
+        // Add this code inside your main <script> tag at the bottom of each admin page
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+
+    // 1. Responsive Sidebar Toggler Functionality
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggler = document.getElementById('sidebar-toggler');
+    if (sidebarToggler) {
+        sidebarToggler.addEventListener('click', () => {
+            sidebar.classList.toggle('toggled');
+        });
+    }
+
+    // 2. Security & Logout
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('adminProfile');
+            window.location.href = 'admin-login.html';
+        });
+    });
+
+    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+
+
+    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
+    // For example, on student.html, your code to fetch students starts here.
+    // On teacher.html, your code to fetch teachers starts here.
+    // etc.
+
+});
+
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next);
+    localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+(function() {
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+})();
+    </script>
+
+    <script src="/JS/pwa.js"></script>
+</body>
+
+</html>

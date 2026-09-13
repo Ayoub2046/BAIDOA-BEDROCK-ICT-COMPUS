@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d4f8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycle Bin | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width:60px;height:60px;border-radius:50px;" alt=""><span style="font-size:20px;">Baidoa Bedrock ICT Campus</span></h3>
+        </div>
+                <ul class="sidebar-nav">
+            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+            <li><a href="recycle-bin.html" class="active"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <nav class="top-navbar">
+            <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+            <h4 class="mb-0 ms-3"><i class="fas fa-trash-restore me-2"></i>Recycle Bin</h4>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="empty-all-btn"><i class="fas fa-trash-alt me-1"></i>Empty All</button>
+                <button class="btn btn-outline-success btn-sm rounded-pill px-3" id="restore-all-btn"><i class="fas fa-undo me-1"></i>Restore All</button>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="refresh-btn"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+                <div class="theme-toggle" onclick="toggleTheme()" style="cursor:pointer;">
+                    <i class="fas fa-moon theme-toggle-icon fs-5" id="themeIcon"></i>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content-area p-3 p-lg-4">
+            <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
+
+            <div id="trash-summary" class="mb-3"></div>
+
+            <div id="trash-content">
+                <div class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>Loading recycle bin...</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    .table-icon { width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; }
+    .trash-table-card .card-header { border-bottom: none; }
+    .trash-table-card .card-header .badge { font-size: .7rem; }
+    .trash-item:hover { background: rgba(0,0,0,.02); }
+    body[data-theme="dark"] .trash-item:hover { background: rgba(255,255,255,.03); }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('.sidebar');
+    document.getElementById('sidebar-toggler').addEventListener('click', () => sidebar.classList.toggle('toggled'));
+    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') { window.location.href = 'admin-login.html'; return; }
+    document.querySelectorAll('#logout-link').forEach(l => l.addEventListener('click', e => { e.preventDefault(); sessionStorage.clear(); window.location.href = 'admin-login.html'; }));
+
+    const TABLE_ICONS = {
+        students: { icon: 'fa-user-graduate', color: '#0d6efd', bg: 'rgba(13,110,253,.12)' },
+        users: { icon: 'fa-users-cog', color: '#6f42c1', bg: 'rgba(111,66,193,.12)' },
+        results: { icon: 'fa-poll', color: '#fd7e14', bg: 'rgba(253,126,20,.12)' },
+        fees: { icon: 'fa-dollar-sign', color: '#dc3545', bg: 'rgba(220,53,69,.12)' },
+        attendance_records: { icon: 'fa-user-check', color: '#198754', bg: 'rgba(25,135,84,.12)' },
+        timetables: { icon: 'fa-clock', color: '#0dcaf0', bg: 'rgba(13,202,240,.12)' },
+        events: { icon: 'fa-calendar-alt', color: '#ffc107', bg: 'rgba(255,193,7,.12)' },
+        exam_schedules: { icon: 'fa-pen-fancy', color: '#20c997', bg: 'rgba(32,201,151,.12)' },
+        clearance_cards: { icon: 'fa-id-card', color: '#6610f2', bg: 'rgba(102,16,242,.12)' },
+        books: { icon: 'fa-book-reader', color: '#795548', bg: 'rgba(121,85,72,.12)' },
+        messages: { icon: 'fa-comments', color: '#00796b', bg: 'rgba(0,121,107,.12)' },
+        gallery_items: { icon: 'fa-images', color: '#e91e63', bg: 'rgba(233,30,99,.12)' },
+        content: { icon: 'fa-edit', color: '#3f51b5', bg: 'rgba(63,81,181,.12)' },
+        news: { icon: 'fa-newspaper', color: '#607d8b', bg: 'rgba(96,125,139,.12)' },
+        classes: { icon: 'fa-layer-group', color: '#009688', bg: 'rgba(0,150,136,.12)' },
+        class_students: { icon: 'fa-link', color: '#00bcd4', bg: 'rgba(0,188,212,.12)' }
+    };
+
+    const TABLE_DISPLAY = {
+        students: 'Students',
+        users: 'Users',
+        results: 'Results',
+        fees: 'Fees',
+        attendance_records: 'Attendance',
+        timetables: 'Timetables',
+        events: 'Events',
+        exam_schedules: 'Exam Schedules',
+        clearance_cards: 'Clearance Cards',
+        books: 'Books',
+        messages: 'Messages',
+        gallery_items: 'Gallery',
+        content: 'Content',
+        news: 'News',
+        classes: 'Classes',
+        class_students: 'Class Assignments'
+    };
+
+    // column display priority - show most relevant columns
+    const TABLE_COLS = {
+        students: ['id','name','grade','parent_name','deleted_at'],
+        users: ['id','name','email','role','deleted_at'],
+        results: ['id','student_id','subject','score','deleted_at'],
+        fees: ['id','studentid','amount','status','deleted_at'],
+        attendance_records: ['id','student_id','status','date','deleted_at'],
+        timetables: ['id','class_id','day_of_week','subject','deleted_at'],
+        events: ['id','title','event_date','deleted_at'],
+        exam_schedules: ['id','class_id','subject','exam_date','deleted_at'],
+        clearance_cards: ['id','student_id','is_cleared','semester','deleted_at'],
+        books: ['id','title','author','deleted_at'],
+        messages: ['id','channel','sender','content','deleted_at'],
+        gallery_items: ['id','title','category','deleted_at'],
+        content: ['id','title','section','deleted_at'],
+        news: ['id','title','deleted_at'],
+        classes: ['id','name','deleted_at'],
+        class_students: ['class_id','student_id','deleted_at']
+    };
+
+    function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        const id = 'toast-' + Date.now();
+        container.innerHTML = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert"><div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
+        new bootstrap.Toast(document.getElementById(id), { delay: 5000 }).show();
+    }
+
+    function fmtVal(val) {
+        if (val === null || val === undefined) return '<span class="text-muted">—</span>';
+        if (typeof val === 'boolean') return val ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>';
+        if (typeof val === 'object') return JSON.stringify(val).substring(0, 40);
+        return String(val).substring(0, 50);
+    }
+
+    async function loadTrash() {
+        const content = document.getElementById('trash-content');
+        const summaryDiv = document.getElementById('trash-summary');
+        content.innerHTML = '<div class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>Loading recycle bin...</p></div>';
+        try {
+            const res = await fetch('/api/trash');
+            if (!res.ok) throw new Error('Failed to load');
+            const data = await res.json();
+            const tables = Object.keys(data);
+
+            if (tables.length === 0) {
+                content.innerHTML = '<div class="text-center py-5 text-muted"><i class="fas fa-trash-restore fa-3x mb-3 opacity-25"></i><h5 class="fw-semibold">Recycle Bin is Empty</h5><p class="small">Deleted items will appear here so you can restore them.</p></div>';
+                summaryDiv.innerHTML = '';
+                return;
+            }
+
+            const totalItems = tables.reduce((sum, t) => sum + data[t].count, 0);
+            summaryDiv.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div><span class="fw-bold fs-5">${totalItems}</span> <span class="text-muted">item(s) in trash</span></div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="emptyAll()"><i class="fas fa-trash-alt me-1"></i>Empty All</button>
+                        <button class="btn btn-sm btn-outline-success rounded-pill" onclick="restoreAll()"><i class="fas fa-undo me-1"></i>Restore All</button>
+                    </div>
+                </div>
+            `;
+
+            let html = '';
+            for (const table of tables) {
+                const info = data[table];
+                const icon = TABLE_ICONS[table] || { icon: 'fa-database', color: '#6c757d', bg: 'rgba(108,117,125,.12)' };
+                const cols = TABLE_COLS[table] || Object.keys(info.items[0]).slice(0, 5);
+                html += `
+                    <div class="card shadow-sm mb-3 trash-table-card">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-2 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="table-icon" style="background:${icon.bg};color:${icon.color};"><i class="fas ${icon.icon}"></i></span>
+                                <h6 class="fw-bold mb-0">${TABLE_DISPLAY[table] || table}</h6>
+                                <span class="badge bg-secondary rounded-pill">${info.count}</span>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-success rounded-pill" onclick="restoreAllTable('${table}')"><i class="fas fa-undo me-1"></i>Restore All</button>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="emptyTable('${table}')"><i class="fas fa-trash-alt me-1"></i>Empty</button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0 align-middle">
+                                    <thead class="table-light small">
+                                        <tr>${cols.map(c => `<th class="text-nowrap">${c.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`).join('')}<th class="text-end pe-3">Actions</th></tr>
+                                    </thead>
+                                    <tbody>`;
+                for (const item of info.items) {
+                    html += `<tr class="trash-item">`;
+                    for (const col of cols) {
+                        html += `<td class="small">${fmtVal(item[col])}</td>`;
+                    }
+                    html += `<td class="text-end pe-3">
+                                <button class="btn btn-sm btn-success rounded-pill" onclick="restoreItem('${table}',${item.id})" title="Restore"><i class="fas fa-undo"></i></button>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="deleteItem('${table}',${item.id})" title="Delete permanently"><i class="fas fa-trash-alt"></i></button>
+                            </td></tr>`;
+                }
+                html += `        </tbody></table>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            content.innerHTML = html;
+        } catch (err) {
+            content.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+        }
+    }
+
+    window.restoreItem = async (table, id) => {
+        try {
+            const res = await fetch(`/api/trash/restore/${table}/${id}`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast(`Item restored from ${TABLE_DISPLAY[table] || table}`, 'success');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    window.deleteItem = async (table, id) => {
+        if (!confirm(`Permanently delete this item from ${TABLE_DISPLAY[table] || table}? This cannot be undone.`)) return;
+        try {
+            const res = await fetch(`/api/trash/item/${table}/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast('Item permanently deleted.', 'danger');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    window.restoreAllTable = async (table) => {
+        try {
+            const res = await fetch(`/api/trash/restore-all/${table}`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast(data.message, 'success');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    window.restoreAll = async () => {
+        try {
+            const res = await fetch('/api/trash/restore-all', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast(data.message, 'success');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    window.emptyTable = async (table) => {
+        if (!confirm(`Permanently delete ALL items in ${TABLE_DISPLAY[table] || table}? This cannot be undone.`)) return;
+        try {
+            const res = await fetch(`/api/trash/empty/${table}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast(data.message, 'danger');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    window.emptyAll = async () => {
+        if (!confirm('Permanently delete ALL items in the recycle bin? This cannot be undone.')) return;
+        try {
+            const res = await fetch('/api/trash/empty', { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            showToast(data.message, 'danger');
+            loadTrash();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    };
+
+    document.getElementById('refresh-btn').addEventListener('click', loadTrash);
+    document.getElementById('restore-all-btn').addEventListener('click', window.restoreAll);
+    document.getElementById('empty-all-btn').addEventListener('click', window.emptyAll);
+    loadTrash();
+});
+
+function toggleTheme() {
+    const body = document.body, next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', next); localStorage.setItem('elif-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-sun fs-5' : 'fas fa-moon fs-5';
+}
+(function() { const saved = localStorage.getItem('elif-theme') || 'light'; document.body.setAttribute('data-theme', saved); const icon = document.getElementById('themeIcon'); if (icon) icon.className = saved === 'dark' ? 'fas fa-sun fs-5' : 'fas fa-moon fs-5'; })();
+</script>
+
+    <script src="/HTML/js/admin.js"></script>
+    <script src="/JS/pwa.js"></script>
+</body>
+</html>
