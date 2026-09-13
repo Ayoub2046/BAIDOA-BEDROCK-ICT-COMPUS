@@ -1,34 +1,57 @@
 {
   "name": "Baidoa Bedrock ICT Campus",
   "short_name": "Bedrock ICT",
-  "description": "Baidoa Bedrock ICT Campus app — student results, attendance, timetable, digital library, news, and staff portal.",
+  "description": "Baidoa Bedrock ICT Campus portal — Student Results, Attendance, Timetable, Digital Library, Announcements, and Staff Management.",
   "id": "/",
   "start_url": "/HTML/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f0f4f8",
+  "background_color": "#0d4f8c",
   "theme_color": "#0d4f8c",
   "lang": "en",
   "categories": ["education", "productivity"],
   "icons": [
     {
-      "src": "/images/BEDRCOK LOGO.JPG",
+      "src": "/images/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/BEDRCOK LOGO.JPG",
+      "src": "/images/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/BEDRCOK LOGO.JPG",
+      "src": "/images/icons/icon-maskable.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/images/BEDRCOK LOGO.JPG",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Check Results",
+      "url": "/HTML/Student Results.html",
+      "description": "View student examination results"
+    },
+    {
+      "name": "Portal Login",
+      "url": "/HTML/portal_login.html",
+      "description": "Log in to student/teacher/admin portal"
+    },
+    {
+      "name": "Digital Library",
+      "url": "/HTML/student-library.html",
+      "description": "Access campus library books and materials"
     }
   ]
 }
