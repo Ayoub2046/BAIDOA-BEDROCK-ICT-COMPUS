@@ -12,7 +12,7 @@ const backupService = require('../services/backupService.js');
 // 1. GET /api/backup/list - List all saved backups
 router.get('/list', async (req, res) => {
     try {
-        const backups = backupService.listBackups();
+        const backups = await backupService.listBackups();
         res.json({ success: true, count: backups.length, backups });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -44,25 +44,29 @@ router.post('/create', async (req, res) => {
     }
 });
 
-// 4. GET /api/backup/download/:filename - Download specific backup file
-router.get('/download/:filename', (req, res) => {
+// 4. GET /api/backup/download/:filename - Download specific backup file (from disk or PostgreSQL)
+router.get('/download/:filename', async (req, res) => {
     const { filename } = req.params;
-    const filePath = backupService.getBackupFilePath(filename);
+    try {
+        const backupResult = await backupService.getBackupData(filename);
 
-    if (!filePath) {
-        return res.status(404).json({ error: 'Backup file not found.' });
+        if (!backupResult) {
+            return res.status(404).json({ error: 'Backup file not found.' });
+        }
+
+        const safeDownloadName = path.basename(filename);
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeDownloadName}"`);
+        return res.send(backupResult.rawJson);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
     }
-
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
 });
 
 // 5. GET /api/backup/download-latest - Quick download of the most recent backup
 router.get('/download-latest', async (req, res) => {
     try {
-        const backups = backupService.listBackups();
+        const backups = await backupService.listBackups();
         let targetFile = null;
 
         if (backups.length > 0) {
@@ -73,16 +77,17 @@ router.get('/download-latest', async (req, res) => {
             targetFile = newBackup.filename;
         }
 
-        const filePath = backupService.getBackupFilePath(targetFile);
-        if (!filePath) {
+        const backupResult = await backupService.getBackupData(targetFile);
+        if (!backupResult) {
             return res.status(404).json({ error: 'Could not prepare latest backup.' });
         }
 
+        const safeDownloadName = path.basename(targetFile);
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="${targetFile}"`);
-        fs.createReadStream(filePath).pipe(res);
+        res.setHeader('Content-Disposition', `attachment; filename="${safeDownloadName}"`);
+        return res.send(backupResult.rawJson);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
 });
 
@@ -93,9 +98,9 @@ router.post('/restore', async (req, res) => {
         let payload = backupData;
 
         if (!payload && filename) {
-            const filePath = backupService.getBackupFilePath(filename);
-            if (!filePath) return res.status(404).json({ error: 'Specified backup file not found.' });
-            payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            const backupResult = await backupService.getBackupData(filename);
+            if (!backupResult) return res.status(404).json({ error: 'Specified backup file not found.' });
+            payload = backupResult.parsed;
         }
 
         if (!payload) {

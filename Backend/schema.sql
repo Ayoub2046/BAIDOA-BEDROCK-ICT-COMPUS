@@ -584,6 +584,23 @@ FROM totals   t
 JOIN students s ON s.id = t.student_id AND s.deleted_at IS NULL
 JOIN classes  c ON c.id = s.classid    AND c.deleted_at IS NULL;
 
+-- ---------------------------------------------------------------
+-- 26. SYSTEM BACKUPS (Database Snapshot Archive)
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS system_backups (
+    id               SERIAL PRIMARY KEY,
+    filename         TEXT UNIQUE NOT NULL,
+    trigger_reason   VARCHAR(100) DEFAULT 'manual',
+    triggered_by     VARCHAR(255) DEFAULT 'Admin',
+    total_records    INTEGER DEFAULT 0,
+    table_stats      JSONB DEFAULT '{}'::jsonb,
+    backup_data      JSONB NOT NULL,
+    file_size_bytes  BIGINT DEFAULT 0,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_system_backups_created_at ON system_backups (created_at DESC);
+
 -- ==============================================================
 -- END OF SCHEMA
 -- ==============================================================
+

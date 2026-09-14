@@ -8,15 +8,46 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const { query, pool } = require('../database.js');
 
-// Root backup directory
-const BACKUP_DIR = path.join(__dirname, '..', '..', 'backups');
+const os = require('os');
 
-// Ensure backups directory exists
-if (!fs.existsSync(BACKUP_DIR)) {
+// Determine a writable backup directory for local caching
+// On serverless / Vercel (/var/task), local root is read-only, so fallback to os.tmpdir()
+function getWritableBackupDir() {
+    const isServerless = Boolean(
+        process.env.VERCEL ||
+        process.env.AWS_LAMBDA_FUNCTION_NAME ||
+        (__dirname && __dirname.startsWith('/var/task'))
+    );
+    if (isServerless) {
+        return path.join(os.tmpdir(), 'backups');
+    }
+    return path.join(__dirname, '..', '..', 'backups');
+}
+
+const BACKUP_DIR = getWritableBackupDir();
+
+// Ensure system_backups table exists in PostgreSQL for permanent cloud storage
+let tableInitialized = false;
+async function ensureBackupsTable() {
+    if (tableInitialized) return;
     try {
-        fs.mkdirSync(BACKUP_DIR, { recursive: true });
+        await query(`
+            CREATE TABLE IF NOT EXISTS system_backups (
+                id SERIAL PRIMARY KEY,
+                filename TEXT UNIQUE NOT NULL,
+                trigger_reason VARCHAR(100) DEFAULT 'manual',
+                triggered_by VARCHAR(255) DEFAULT 'Admin',
+                total_records INTEGER DEFAULT 0,
+                table_stats JSONB DEFAULT '{}'::jsonb,
+                backup_data JSONB NOT NULL,
+                file_size_bytes BIGINT DEFAULT 0,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        `);
+        await query(`CREATE INDEX IF NOT EXISTS idx_system_backups_created_at ON system_backups (created_at DESC)`);
+        tableInitialized = true;
     } catch (e) {
-        console.error('Error creating backups directory:', e.message);
+        console.warn('[BackupService] system_backups table check:', e.message);
     }
 }
 
@@ -120,21 +151,56 @@ async function createFullBackup(triggerReason = 'manual', triggeredBy = 'Admin')
     }
 
     const filename = `backup_${getTimestampSlug()}_${triggerReason}.json`;
-    const filePath = path.join(BACKUP_DIR, filename);
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const fileSizeBytes = Buffer.byteLength(jsonString, 'utf8');
 
-    fs.writeFileSync(filePath, JSON.stringify(backupData, null, 2), 'utf8');
+    // 1. PRIMARY STORAGE: Persist directly into PostgreSQL (survives Vercel cold starts & read-only fs)
+    await ensureBackupsTable();
+    try {
+        await query(`
+            INSERT INTO system_backups (filename, trigger_reason, triggered_by, total_records, table_stats, backup_data, file_size_bytes, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+            ON CONFLICT (filename) DO UPDATE SET
+                total_records = EXCLUDED.total_records,
+                table_stats = EXCLUDED.table_stats,
+                backup_data = EXCLUDED.backup_data,
+                file_size_bytes = EXCLUDED.file_size_bytes
+        `, [
+            filename,
+            triggerReason,
+            triggeredBy,
+            backupData.meta.totalRecords,
+            JSON.stringify(backupData.meta.tableStats),
+            jsonString,
+            fileSizeBytes
+        ]);
+    } catch (dbErr) {
+        console.error('[BackupService] Failed to persist backup to system_backups table:', dbErr.message);
+    }
 
-    const fileStats = fs.statSync(filePath);
+    // 2. SECONDARY / LOCAL CACHE: Attempt disk write (swallowing EROFS / permission errors gracefully)
+    const backupDir = getWritableBackupDir();
+    const filePath = path.join(backupDir, filename);
+    let writtenToDisk = false;
+    try {
+        if (!fs.existsSync(backupDir)) {
+            fs.mkdirSync(backupDir, { recursive: true });
+        }
+        fs.writeFileSync(filePath, jsonString, 'utf8');
+        writtenToDisk = true;
+    } catch (fsErr) {
+        console.warn(`[BackupService] Filesystem write skipped (${fsErr.code || fsErr.message}). Backup safely stored in PostgreSQL.`);
+    }
+
     const durationMs = Date.now() - startTime;
-
-    console.log(`[BackupService] Snapshot created: ${filename} (${backupData.meta.totalRecords} records, ${Math.round(fileStats.size / 1024)} KB) in ${durationMs}ms`);
+    console.log(`[BackupService] Snapshot created: ${filename} (${backupData.meta.totalRecords} records, ${formatBytes(fileSizeBytes)}) in ${durationMs}ms [DB: OK, Disk: ${writtenToDisk ? 'OK' : 'Read-Only/Skipped'}]`);
 
     return {
         id: filename,
         filename,
-        path: filePath,
-        sizeBytes: fileStats.size,
-        sizeFormatted: formatBytes(fileStats.size),
+        path: writtenToDisk ? filePath : null,
+        sizeBytes: fileSizeBytes,
+        sizeFormatted: formatBytes(fileSizeBytes),
         createdAt: backupData.meta.createdAt,
         triggerReason,
         triggeredBy,
@@ -145,52 +211,131 @@ async function createFullBackup(triggerReason = 'manual', triggeredBy = 'Admin')
 }
 
 /**
- * List all saved backups in the backups/ directory
+ * List all saved backups from PostgreSQL system_backups table + any local files
  */
-function listBackups() {
-    if (!fs.existsSync(BACKUP_DIR)) return [];
+async function listBackups() {
+    await ensureBackupsTable();
+    const backupList = [];
+    const seenFilenames = new Set();
 
-    const files = fs.readdirSync(BACKUP_DIR)
-        .filter(f => f.endsWith('.json') && f.startsWith('backup_'))
-        .sort((a, b) => b.localeCompare(a)); // Newest first
-
-    return files.map(file => {
-        const filePath = path.join(BACKUP_DIR, file);
-        try {
-            const stats = fs.statSync(filePath);
-            // Quick read first 1KB to parse metadata safely without loading entire huge JSON
-            let meta = {};
+    // 1. Read from PostgreSQL system_backups table
+    try {
+        const { rows } = await query(`
+            SELECT filename, trigger_reason, triggered_by, total_records, table_stats, file_size_bytes, created_at
+            FROM system_backups
+            ORDER BY created_at DESC
+        `);
+        for (const row of rows) {
+            seenFilenames.add(row.filename);
+            const size = Number(row.file_size_bytes) || 0;
+            let stats = {};
             try {
-                const content = fs.readFileSync(filePath, 'utf8');
-                const parsed = JSON.parse(content);
-                meta = parsed.meta || {};
+                stats = typeof row.table_stats === 'string' ? JSON.parse(row.table_stats) : (row.table_stats || {});
             } catch (e) {}
 
-            return {
-                filename: file,
-                sizeBytes: stats.size,
-                sizeFormatted: formatBytes(stats.size),
-                createdAt: meta.createdAt || stats.mtime.toISOString(),
-                triggerReason: meta.triggerReason || 'snapshot',
-                triggeredBy: meta.triggeredBy || 'System',
-                totalRecords: meta.totalRecords !== undefined ? meta.totalRecords : null,
-                tableStats: meta.tableStats || {}
-            };
-        } catch (e) {
-            return null;
+            backupList.push({
+                filename: row.filename,
+                sizeBytes: size,
+                sizeFormatted: formatBytes(size),
+                createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+                triggerReason: row.trigger_reason || 'snapshot',
+                triggeredBy: row.triggered_by || 'System',
+                totalRecords: row.total_records !== null ? Number(row.total_records) : null,
+                tableStats: stats
+            });
         }
-    }).filter(Boolean);
+    } catch (dbErr) {
+        console.warn('[BackupService] Could not list from system_backups table:', dbErr.message);
+    }
+
+    // 2. Scan local disk for any backups not yet in DB
+    try {
+        const backupDir = getWritableBackupDir();
+        if (fs.existsSync(backupDir)) {
+            const files = fs.readdirSync(backupDir)
+                .filter(f => f.endsWith('.json') && f.startsWith('backup_'))
+                .sort((a, b) => b.localeCompare(a));
+
+            for (const file of files) {
+                if (seenFilenames.has(file)) continue;
+                const filePath = path.join(backupDir, file);
+                try {
+                    const stats = fs.statSync(filePath);
+                    let meta = {};
+                    try {
+                        const content = fs.readFileSync(filePath, 'utf8');
+                        const parsed = JSON.parse(content);
+                        meta = parsed.meta || {};
+                    } catch (e) {}
+
+                    backupList.push({
+                        filename: file,
+                        sizeBytes: stats.size,
+                        sizeFormatted: formatBytes(stats.size),
+                        createdAt: meta.createdAt || stats.mtime.toISOString(),
+                        triggerReason: meta.triggerReason || 'snapshot',
+                        triggeredBy: meta.triggeredBy || 'System',
+                        totalRecords: meta.totalRecords !== undefined ? meta.totalRecords : null,
+                        tableStats: meta.tableStats || {}
+                    });
+                    seenFilenames.add(file);
+                } catch (e) {}
+            }
+        }
+    } catch (e) {}
+
+    backupList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return backupList;
 }
 
 /**
- * Get the absolute file path for a backup
+ * Retrieve backup JSON data from disk or PostgreSQL system_backups table
+ * @param {string} filename 
+ * @returns {Promise<{rawJson: string, parsed: object, source: string, path?: string}|null>}
+ */
+async function getBackupData(filename) {
+    if (!filename) return null;
+    const safeName = path.basename(filename);
+
+    // 1. Check disk first
+    try {
+        const backupDir = getWritableBackupDir();
+        const diskPath = path.join(backupDir, safeName);
+        if (fs.existsSync(diskPath)) {
+            const raw = fs.readFileSync(diskPath, 'utf8');
+            return { rawJson: raw, parsed: JSON.parse(raw), source: 'file', path: diskPath };
+        }
+    } catch (e) {}
+
+    // 2. Fallback to PostgreSQL system_backups table
+    try {
+        await ensureBackupsTable();
+        const { rows } = await query(`SELECT backup_data FROM system_backups WHERE filename = $1 LIMIT 1`, [safeName]);
+        if (rows.length > 0 && rows[0].backup_data) {
+            const data = rows[0].backup_data;
+            const rawJson = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+            return { rawJson, parsed, source: 'database' };
+        }
+    } catch (dbErr) {
+        console.error('[BackupService] Error fetching backup from DB:', dbErr.message);
+    }
+
+    return null;
+}
+
+/**
+ * Get the absolute file path for a backup (if exists on disk)
  */
 function getBackupFilePath(filename) {
-    // Sanitize filename to prevent directory traversal
+    if (!filename) return null;
     const safeName = path.basename(filename);
-    const fullPath = path.join(BACKUP_DIR, safeName);
-    if (!fs.existsSync(fullPath)) return null;
-    return fullPath;
+    try {
+        const backupDir = getWritableBackupDir();
+        const fullPath = path.join(backupDir, safeName);
+        if (fs.existsSync(fullPath)) return fullPath;
+    } catch (e) {}
+    return null;
 }
 
 /**
@@ -438,7 +583,7 @@ function initAutomatedDailyBackup() {
     async function checkAndRunDailyBackup() {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const backups = listBackups();
+            const backups = await listBackups();
             const hasBackupToday = backups.some(b => b.filename.includes(today) && b.triggerReason === 'daily_auto');
 
             if (!hasBackupToday) {
@@ -461,9 +606,12 @@ module.exports = {
     createFullBackup,
     listBackups,
     getBackupFilePath,
+    getBackupData,
     restoreBackup,
     clearSystemData,
     getSystemStats,
     initAutomatedDailyBackup,
+    ensureBackupsTable,
+    getWritableBackupDir,
     BACKUP_DIR
 };
