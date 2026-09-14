@@ -307,42 +307,65 @@ async function clearSystemData(adminUserId = null) {
     try {
         await client.query('BEGIN');
 
-        // Clear operational tables in reverse dependency order
+        // Clear operational tables using SAVEPOINTs so a single table failure
+        // does NOT abort the entire transaction block (PostgreSQL requirement)
         for (const table of OPERATIONAL_TABLES) {
+            await client.query(`SAVEPOINT sp_${table.replace(/[^a-z0-9]/gi, '_')}`);
             try {
                 const countRes = await client.query(`SELECT COUNT(*) as count FROM ${table}`);
                 const count = parseInt(countRes.rows[0]?.count) || 0;
                 await client.query(`DELETE FROM ${table}`);
                 wipeStats[table] = count;
-                // Reset ID sequence
+                console.log(`[BackupService] Cleared ${count} rows from ${table}`);
+                // Reset ID sequence (best-effort)
+                await client.query(`SAVEPOINT sp_seq_${table.replace(/[^a-z0-9]/gi, '_')}`);
                 try {
                     await client.query(`SELECT setval(pg_get_serial_sequence('${table}', 'id'), 1, false)`);
-                } catch (e) {}
+                } catch (e) {
+                    await client.query(`ROLLBACK TO SAVEPOINT sp_seq_${table.replace(/[^a-z0-9]/gi, '_')}`);
+                }
+                await client.query(`RELEASE SAVEPOINT sp_seq_${table.replace(/[^a-z0-9]/gi, '_')}`);
             } catch (tableErr) {
+                console.warn(`[BackupService] Could not clear ${table}: ${tableErr.message} — rolling back to savepoint`);
+                await client.query(`ROLLBACK TO SAVEPOINT sp_${table.replace(/[^a-z0-9]/gi, '_')}`);
                 wipeStats[table] = 0;
             }
+            await client.query(`RELEASE SAVEPOINT sp_${table.replace(/[^a-z0-9]/gi, '_')}`);
         }
 
         // Delete non-admin staff users (preserve Admin accounts so admin is not locked out)
+        await client.query('SAVEPOINT sp_non_admin_users');
         try {
             const userCountRes = await client.query(`SELECT COUNT(*) as count FROM users WHERE role != 'Admin'`);
             wipeStats['non_admin_users'] = parseInt(userCountRes.rows[0]?.count) || 0;
             await client.query(`DELETE FROM users WHERE role != 'Admin'`);
-        } catch (e) {}
+        } catch (e) {
+            console.warn('[BackupService] Could not delete non-admin users:', e.message);
+            await client.query('ROLLBACK TO SAVEPOINT sp_non_admin_users');
+        }
+        await client.query('RELEASE SAVEPOINT sp_non_admin_users');
 
         // Ensure at least one primary admin account exists
-        const adminCheck = await client.query(`SELECT id, email FROM users WHERE role = 'Admin' AND deleted_at IS NULL LIMIT 1`);
-        if (adminCheck.rows.length === 0) {
-            const hash = await bcrypt.hash('admin123', 10);
-            await client.query(`
-                INSERT INTO users (name, email, password, role, isverified, isactive)
-                VALUES ('System Administrator', 'admin@bbict.edu.so', $1, 'Admin', true, true)
-                ON CONFLICT (email, role) DO NOTHING
-            `, [hash]);
-            console.log('[BackupService] Seeded default administrator account (admin@bbict.edu.so).');
+        await client.query('SAVEPOINT sp_admin_seed');
+        try {
+            const adminCheck = await client.query(`SELECT id, email FROM users WHERE role = 'Admin' AND deleted_at IS NULL LIMIT 1`);
+            if (adminCheck.rows.length === 0) {
+                const hash = await bcrypt.hash('admin123', 10);
+                await client.query(`
+                    INSERT INTO users (name, email, password, role, isverified, isactive)
+                    VALUES ('System Administrator', 'admin@bbict.edu.so', $1, 'Admin', true, true)
+                    ON CONFLICT (email) DO NOTHING
+                `, [hash]);
+                console.log('[BackupService] Seeded default administrator account (admin@bbict.edu.so).');
+            }
+        } catch (e) {
+            console.warn('[BackupService] Admin seed check failed:', e.message);
+            await client.query('ROLLBACK TO SAVEPOINT sp_admin_seed');
         }
+        await client.query('RELEASE SAVEPOINT sp_admin_seed');
 
         // Re-seed standard 3-part exam definitions
+        await client.query('SAVEPOINT sp_exam_seed');
         try {
             await client.query(`
                 INSERT INTO exams (name, exam_key, max_score, sort_order, active) VALUES
@@ -351,7 +374,10 @@ async function clearSystemData(adminUserId = null) {
                     ('Final Exam', 'final', 60, 3, true)
                 ON CONFLICT (exam_key) DO UPDATE SET max_score = EXCLUDED.max_score, active = true
             `);
-        } catch (e) {}
+        } catch (e) {
+            await client.query('ROLLBACK TO SAVEPOINT sp_exam_seed');
+        }
+        await client.query('RELEASE SAVEPOINT sp_exam_seed');
 
         await client.query('COMMIT');
         console.log('[BackupService] SYSTEM DATA RESET COMPLETE. All tables cleared and ready for scratch start.');
