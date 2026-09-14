@@ -148,14 +148,11 @@
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead>
-                                    <tr>
-                                        <th><input type="checkbox" id="select-all"></th>
+                                    <tr id="results-table-header-row">
+                                        <th style="width:40px;"><input type="checkbox" id="select-all"></th>
                                         <th>Student</th>
                                         <th>Subject</th>
-                                        <th class="text-center">Quiz (/20)</th>
-                                        <th class="text-center">Assignment (/20)</th>
-                                        <th class="text-center">Final (/60)</th>
-                                        <th class="text-center">Total (/100)</th>
+                                        <!-- Dynamic exam headers injected here -->
                                         <th>Submitted By</th>
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
@@ -214,31 +211,8 @@
                     <div class="mb-3">
                         <span class="text-muted small">Subject:</span> <strong id="edit-subject-name" class="text-primary"></strong>
                     </div>
-                    <div class="row g-2">
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Quiz 1 (Max 5)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-quiz1" min="0" max="5" step="0.5">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Quiz 2 (Max 5)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-quiz2" min="0" max="5" step="0.5">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Semester 1 (Max 5)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-sem1" min="0" max="5" step="0.5">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Semester 2 (Max 5)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-sem2" min="0" max="5" step="0.5">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Midterm (Max 40)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-midterm" min="0" max="40" step="0.5">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label small fw-bold">Final Exam (Max 40)</label>
-                            <input type="number" class="form-control form-control-sm" id="edit-score-final" min="0" max="40" step="0.5">
-                        </div>
+                    <div class="row g-2" id="direct-edit-inputs-container">
+                        <!-- Populated dynamically with admin-defined exams -->
                     </div>
                     <div class="mb-2 mt-2">
                         <label class="form-label small fw-bold">Approval Status</label>
@@ -264,13 +238,66 @@
             const RESULTS_API = '/api/results';
             let allResults = [];
             let holdModal = null;
+            let approvalExams = [];
+
+            async function loadExamsConfig() {
+                try {
+                    const res = await fetch('/api/exams');
+                    if (res.ok) {
+                        const data = await res.json();
+                        approvalExams = (data || []).filter(e => e.active !== false && !e.deleted_at);
+                        approvalExams.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id);
+                    }
+                } catch (e) {
+                    console.warn('Could not load exams:', e);
+                }
+                if (!approvalExams || approvalExams.length === 0) {
+                    approvalExams = [
+                        { exam_key: 'oral_exam', name: 'Oral Exam', max_score: 20 },
+                        { exam_key: 'practical_exam', name: 'Practical Exam', max_score: 80 }
+                    ];
+                }
+                renderHeader();
+            }
+
+            function renderHeader() {
+                const row = document.getElementById('results-table-header-row');
+                if (!row) return;
+                row.querySelectorAll('.dynamic-exam-th').forEach(el => el.remove());
+                const totalMax = approvalExams.reduce((s, e) => s + (parseFloat(e.max_score) || 0), 0);
+
+                const frag = document.createDocumentFragment();
+                approvalExams.forEach(e => {
+                    const th = document.createElement('th');
+                    th.className = 'text-center dynamic-exam-th';
+                    th.textContent = `${e.name} (/${parseFloat(e.max_score)})`;
+                    frag.appendChild(th);
+                });
+                const totalTh = document.createElement('th');
+                totalTh.className = 'text-center dynamic-exam-th';
+                totalTh.textContent = `Total (/${totalMax})`;
+                frag.appendChild(totalTh);
+
+                const ref = Array.from(row.children).find(th => th.textContent.includes('Submitted By'));
+                if (ref) {
+                    row.insertBefore(frag, ref);
+                } else {
+                    row.appendChild(frag);
+                }
+            }
 
             loadResults = async function() {
                 const tbody = document.getElementById('results-table-body');
+                const colCount = 5 + (approvalExams.length || 2) + 1;
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading results...</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading results...</td></tr>`;
                 }
                 try {
+                    if (approvalExams.length === 0) {
+                        await loadExamsConfig();
+                    } else {
+                        renderHeader();
+                    }
                     const response = await fetch(RESULTS_API);
                     if (!response.ok) throw new Error(`Results API error (${response.status})`);
                     allResults = await response.json();
@@ -280,7 +307,7 @@
                     console.error('Error loading results:', error);
                     if (tbody) {
                         tbody.innerHTML = `
-                            <tr><td colspan="10" class="text-center py-4">
+                            <tr><td colspan="${colCount}" class="text-center py-4">
                                 <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
                                 <span class="text-danger d-block mb-2">Error loading results: ${error.message}</span>
                                 <button class="btn btn-sm btn-outline-primary" onclick="loadResults()"><i class="fas fa-redo me-1"></i> Try Again</button>
@@ -305,8 +332,9 @@
                 let filtered = allResults;
                 if (filter !== 'all') filtered = allResults.filter(r => r.approval_status === filter);
 
+                const colCount = 5 + (approvalExams.length || 2) + 1;
                 if (filtered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-5 text-muted">
+                    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-5 text-muted">
                         <i class="fas fa-poll fa-3x mb-2 d-block text-secondary"></i>
                         <p class="mb-0">No exam results found.</p>
                     </td></tr>`;
@@ -318,12 +346,6 @@
                     'approved': 'bg-success',
                     'rejected': 'bg-danger',
                     'on_hold': 'bg-info text-white'
-                };
-
-                const examTypeLabels = {
-                    'quiz1': 'Quiz 1', 'quiz2': 'Quiz 2',
-                    'sem1': 'Sem 1', 'sem2': 'Sem 2',
-                    'midterm': 'Midterm', 'final': 'Final'
                 };
 
                 // Group results by student_id + subject
@@ -348,11 +370,25 @@
                     grouped[key].ids.push(r.id);
                 });
 
+                const totalMax = approvalExams.reduce((s, e) => s + (parseFloat(e.max_score) || 0), 0);
+
                 tbody.innerHTML = Object.values(grouped).map(g => {
-                    const quiz = g.scores.quiz !== undefined ? g.scores.quiz : ((g.scores.quiz1 || 0) + (g.scores.quiz2 || 0));
-                    const assignment = g.scores.assignment !== undefined ? g.scores.assignment : ((g.scores.sem1 || 0) + (g.scores.sem2 || 0));
-                    const finalScore = g.scores.final !== undefined ? g.scores.final : (g.scores.midterm || 0);
-                    const total = quiz + assignment + finalScore;
+                    let total = 0;
+                    const examTds = approvalExams.map(e => {
+                        let score = 0;
+                        if (g.scores[e.exam_key] !== undefined) {
+                            score = g.scores[e.exam_key];
+                        } else if (e.exam_key === 'oral_exam' && g.scores.quiz !== undefined) {
+                            score = g.scores.quiz;
+                        } else if (e.exam_key === 'practical_exam') {
+                            score = (g.scores.assignment || 0) + (g.scores.final || 0);
+                        }
+                        const max = parseFloat(e.max_score) || 100;
+                        total += score;
+                        return `<td class="text-center">${score}/${max}</td>`;
+                    }).join('');
+
+                    const isPass = totalMax > 0 ? (total / totalMax) >= 0.5 : total >= 50;
                     const ids = g.ids.join(',');
                     const bbId = 'BB' + String(260000 + g.student_id).slice(-6);
                     return `
@@ -360,10 +396,8 @@
                         <td><input type="checkbox" class="result-checkbox" data-ids="${ids}" data-status="${g.approval_status}"></td>
                         <td>${g.studentName}<br><small class="text-muted fw-semibold">${bbId}</small></td>
                         <td>${g.subject}</td>
-                        <td class="text-center">${quiz}/20</td>
-                        <td class="text-center">${assignment}/20</td>
-                        <td class="text-center">${finalScore}/60</td>
-                        <td class="text-center fw-bold ${total >= 50 ? 'text-success' : 'text-danger'}">${total}/100</td>
+                        ${examTds}
+                        <td class="text-center fw-bold ${isPass ? 'text-success' : 'text-danger'}">${total}/${totalMax}</td>
                         <td>${g.submitted_by || 'N/A'}</td>
                         <td>
                             <span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span>
@@ -448,14 +482,14 @@
                 const ids = btn.dataset.ids.split(',').map(Number);
                 const isCurrentlyUnlocked = btn.dataset.unlocked === 'true';
                 const action = isCurrentlyUnlocked ? 'lock' : 'unlock';
-                if (!confirm(`${isCurrentlyUnlocked ? 'Lock' : 'Unlock'} this submission ${isCurrentlyUnlocked ? 'so teacher cannot edit' : 'so teacher can re-edit and resubmit'}?`)) return;
+                if (!confirm(`${isCurrentlyUnlocked ? 'Lock' : 'Unlock'} this subject result for teacher re-edit?`)) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/unlock`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ids, unlock: !isCurrentlyUnlocked })
                     });
-                    if (!response.ok) throw new Error('Operation failed');
+                    if (!response.ok) throw new Error('Update failed');
                     loadResults();
                 } catch (err) {
                     alert(`Error: ${err.message}`);
@@ -483,12 +517,26 @@
                 document.getElementById('edit-student-name').textContent = `${studentName} (BB${String(260000 + parseInt(studentId)).slice(-6)})`;
                 document.getElementById('edit-subject-name').textContent = subject;
 
-                document.getElementById('edit-score-quiz1').value = scores.quiz1 ?? '';
-                document.getElementById('edit-score-quiz2').value = scores.quiz2 ?? '';
-                document.getElementById('edit-score-sem1').value = scores.sem1 ?? '';
-                document.getElementById('edit-score-sem2').value = scores.sem2 ?? '';
-                document.getElementById('edit-score-midterm').value = scores.midterm ?? '';
-                document.getElementById('edit-score-final').value = scores.final ?? '';
+                // Dynamically populate inputs based on approvalExams
+                const inputsContainer = document.getElementById('direct-edit-inputs-container');
+                if (inputsContainer) {
+                    inputsContainer.innerHTML = approvalExams.map(e => {
+                        let val = '';
+                        if (scores[e.exam_key] !== undefined) {
+                            val = scores[e.exam_key];
+                        } else if (e.exam_key === 'oral_exam' && scores.quiz !== undefined) {
+                            val = scores.quiz;
+                        } else if (e.exam_key === 'practical_exam' && (scores.assignment !== undefined || scores.final !== undefined)) {
+                            val = (scores.assignment || 0) + (scores.final || 0);
+                        }
+                        return `
+                        <div class="col-6 mb-2">
+                            <label class="form-label small fw-bold">${e.name} (Max ${parseFloat(e.max_score)})</label>
+                            <input type="number" class="form-control form-control-sm direct-edit-score-input" data-exam-key="${e.exam_key}" min="0" max="${parseFloat(e.max_score)}" step="0.5" value="${val}">
+                        </div>`;
+                    }).join('');
+                }
+
                 document.getElementById('edit-approval-status').value = status;
 
                 if (directEditModal) directEditModal.show();
@@ -501,18 +549,9 @@
                 const approvalStatus = document.getElementById('edit-approval-status').value;
 
                 const scores = {};
-                const q1 = document.getElementById('edit-score-quiz1').value;
-                if (q1 !== '') scores.quiz1 = parseFloat(q1);
-                const q2 = document.getElementById('edit-score-quiz2').value;
-                if (q2 !== '') scores.quiz2 = parseFloat(q2);
-                const s1 = document.getElementById('edit-score-sem1').value;
-                if (s1 !== '') scores.sem1 = parseFloat(s1);
-                const s2 = document.getElementById('edit-score-sem2').value;
-                if (s2 !== '') scores.sem2 = parseFloat(s2);
-                const mid = document.getElementById('edit-score-midterm').value;
-                if (mid !== '') scores.midterm = parseFloat(mid);
-                const fin = document.getElementById('edit-score-final').value;
-                if (fin !== '') scores.final = parseFloat(fin);
+                document.querySelectorAll('.direct-edit-score-input').forEach(inp => {
+                    if (inp.value !== '') scores[inp.dataset.examKey] = parseFloat(inp.value);
+                });
 
                 try {
                     const res = await fetch(`${RESULTS_API}/admin/direct-update`, {

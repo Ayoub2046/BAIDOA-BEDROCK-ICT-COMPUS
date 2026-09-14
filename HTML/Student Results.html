@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1963,6 +1963,8 @@
         .bp-quiz   { background: #dbeafe; color: #1d4ed8; }
         .bp-assign { background: #d1fae5; color: #065f46; }
         .bp-final  { background: #fef3c7; color: #92400e; }
+        .bp-extra1 { background: #f3e8ff; color: #7e22ce; }
+        .bp-extra2 { background: #fee2e2; color: #b91c1c; }
         .bp-total  { background: linear-gradient(135deg, #0d4f8c, #1a7fd4); color: #fff; }
 
         /* ====== 3-PART RESULT CARD ====== */
@@ -2006,6 +2008,8 @@
         .rc3-quiz   { color: #1d4ed8; }
         .rc3-assign { color: #065f46; }
         .rc3-final  { color: #92400e; }
+        .rc3-extra1 { color: #7e22ce; }
+        .rc3-extra2 { color: #b91c1c; }
         .rc3-bar-wrap {
             flex: 1;
             height: 10px;
@@ -2021,6 +2025,8 @@
         .rc3-bar-quiz   { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
         .rc3-bar-assign { background: linear-gradient(90deg, #34d399, #059669); }
         .rc3-bar-final  { background: linear-gradient(90deg, #fbbf24, #d97706); }
+        .rc3-bar-extra1 { background: linear-gradient(90deg, #a855f7, #7e22ce); }
+        .rc3-bar-extra2 { background: linear-gradient(90deg, #f87171, #dc2626); }
         .rc3-score {
             width: 46px;
             text-align: right;
@@ -2339,10 +2345,9 @@
                 <!-- Exam Breakdown Legend -->
                 <div class="exam-breakdown-legend no-print mb-3">
                     <div class="breakdown-label"><i class="fas fa-info-circle me-1"></i> Score Breakdown per Subject</div>
-                    <div class="breakdown-parts">
-                        <div class="bp-item bp-quiz"><i class="fas fa-pen me-1"></i>Quiz <span class="bp-max">/20</span></div>
-                        <div class="bp-item bp-assign"><i class="fas fa-tasks me-1"></i>Assignment <span class="bp-max">/20</span></div>
-                        <div class="bp-item bp-final"><i class="fas fa-graduation-cap me-1"></i>Final Exam <span class="bp-max">/60</span></div>
+                    <div class="breakdown-parts" id="breakdown-parts-legend">
+                        <div class="bp-item bp-quiz"><i class="fas fa-pen me-1"></i>Oral Exam <span class="bp-max">/20</span></div>
+                        <div class="bp-item bp-assign"><i class="fas fa-tasks me-1"></i>Practical Exam <span class="bp-max">/80</span></div>
                         <div class="bp-item bp-total"><i class="fas fa-star me-1"></i>Total <span class="bp-max">/100</span></div>
                     </div>
                 </div>
@@ -3296,21 +3301,50 @@
                 return colors[index % colors.length];
             }
 
-            // ====== 3-PART FIXED EXAM STRUCTURE ======
-            // Quiz /20, Assignment /20, Final /60 → Total /100
-            var EXAM_PARTS = [
-                { key: 'quiz',       label: 'Quiz',        max: 20, barClass: 'ep-quiz',   icon: 'fa-pen' },
-                { key: 'assignment', label: 'Assignment',  max: 20, barClass: 'ep-assign', icon: 'fa-tasks' },
-                { key: 'final',      label: 'Final Exam',  max: 60, barClass: 'ep-final',  icon: 'fa-graduation-cap' }
-            ];
-            // Also keep EXAM_DEFS pointing to parts for analytics compat
-            var EXAM_DEFS = EXAM_PARTS;
+                        // ====== DYNAMIC EXAM STRUCTURE (set by Admin) ======
+            // Populated from data.exams returned by the backend (active admin-defined exams)
+            var EXAM_PARTS = []; // filled by setupExamDefs()
+            var EXAM_DEFS  = EXAM_PARTS;
 
-            // setupExamDefs: no-op in new system (3 parts are fixed)
+            var PART_BAR_CLASSES   = ['rc3-bar-quiz','rc3-bar-assign','rc3-bar-final','rc3-bar-extra1','rc3-bar-extra2'];
+            var PART_LABEL_CLASSES = ['rc3-quiz','rc3-assign','rc3-final','rc3-extra1','rc3-extra2'];
+            var PART_ICONS         = ['fa-pen','fa-tasks','fa-graduation-cap','fa-star','fa-bookmark'];
+            var PART_BP_CLASSES    = ['bp-quiz','bp-assign','bp-final','bp-extra1','bp-extra2'];
+
             function setupExamDefs(data) {
-                // No-op — 3-part structure is fixed
-            }
+                var exams = (data && data.exams) ? data.exams : [];
+                exams = exams.filter(function(e) { return e.active !== false && !e.deleted_at; });
+                exams.sort(function(a, b) { return (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id; });
+                EXAM_PARTS = exams.map(function(e, i) {
+                    return {
+                        key:      e.exam_key,
+                        label:    e.name,
+                        max:      parseFloat(e.max_score) || 0,
+                        barClass: PART_BAR_CLASSES[i % PART_BAR_CLASSES.length],
+                        lblClass: PART_LABEL_CLASSES[i % PART_LABEL_CLASSES.length],
+                        icon:     PART_ICONS[i % PART_ICONS.length],
+                        bpClass:  PART_BP_CLASSES[i % PART_BP_CLASSES.length]
+                    };
+                });
+                if (EXAM_PARTS.length === 0) {
+                    EXAM_PARTS = [
+                        { key:'oral_exam',      label:'Oral Exam',      max:20, barClass:'rc3-bar-quiz',   lblClass:'rc3-quiz',   icon:'fa-pen',   bpClass:'bp-quiz' },
+                        { key:'practical_exam', label:'Practical Exam', max:80, barClass:'rc3-bar-assign', lblClass:'rc3-assign', icon:'fa-tasks', bpClass:'bp-assign' }
+                    ];
+                }
+                EXAM_DEFS = EXAM_PARTS;
 
+                // Dynamically update the Breakdown Legend in the DOM
+                var legendEl = document.getElementById('breakdown-parts-legend');
+                if (legendEl && EXAM_PARTS.length > 0) {
+                    var totalMax = EXAM_PARTS.reduce(function(sum, p) { return sum + p.max; }, 0);
+                    var legHtml = EXAM_PARTS.map(function(p) {
+                        return '<div class="bp-item ' + p.bpClass + '"><i class="fas ' + p.icon + ' me-1"></i>' + p.label + ' <span class="bp-max">/' + p.max + '</span></div>';
+                    }).join('');
+                    legHtml += '<div class="bp-item bp-total"><i class="fas fa-star me-1"></i>Total <span class="bp-max">/' + totalMax + '</span></div>';
+                    legendEl.innerHTML = legHtml;
+                }
+            }
             // Load and render the Top 3 Class Leaders Honor Roll
             async function loadClassLeaders(data, examType) {
                 var podiumEl = document.getElementById('podium-display');
@@ -3486,29 +3520,63 @@
                     var subjectData = results[subject];
                     var color = getSubjectColor(index);
 
-                    // Get scores for the 3 fixed parts with backward compatibility
-                    var quizScore   = parseFloat(subjectData.scores && (subjectData.scores['quiz'] !== undefined ? subjectData.scores['quiz'] : ((subjectData.scores['quiz1'] || 0) + (subjectData.scores['quiz2'] || 0)))) || 0;
-                    var assignScore = parseFloat(subjectData.scores && (subjectData.scores['assignment'] !== undefined ? subjectData.scores['assignment'] : ((subjectData.scores['sem1'] || 0) + (subjectData.scores['sem2'] || 0)))) || 0;
-                    var finalScore  = parseFloat(subjectData.scores && (subjectData.scores['final'] !== undefined ? subjectData.scores['final'] : (subjectData.scores['midterm'] || subjectData.scores['score'] || 0))) || 0;
-
-                    var quizMax   = (subjectData.maxScores && subjectData.maxScores['quiz'])       ? parseFloat(subjectData.maxScores['quiz'])       : 20;
-                    var assignMax = (subjectData.maxScores && subjectData.maxScores['assignment']) ? parseFloat(subjectData.maxScores['assignment']) : 20;
-                    var finalMax  = (subjectData.maxScores && subjectData.maxScores['final'])     ? parseFloat(subjectData.maxScores['final'])     : 60;
-
-                    // Check if teacher has submitted any part
+                    // Dynamic: Render all admin-defined exam parts
                     var hasAnyScore = (subjectData.scores && Object.keys(subjectData.scores).length > 0);
                     if (!hasAnyScore) return; // skip subjects with no scores yet
 
-                    var subjectTotal = quizScore + assignScore + finalScore;
-                    var subjectMax   = quizMax + assignMax + finalMax;
-                    var percentage   = subjectMax > 0 ? Math.round((subjectTotal / subjectMax) * 100) : 0;
-                    var grade        = getGradeBadge(percentage);
+                    var subjectTotal = 0;
+                    var subjectMax   = 0;
+                    var partRows     = '';
+
+                    function pct(score, max) { return max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0; }
+
+                    var partsToRender = (EXAM_PARTS && EXAM_PARTS.length > 0) ? EXAM_PARTS : [];
+                    if (partsToRender.length === 0) {
+                        var keys = Object.keys(subjectData.scores);
+                        partsToRender = keys.map(function(k, idx) {
+                            return {
+                                key: k,
+                                label: k.replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); }),
+                                max: (subjectData.maxScores && subjectData.maxScores[k]) ? parseFloat(subjectData.maxScores[k]) : 100,
+                                barClass: PART_BAR_CLASSES[idx % PART_BAR_CLASSES.length],
+                                lblClass: PART_LABEL_CLASSES[idx % PART_LABEL_CLASSES.length],
+                                icon: PART_ICONS[idx % PART_ICONS.length]
+                            };
+                        });
+                    }
+
+                    partsToRender.forEach(function(p) {
+                        var scoreVal = 0;
+                        if (subjectData.scores && subjectData.scores[p.key] !== undefined) {
+                            scoreVal = parseFloat(subjectData.scores[p.key]) || 0;
+                        } else if (p.key === 'oral_exam' && subjectData.scores && subjectData.scores['quiz'] !== undefined) {
+                            scoreVal = parseFloat(subjectData.scores['quiz']) || 0;
+                        } else if (p.key === 'practical_exam' && subjectData.scores && (subjectData.scores['assignment'] !== undefined || subjectData.scores['final'] !== undefined)) {
+                            scoreVal = (parseFloat(subjectData.scores['assignment']) || 0) + (parseFloat(subjectData.scores['final']) || 0);
+                        }
+
+                        var maxVal = (subjectData.maxScores && subjectData.maxScores[p.key]) ? parseFloat(subjectData.maxScores[p.key]) : p.max;
+                        if (!maxVal || maxVal <= 0) maxVal = p.max || 100;
+
+                        subjectTotal += scoreVal;
+                        subjectMax   += maxVal;
+
+                        partRows += '<div class="rc3-row">';
+                        partRows += '  <div class="rc3-part-label ' + p.lblClass + '"><i class="fas ' + p.icon + '"></i> ' + p.label + '</div>';
+                        partRows += '  <div class="rc3-bar-wrap">';
+                        partRows += '    <div class="rc3-bar ' + p.barClass + '" style="width:' + pct(scoreVal, maxVal) + '%"></div>';
+                        partRows += '  </div>';
+                        partRows += '  <div class="rc3-score">' + scoreVal + '<span class="rc3-max">/' + maxVal + '</span></div>';
+                        partRows += '</div>';
+                    });
+
+                    if (subjectMax === 0) subjectMax = 100;
+                    var percentage = subjectMax > 0 ? Math.round((subjectTotal / subjectMax) * 100) : 0;
+                    var grade      = getGradeBadge(percentage);
 
                     grandTotal   += subjectTotal;
                     grandMax     += subjectMax;
                     subjectCount++;
-
-                    function pct(score, max) { return max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0; }
 
                     html += '<div class="col-md-6 col-lg-4">';
                     html += '<div class="result-card result-card-3part">';
@@ -3524,36 +3592,9 @@
                     html += '  </div>';
                     html += '</div>';
 
-                    // 3-part score rows
+                    // Exam parts score rows
                     html += '<div class="rc-body rc3-body">';
-
-                    // Quiz
-                    html += '<div class="rc3-row">';
-                    html += '  <div class="rc3-part-label rc3-quiz"><i class="fas fa-pen"></i> Quiz</div>';
-                    html += '  <div class="rc3-bar-wrap">';
-                    html += '    <div class="rc3-bar rc3-bar-quiz" style="width:' + pct(quizScore, quizMax) + '%"></div>';
-                    html += '  </div>';
-                    html += '  <div class="rc3-score">' + quizScore + '<span class="rc3-max">/' + quizMax + '</span></div>';
-                    html += '</div>';
-
-                    // Assignment
-                    html += '<div class="rc3-row">';
-                    html += '  <div class="rc3-part-label rc3-assign"><i class="fas fa-tasks"></i> Assignment</div>';
-                    html += '  <div class="rc3-bar-wrap">';
-                    html += '    <div class="rc3-bar rc3-bar-assign" style="width:' + pct(assignScore, assignMax) + '%"></div>';
-                    html += '  </div>';
-                    html += '  <div class="rc3-score">' + assignScore + '<span class="rc3-max">/' + assignMax + '</span></div>';
-                    html += '</div>';
-
-                    // Final
-                    html += '<div class="rc3-row">';
-                    html += '  <div class="rc3-part-label rc3-final"><i class="fas fa-graduation-cap"></i> Final</div>';
-                    html += '  <div class="rc3-bar-wrap">';
-                    html += '    <div class="rc3-bar rc3-bar-final" style="width:' + pct(finalScore, finalMax) + '%"></div>';
-                    html += '  </div>';
-                    html += '  <div class="rc3-score">' + finalScore + '<span class="rc3-max">/' + finalMax + '</span></div>';
-                    html += '</div>';
-
+                    html += partRows;
                     html += '</div>'; // end rc3-body
 
                     // Card footer — total
@@ -3566,7 +3607,7 @@
                     html += '    <svg viewBox="0 0 36 36" class="rc3-svg">';
                     html += '      <circle class="rc3-ring-bg" cx="18" cy="18" r="15.9155" fill="none" stroke="#e8f5e8" stroke-width="3"/>';
                     var dash = Math.round(percentage * 100) / 1000;
-                    html += '      <circle class="rc3-ring-fill" cx="18" cy="18" r="15.9155" fill="none" stroke="' + (percentage >= 50 ? '#27ae60' : percentage >= 35 ? '#f39c12' : '#e74c3c') + '" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + dash + ' 100" transform="rotate(-90 18 18"/>';
+                    html += '      <circle class="rc3-ring-fill" cx="18" cy="18" r="15.9155" fill="none" stroke="' + (percentage >= 50 ? '#27ae60' : percentage >= 35 ? '#f39c12' : '#e74c3c') + '" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + dash + ' 100" transform="rotate(-90 18 18)"/>';
                     html += '    </svg>';
                     html += '    <span class="rc3-pct-text">' + percentage + '%</span>';
                     html += '  </div>';

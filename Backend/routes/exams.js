@@ -46,16 +46,20 @@ async function ensureTables() {
         )
     `);
     await query(`ALTER TABLE class_exams ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false`);
-    // Seed standard 3-part exam structure: Quiz (20), Assignment (20), Final Exam (60)
-    await query(`
-        INSERT INTO exams (name, exam_key, max_score, sort_order)
-        VALUES
-            ('Quiz', 'quiz', 20, 1),
-            ('Assignment', 'assignment', 20, 2),
-            ('Final Exam', 'final', 60, 3)
-        ON CONFLICT (exam_key) DO UPDATE
-           SET name = EXCLUDED.name, max_score = EXCLUDED.max_score, sort_order = EXCLUDED.sort_order
-    `).catch(e => {});
+    // Seed standard exams ONLY if the exams table has no records at all
+    try {
+        const { rows: countRows } = await query(`SELECT COUNT(*) as c FROM exams`);
+        if (parseInt(countRows[0]?.c) === 0) {
+            await query(`
+                INSERT INTO exams (name, exam_key, max_score, sort_order)
+                VALUES
+                    ('Quiz', 'quiz', 20, 1),
+                    ('Assignment', 'assignment', 20, 2),
+                    ('Final Exam', 'final', 60, 3)
+                ON CONFLICT (exam_key) DO NOTHING
+            `);
+        }
+    } catch (e) {}
 }
 
 // GET all active exams ordered by sort_order

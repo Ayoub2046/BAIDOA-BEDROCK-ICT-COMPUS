@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="manifest" href="/manifest.json">
@@ -443,9 +443,9 @@
                                 <h5 class="mb-1"><i class="fas fa-layer-group" style="color:#d4af37;"></i> Record Exam Results — All Parts</h5>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="badge" style="background:#0d2b4e;color:#d4af37;font-size:0.72rem;">
-                                        <i class="fas fa-shield-alt me-1"></i> Quiz · Assignment · Final Exam
-                                    </span>
-                                    <small class="text-muted" style="font-size:0.72rem;">Enter all 3 parts at once. 🔒 = locked by Admin.</small>
+                                        <i class="fas fa-shield-alt me-1"></i> <span id="results-exam-parts-badge">Loading exam parts...</span>
+                                     </span>
+                                     <small class="text-muted" style="font-size:0.72rem;" id="results-exam-parts-subtext">Loading exam configuration... 🔒 = locked by Admin.</small>
                                 </div>
                             </div>
                         </div>
@@ -527,12 +527,10 @@
                                 <div class="table-responsive" style="max-height:500px;overflow-y:auto;border-radius:10px;border:1px solid #dee2e6;">
                                     <table class="table table-hover align-middle mb-0 multi-part-table" id="results-entry-table">
                                         <thead id="results-table-head">
-                                            <tr>
+                                            <tr id="results-table-header-row">
                                                 <th style="min-width:130px;">Student</th>
-                                                <th id="th-quiz" style="text-align:center;">Quiz<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/20</small></th>
-                                                <th id="th-assignment" style="text-align:center;">Assignment<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/20</small></th>
-                                                <th id="th-final" style="text-align:center;">Final Exam<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/60</small></th>
-                                                <th style="text-align:center;">Total<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/100</small></th>
+                                                <!-- Dynamic exam part columns will be injected here by JS -->
+                                                <th style="text-align:center;">Total<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;" id="results-total-max-label">/100</small></th>
                                                 <th style="text-align:center;">Grade</th>
                                                 <th>Remarks</th>
                                             </tr>
@@ -1148,12 +1146,8 @@
 
         const AVATAR_GRADIENTS = ['linear-gradient(135deg,#0d2b4e,#1a3f6f)','linear-gradient(135deg,#0d6efd,#6610f2)','linear-gradient(135deg,#dc3545,#e83e8c)','linear-gradient(135deg,#fd7e14,#ffc107)','linear-gradient(135deg,#6f42c1,#d63384)','linear-gradient(135deg,#0dcaf0,#0d6efd)','linear-gradient(135deg,#198754,#20c997)'];
 
-        // All 3 exam parts definition (max scores from API, fallback defaults)
-        let examParts = [
-            { key: 'quiz', label: 'Quiz', max: 20, locked: false },
-            { key: 'assignment', label: 'Assignment', max: 20, locked: false },
-            { key: 'final', label: 'Final Exam', max: 60, locked: false }
-        ];
+        // Exam parts — dynamically loaded from Admin settings via API
+        let examParts = []; // populated in loadResultsStudents() from /api/exams
 
         function getGradeBadge(pct) {
             if (pct >= 95) return {cls:'grade-A-plus', text:'A+'};
@@ -1196,21 +1190,42 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
             try {
-                // 1. Load exam definitions/max scores for this class
-                const examRes = await fetch(`/api/exams/class/${classId}`);
-                const examsData = await examRes.json();
-                if (Array.isArray(examsData) && examsData.length > 0) {
-                    const keyOrder = ['quiz', 'assignment', 'final'];
-                    keyOrder.forEach(k => {
-                        const found = examsData.find(e => e.exam_key === k);
-                        const part = examParts.find(p => p.key === k);
-                        if (found && part) {
-                            part.max = parseFloat(found.max_score) || part.max;
-                            part.locked = found.is_locked === true;
-                            part.id = found.id;
-                        }
-                    });
+                // 1. Load exam definitions dynamically from Admin settings
+                let examsData = [];
+                try {
+                    const examRes = await fetch(`/api/exams/class/${classId}`);
+                    if (examRes.ok) examsData = await examRes.json();
+                } catch(e) {}
+                // Fallback to global exams if class-specific returns empty
+                if (!Array.isArray(examsData) || examsData.length === 0) {
+                    try {
+                        const fallbackRes = await fetch('/api/exams');
+                        if (fallbackRes.ok) examsData = await fallbackRes.json();
+                    } catch(e) {}
                 }
+                // Build examParts dynamically from admin-defined exams
+                if (Array.isArray(examsData) && examsData.length > 0) {
+                    examParts = examsData
+                        .filter(e => e.active !== false && !e.deleted_at)
+                        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id)
+                        .map(e => ({
+                            key: e.exam_key,
+                            label: e.name,
+                            max: parseFloat(e.max_score) || 0,
+                            locked: e.is_locked === true,
+                            id: e.id
+                        }));
+                }
+                // Final fallback: if still empty use a 100-point default
+                if (examParts.length === 0) {
+                    examParts = [{ key: 'score', label: 'Score', max: 100, locked: false }];
+                }
+
+                // Update badge in the card header
+                const partsLabel = $('results-exam-parts-badge');
+                const partsSubtext = $('results-exam-parts-subtext');
+                if (partsLabel) partsLabel.textContent = examParts.map(p => p.label).join(' · ');
+                if (partsSubtext) partsSubtext.textContent = `Enter all ${examParts.length} part${examParts.length > 1 ? 's' : ''} at once. 🔒 = locked by Admin.`;
 
                 // 2. Load previous submissions for this class + subject to inspect lock status & existing marks
                 let existingResults = [];
@@ -1233,15 +1248,27 @@
                     </span>`;
                 }).join('');
 
-                // Update table headers with lock status
-                ['quiz','assignment','final'].forEach(k => {
-                    const th = $('th-' + k);
-                    const p = examParts.find(x => x.key === k);
-                    if (th && p) {
+                // Dynamically build table headers from examParts
+                const headerRow = $('results-table-header-row');
+                if (headerRow) {
+                    // Remove old dynamic exam columns (keep Student, Total, Grade, Remarks)
+                    headerRow.querySelectorAll('.dynamic-exam-th').forEach(el => el.remove());
+                    // Insert after the first <th> (Student column)
+                    const studentTh = headerRow.querySelector('th:first-child');
+                    examParts.slice().reverse().forEach(p => {
                         const locked = p.locked || isLockedBySubmission;
+                        const th = document.createElement('th');
+                        th.className = 'dynamic-exam-th';
+                        th.style.textAlign = 'center';
+                        th.id = 'th-exam-' + p.key;
                         th.innerHTML = `${p.label}${locked ? ' <i class="fas fa-lock" style="color:#f59e0b;font-size:0.7rem;"></i>' : ''}<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/${p.max}</small>`;
-                    }
-                });
+                        studentTh.insertAdjacentElement('afterend', th);
+                    });
+                }
+                // Update total max label
+                const totalMax0 = examParts.reduce((s, p) => s + p.max, 0);
+                const totalMaxLabel = $('results-total-max-label');
+                if (totalMaxLabel) totalMaxLabel.textContent = '/' + totalMax0;
 
                 // Submit button & status banner
                 const submitBtn = $('submit-results-btn');
@@ -1278,7 +1305,7 @@
                     $('results-alert').innerHTML = `
                         <div class="alert alert-light border d-flex align-items-center gap-2 text-muted mb-3" style="border-radius:10px;font-size:0.82rem;">
                             <i class="fas fa-info-circle text-primary"></i>
-                            <div>Enter <strong>Quiz (/20)</strong>, <strong>Assignment (/20)</strong>, and <strong>Final Exam (/60)</strong> for all students. All 3 parts will be submitted together at once.</div>
+                            <div>Enter ${examParts.map(p => `<strong>${p.label} (/${p.max})</strong>`).join(', ')} for all students. All ${examParts.length} part${examParts.length > 1 ? 's' : ''} will be submitted together at once.</div>
                         </div>`;
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -1314,13 +1341,14 @@
                         if (r.remarks) sRemark = r.remarks;
                     });
 
+                    // Build parts object dynamically from admin-defined exam keys
+                    const initialParts = {};
+                    examParts.forEach(p => {
+                        initialParts[p.key] = sScores[p.key] !== undefined ? sScores[p.key] : 0;
+                    });
                     currentResultsStudents[s.id] = {
                         name: s.name,
-                        parts: {
-                            quiz: sScores.quiz !== undefined ? sScores.quiz : 0,
-                            assignment: sScores.assignment !== undefined ? sScores.assignment : 0,
-                            final: sScores.final !== undefined ? sScores.final : 0
-                        }
+                        parts: initialParts
                     };
 
                     const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
@@ -1480,7 +1508,7 @@
                 $('results-alert').innerHTML = `
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-3" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
                         <i class="fas fa-check-circle fa-lg text-success"></i>
-                        <div><strong>All 3 Parts Submitted & Locked!</strong> Quiz, Assignment, and Final Exam results have been submitted. Editing is now locked until an Administrator unlocks them in Results Approval.</div>
+                        <div><strong>All ${examParts.length} Part${examParts.length > 1 ? 's' : ''} Submitted & Locked!</strong> ${examParts.map(p => p.label).join(', ')} results have been submitted. Editing is now locked until an Administrator unlocks them in Results Approval.</div>
                     </div>`;
 
                 await loadSubmittedResults();
