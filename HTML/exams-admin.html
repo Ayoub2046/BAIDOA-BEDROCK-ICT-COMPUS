@@ -17,9 +17,10 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .exam-def-row { display: flex; align-items: center; gap: 0.6rem; }
-        .assign-check { width: 22px; height: 22px; accent-color: var(--primary-dark, #0f510e); }
-        .badge-assigned { background: #d5f5e3; color: #1e8449; }
+        .assign-check { width: 22px; height: 22px; accent-color: #0d4f8c; }
+        .badge-assigned { background: #e8eef7; color: #0d4f8c; border: 1px solid #c3d1e6; }
         .badge-notassigned { background: #f0f2f5; color: #888; }
+        body[data-theme="dark"] .badge-assigned { background: #1a2c4e; color: #d4af37; }
         body[data-theme="dark"] .badge-notassigned { background: #2a3a2a; color: #aaa; }
         .max-score-input { max-width: 100px; }
     </style>
@@ -88,6 +89,7 @@
                                         <th>Key</th>
                                         <th>Max Score</th>
                                         <th>Status</th>
+                                        <th>Lock Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -187,7 +189,7 @@
 
             function renderExamsTable() {
                 if (exams.length === 0) {
-                    examsTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No exams defined yet.</td></tr>`;
+                    examsTbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No exams defined yet.</td></tr>`;
                     return;
                 }
                 examsTbody.innerHTML = exams.map(e => `
@@ -197,6 +199,11 @@
                         <td><code>${e.exam_key}</code></td>
                         <td>${e.max_score}</td>
                         <td>${e.active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'}</td>
+                        <td>
+                            <button class="btn btn-sm ${e.is_locked ? 'btn-danger' : 'btn-outline-success'} btn-toggle-lock" data-id="${e.id}" data-locked="${e.is_locked ? 'true' : 'false'}" style="font-size:0.75rem;padding:3px 10px;border-radius:20px;" title="${e.is_locked ? 'Click to Unlock' : 'Click to Lock'}">
+                                <i class="fas fa-${e.is_locked ? 'lock' : 'lock-open'} me-1"></i>${e.is_locked ? 'Locked' : 'Unlocked'}
+                            </button>
+                        </td>
                         <td class="action-buttons">
                             <button class="btn btn-sm btn-edit" data-id="${e.id}"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-delete" data-id="${e.id}"><i class="fas fa-trash"></i></button>
@@ -204,7 +211,7 @@
                     </tr>`).join('');
             }
 
-            // --- Add / Edit / Delete ---
+            // --- Add / Edit / Delete / Lock ---
             document.getElementById('btn-add-exam').addEventListener('click', () => {
                 examForm.reset();
                 document.getElementById('exam-id').value = '';
@@ -217,6 +224,26 @@
                 const btn = e.target.closest('button');
                 if (!btn) return;
                 const id = parseInt(btn.dataset.id);
+                if (btn.classList.contains('btn-toggle-lock')) {
+                    const currentlyLocked = btn.dataset.locked === 'true';
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch(`/api/exams/${id}/lock`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ locked: !currentlyLocked })
+                        });
+                        if (!res.ok) throw new Error('Failed to change lock state');
+                        const data = await res.json();
+                        showAlert(data.message || 'Lock status updated.', 'success');
+                        await loadExams();
+                    } catch(err) {
+                        showAlert(err.message, 'danger');
+                    } finally {
+                        btn.disabled = false;
+                    }
+                    return;
+                }
                 if (btn.classList.contains('btn-edit')) {
                     const exam = exams.find(x => x.id === id);
                     if (!exam) return;
@@ -287,7 +314,7 @@
                     assignContainer.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="fw-bold">Exams for ${classSelector.options[classSelector.selectedIndex].text}</span>
-                            <button class="btn btn-success btn-sm" id="save-assign-btn"><i class="fas fa-save me-1"></i> Save Assignment</button>
+                            <button class="btn btn-primary btn-sm" id="save-assign-btn" style="background:#0d4f8c;border-color:#0d4f8c;"><i class="fas fa-save me-1"></i> Save Assignment</button>
                         </div>
                         <div class="row g-2">${classExams.map(e => `
                             <div class="col-md-6 col-lg-4">
@@ -298,9 +325,42 @@
                                         <small class="text-muted">Max ${e.max_score}</small>
                                     </div>
                                     <span class="badge ${e.assigned ? 'badge-assigned' : 'badge-notassigned'}">${e.assigned ? 'Assigned' : 'Not assigned'}</span>
+                                    ${e.assigned ? `
+                                    <button type="button" class="btn btn-sm ${e.is_locked ? 'btn-danger' : 'btn-outline-secondary'} btn-class-lock ms-1"
+                                        data-exam-id="${e.id}" data-locked="${e.is_locked ? 'true' : 'false'}"
+                                        title="${e.is_locked ? 'Click to unlock for this class' : 'Click to lock for this class'}"
+                                        style="font-size:0.7rem;padding:2px 7px;border-radius:14px;">
+                                        <i class="fas fa-${e.is_locked ? 'lock' : 'lock-open'} me-1"></i>${e.is_locked ? 'Locked' : 'Open'}
+                                    </button>` : ''}
                                 </div>
                             </div>`).join('')}
                         </div>`;
+
+                    // Wire per-class lock toggle buttons
+                    assignContainer.querySelectorAll('.btn-class-lock').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const examId = parseInt(btn.dataset.examId);
+                            const currentlyLocked = btn.dataset.locked === 'true';
+                            btn.disabled = true;
+                            try {
+                                const r = await fetch(`/api/exams/class/${classId}/exam/${examId}/lock`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ locked: !currentlyLocked })
+                                });
+                                if (!r.ok) throw new Error('Lock update failed');
+                                const resData = await r.json();
+                                showAlert(resData.message || 'Updated lock status.', 'success');
+                                await renderAssignments();
+                            } catch(err) {
+                                showAlert(err.message, 'danger');
+                            } finally {
+                                btn.disabled = false;
+                            }
+                        });
+                    });
+
                     document.getElementById('save-assign-btn').addEventListener('click', async () => {
                         const examIds = Array.from(document.querySelectorAll('.assign-check:checked')).map(cb => parseInt(cb.dataset.examId));
                         try {

@@ -152,11 +152,10 @@
                                         <th><input type="checkbox" id="select-all"></th>
                                         <th>Student</th>
                                         <th>Subject</th>
-                                        <th class="text-center">Quiz</th>
-                                        <th class="text-center">Semester</th>
-                                        <th class="text-center">Midterm</th>
-                                        <th class="text-center">Final</th>
-                                        <th class="text-center">Total</th>
+                                        <th class="text-center">Quiz (/20)</th>
+                                        <th class="text-center">Assignment (/20)</th>
+                                        <th class="text-center">Final (/60)</th>
+                                        <th class="text-center">Total (/100)</th>
                                         <th>Submitted By</th>
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
@@ -350,11 +349,10 @@
                 });
 
                 tbody.innerHTML = Object.values(grouped).map(g => {
-                    const quiz = (g.scores.quiz1 || 0) + (g.scores.quiz2 || 0);
-                    const sem = (g.scores.sem1 || 0) + (g.scores.sem2 || 0);
-                    const midterm = g.scores.midterm || 0;
-                    const finalScore = g.scores.final || 0;
-                    const total = quiz + sem + midterm + finalScore;
+                    const quiz = g.scores.quiz !== undefined ? g.scores.quiz : ((g.scores.quiz1 || 0) + (g.scores.quiz2 || 0));
+                    const assignment = g.scores.assignment !== undefined ? g.scores.assignment : ((g.scores.sem1 || 0) + (g.scores.sem2 || 0));
+                    const finalScore = g.scores.final !== undefined ? g.scores.final : (g.scores.midterm || 0);
+                    const total = quiz + assignment + finalScore;
                     const ids = g.ids.join(',');
                     const bbId = 'BB' + String(260000 + g.student_id).slice(-6);
                     return `
@@ -362,11 +360,10 @@
                         <td><input type="checkbox" class="result-checkbox" data-ids="${ids}" data-status="${g.approval_status}"></td>
                         <td>${g.studentName}<br><small class="text-muted fw-semibold">${bbId}</small></td>
                         <td>${g.subject}</td>
-                        <td class="text-center">${quiz}/10</td>
-                        <td class="text-center">${sem}/10</td>
-                        <td class="text-center">${midterm}/40</td>
-                        <td class="text-center">${finalScore}/40</td>
-                        <td class="text-center fw-bold ${total >= 60 ? 'text-success' : total >= 40 ? 'text-warning' : 'text-danger'}">${total}/100</td>
+                        <td class="text-center">${quiz}/20</td>
+                        <td class="text-center">${assignment}/20</td>
+                        <td class="text-center">${finalScore}/60</td>
+                        <td class="text-center fw-bold ${total >= 50 ? 'text-success' : 'text-danger'}">${total}/100</td>
                         <td>${g.submitted_by || 'N/A'}</td>
                         <td>
                             <span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span>

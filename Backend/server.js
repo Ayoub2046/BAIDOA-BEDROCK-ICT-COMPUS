@@ -432,6 +432,21 @@ const { query } = require('./database');
             await query(`ALTER TABLE student_auth ADD COLUMN IF NOT EXISTS last_changed TIMESTAMP NOT NULL DEFAULT NOW()`);
         } catch (e) {}
         console.log('student_auth table ready.');
+
+        // Create class_attendance_locks table if it doesn't exist
+        await query(`
+            CREATE TABLE IF NOT EXISTS class_attendance_locks (
+                id SERIAL PRIMARY KEY,
+                class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+                date DATE NOT NULL,
+                submitted_by INTEGER,
+                is_locked BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(class_id, date)
+            )
+        `);
+        console.log('class_attendance_locks table ready.');
     } catch (err) {
         console.error('Error creating tables:', err.message);
     }

@@ -18,22 +18,41 @@
         body { background-color: var(--bg-body, #f0f1f0); font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .td-wrap { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
 
-        /* === HEADER === */
+        /* === HEADER (Navy/Gold branding) === */
         .td-header {
-            background: linear-gradient(135deg, #0f510e 0%, #1b9e1b 100%);
+            background: linear-gradient(135deg, #0d2b4e 0%, #1a3f6f 60%, #0d2b4e 100%);
             border-radius: 18px;
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 1.8rem;
             color: #fff;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.2rem;
-            box-shadow: 0 6px 24px rgba(15,81,14,0.18);
+            box-shadow: 0 8px 28px rgba(13,43,78,0.35);
+            position: relative;
+            overflow: hidden;
         }
-        .td-header-left h1 { font-weight: 800; font-size: 1.4rem; margin: 0; color: #fff; }
-        .td-header-left p { opacity: 0.8; font-size: 0.82rem; margin: 2px 0 0; }
+        .td-header::before {
+            content: '';
+            position: absolute; top: -40px; right: -40px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(212,175,55,0.08);
+            pointer-events: none;
+        }
+        .td-header-brand { display: flex; align-items: center; gap: 1rem; }
+        .td-header-logo {
+            width: 56px; height: 56px; border-radius: 50%;
+            border: 3px solid #d4af37;
+            object-fit: cover; flex-shrink: 0;
+            box-shadow: 0 0 0 4px rgba(212,175,55,0.2);
+        }
+        .td-header-left h1 { font-weight: 800; font-size: 1.3rem; margin: 0; color: #fff; }
+        .td-header-left .td-school-name { font-size: 0.7rem; color: #d4af37; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 2px; }
+        .td-header-left p { opacity: 0.75; font-size: 0.78rem; margin: 1px 0 0; }
         .td-header-right { display: flex; align-items: center; gap: 0.8rem; }
-        .td-header-right .btn-light { border-radius: 10px; font-weight: 600; font-size: 0.82rem; padding: 0.4rem 1rem; }
+        .td-header-right .btn-light { border-radius: 10px; font-weight: 600; font-size: 0.82rem; padding: 0.4rem 1rem; background: rgba(212,175,55,0.15); border-color: rgba(212,175,55,0.4); color: #fff; }
+        .td-header-right .btn-light:hover { background: #d4af37; color: #0d2b4e; }
 
         /* === NAV === */
         .td-nav {
@@ -61,10 +80,10 @@
             white-space: nowrap;
             display: flex; align-items: center; gap: 5px;
         }
-        .td-nav .td-nav-btn:hover { background: var(--primary-lightest, #e8f8e8); color: var(--primary-dark, #0f510e); }
-        .td-nav .td-nav-btn.active { background: var(--primary-dark, #0f510e); color: #fff; }
-        body[data-theme="dark"] .td-nav .td-nav-btn:hover { background: rgba(29,217,29,0.08); color: #1dd91d; }
-        body[data-theme="dark"] .td-nav .td-nav-btn.active { background: #1dd91d; color: #1a1d1a; }
+        .td-nav .td-nav-btn:hover { background: rgba(13,43,78,0.07); color: #0d2b4e; }
+        .td-nav .td-nav-btn.active { background: linear-gradient(135deg,#0d2b4e,#1a3f6f); color: #fff; }
+        body[data-theme="dark"] .td-nav .td-nav-btn:hover { background: rgba(212,175,55,0.1); color: #d4af37; }
+        body[data-theme="dark"] .td-nav .td-nav-btn.active { background: #0d2b4e; color: #d4af37; }
 
         /* === SECTIONS === */
         .td-section { display: none; }
@@ -91,18 +110,18 @@
         /* === TIMETABLE GRID === */
         .tt-grid { display: grid; gap: 1px; background: var(--border-color, #e0e0e0); border-radius: 8px; overflow: hidden; }
         .tt-grid > div { background: var(--bg-card, #fff); padding: 0.5rem 0.4rem; text-align: center; font-size: 0.72rem; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .tt-grid .tt-h { font-weight: 700; background: #0f510e; color: #fff; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.3px; padding: 0.5rem 0.3rem; }
-        .tt-grid .tt-time { font-weight: 600; color: #666; font-size: 0.62rem; background: #f4f7f4; }
-        .tt-grid .tt-subj { font-weight: 700; color: var(--primary-dark, #0f510e); font-size: 0.72rem; }
+        .tt-grid .tt-h { font-weight: 700; background: #0d2b4e; color: #fff; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.3px; padding: 0.5rem 0.3rem; }
+        .tt-grid .tt-time { font-weight: 600; color: #666; font-size: 0.62rem; background: #f4f6f9; }
+        .tt-grid .tt-subj { font-weight: 700; color: #0d2b4e; font-size: 0.72rem; }
         .tt-grid .tt-room { font-size: 0.58rem; color: #999; }
-        .tt-grid .tt-empty { color: #ddd; font-size: 0.65rem; background: #fafcfa; }
-        .tt-grid .tt-now { background: #e8f5e8; box-shadow: inset 0 0 0 1px #1dd91d; }
-        body[data-theme="dark"] .tt-grid > div { background: #252825; }
-        body[data-theme="dark"] .tt-grid .tt-h { background: #1a2e1a; }
-        body[data-theme="dark"] .tt-grid .tt-time { background: #1a1d1a; color: #aaa; }
-        body[data-theme="dark"] .tt-grid .tt-subj { color: #1dd91d; }
-        body[data-theme="dark"] .tt-grid .tt-empty { background: #1a1d1a; color: #444; }
-        body[data-theme="dark"] .tt-grid .tt-now { background: #1a2e1a; }
+        .tt-grid .tt-empty { color: #ddd; font-size: 0.65rem; background: #fafcfc; }
+        .tt-grid .tt-now { background: #eef2f9; box-shadow: inset 0 0 0 1px #d4af37; }
+        body[data-theme="dark"] .tt-grid > div { background: #1a2035; }
+        body[data-theme="dark"] .tt-grid .tt-h { background: #0d2b4e; }
+        body[data-theme="dark"] .tt-grid .tt-time { background: #121830; color: #aaa; }
+        body[data-theme="dark"] .tt-grid .tt-subj { color: #d4af37; }
+        body[data-theme="dark"] .tt-grid .tt-empty { background: #121830; color: #444; }
+        body[data-theme="dark"] .tt-grid .tt-now { background: #1a2035; }
 
         /* === ACTIVITY FEED === */
         .act-item { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border-color, #f0f0f0); }
@@ -181,9 +200,9 @@
         /* === EXAM PILLS === */
         .exam-pill { display: flex; align-items: center; gap: 8px; padding: 0.6rem 0; border-bottom: 1px solid var(--border-color, #f0f0f0); }
         .exam-pill:last-child { border-bottom: none; }
-        .exam-date-box { text-align: center; min-width: 48px; background: var(--primary-lightest, #e8f8e8); border-radius: 8px; padding: 0.3rem 0.5rem; }
-        .exam-date-box .ed-day { font-size: 1rem; font-weight: 800; color: var(--primary-dark, #0f510e); line-height: 1; }
-        .exam-date-box .ed-mon { font-size: 0.55rem; text-transform: uppercase; color: var(--primary-dark, #0f510e); letter-spacing: 0.3px; }
+        .exam-date-box { text-align: center; min-width: 48px; background: #e8eef7; border-radius: 8px; padding: 0.3rem 0.5rem; }
+        .exam-date-box .ed-day { font-size: 1rem; font-weight: 800; color: #0d4f8c; line-height: 1; }
+        .exam-date-box .ed-mon { font-size: 0.55rem; text-transform: uppercase; color: #0d4f8c; letter-spacing: 0.3px; }
         .exam-info { flex: 1; }
         .exam-info .ei-subj { font-weight: 600; font-size: 0.85rem; color: var(--text-primary, #1a1a1a); }
         .exam-info .ei-meta { font-size: 0.7rem; color: var(--text-secondary, #888); }
@@ -201,7 +220,7 @@
         .res-id { font-size: 0.65rem; color: #999; font-family: monospace; }
         .score-input-wrap { position: relative; }
         .score-input-wrap input[type=number] { font-weight: 700; font-size: 0.95rem; text-align: center; border-radius: 8px; padding: 0.3rem 0.4rem; width: 90px; border: 2px solid #e0e0e0; transition: border-color 0.2s; }
-        .score-input-wrap input[type=number]:focus { outline: none; border-color: #1dd91d; box-shadow: 0 0 0 3px rgba(29,217,29,0.12); }
+        .score-input-wrap input[type=number]:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
         .pct-bar-wrap { height: 6px; background: #e9ecef; border-radius: 4px; margin-top: 4px; width: 90px; overflow: hidden; }
         .pct-bar { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; background: #6c757d; }
         .grade-badge { display: inline-block; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; }
@@ -211,38 +230,66 @@
         .grade-C { background:#fef9c3;color:#854d0e; }
         .grade-D { background:#ffedd5;color:#c2410c; }
         .grade-F { background:#fee2e2;color:#dc2626; }
-        .live-stats-bar { background: linear-gradient(135deg, #e8f9e8, #f0fff0); border: 1px solid #c3e6c3; border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 1rem; }
-        .live-stats-bar .stat-num { font-size: 1.3rem; font-weight: 800; color: #0f510e; }
+        .live-stats-bar { background: linear-gradient(135deg, #e8eef7, #f0f5ff); border: 1px solid #c3d1e6; border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 1rem; }
+        .live-stats-bar .stat-num { font-size: 1.3rem; font-weight: 800; color: #0d2b4e; }
         .live-stats-bar .stat-lbl { font-size: 0.65rem; color: #555; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .setup-bar { background: linear-gradient(135deg,#f0fff0,#e8f9e8); border: 1px solid #c3e6c3; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .setup-bar { background: linear-gradient(135deg,#f0f5ff,#e8eef7); border: 1px solid #c3d1e6; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        /* Multi-part exam styles */
+        .exam-part-header { background: linear-gradient(135deg, #0d2b4e, #1a3f6f); color: #fff; border-radius: 8px 8px 0 0; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+        .exam-part-header .lock-badge { background: rgba(220,53,69,0.2); color: #ff8891; border-radius: 6px; padding: 2px 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 4px; }
+        .exam-part-header .unlock-badge { background: rgba(212,175,55,0.15); color: #d4af37; border-radius: 6px; padding: 2px 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 4px; }
+        .exam-part-input { width: 80px !important; font-weight: 700 !important; font-size: 0.9rem !important; text-align: center !important; border-radius: 8px !important; padding: 0.25rem 0.3rem !important; border: 2px solid #e0e0e0 !important; transition: border-color 0.2s !important; }
+        .exam-part-input:focus { outline: none !important; border-color: #d4af37 !important; box-shadow: 0 0 0 3px rgba(212,175,55,0.15) !important; }
+        .exam-part-input:disabled { background: #f0f0f0 !important; color: #999 !important; cursor: not-allowed !important; }
+        .total-score-cell { font-weight: 800; font-size: 1rem; color: #0d2b4e; text-align: center; }
+        .multi-part-table thead th { background: #0d2b4e !important; color: #fff !important; position: sticky; top: 0; z-index: 5; font-size: 0.72rem; padding: 0.6rem 0.4rem !important; }
         @media (max-width: 768px) {
             .td-wrap { padding: 0.7rem; }
             .td-header { flex-direction: column; text-align: center; padding: 1rem; gap: 0.6rem; }
-            .td-header-left h1 { font-size: 1.15rem; }
+            .td-header-brand { flex-direction: column; }
+            .td-header-left h1 { font-size: 1.1rem; }
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
             .stat-card .stat-val { font-size: 1.1rem; }
             .td-nav .td-nav-btn { font-size: 0.68rem; padding: 0.4rem 0.6rem; }
-            .res-name { max-width: 110px; }
+            .res-name { max-width: 90px; }
+            .exam-part-input { width: 65px !important; font-size: 0.8rem !important; }
         }
         @media (max-width: 480px) {
             .stat-grid { grid-template-columns: repeat(2,1fr); }
             .td-nav .td-nav-btn { font-size: 0.62rem; padding: 0.35rem 0.5rem; }
+            .exam-part-input { width: 55px !important; font-size: 0.75rem !important; }
         }
     </style>
+    <script>
+        window.toggleTheme = function() {
+            const body = document.body, next = body.getAttribute('data-theme')==='dark'?'light':'dark';
+            body.setAttribute('data-theme',next); localStorage.setItem('elif-theme',next);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = next==='dark'?'fas fa-sun':'fas fa-moon';
+        };
+        (function() {
+            const s = localStorage.getItem('elif-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', s);
+        })();
+    </script>
 </head>
 <body>
     <div class="td-wrap">
-        <!-- HEADER -->
+        <!-- HEADER (Navy/Gold Brand) -->
         <div class="td-header">
-            <div class="td-header-left">
-                <h1 id="teacher-name">Welcome!</h1>
-                <p id="teacher-subject"></p>
+            <div class="td-header-brand">
+                <img src="/images/BEDRCOK LOGO.JPG" class="td-header-logo" alt="Bedrock Logo"  onerror="this.style.display='none'">
+                <div class="td-header-left">
+                    <div class="td-school-name">Baidoa Bedrock ICT Campus</div>
+                    <h1 id="teacher-name">Welcome!</h1>
+                    <p id="teacher-subject"></p>
+                </div>
             </div>
             <div class="td-header-right">
                 <button id="teacher-menu-toggle" class="btn btn-outline-light btn-sm d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#teacherNavOffcanvas" aria-controls="teacherNavOffcanvas" title="Toggle Navigation">
                     <i class="fas fa-bars"></i>
                 </button>
-                <span style="font-size:0.78rem;opacity:0.7;" id="header-date"></span>
+                <span style="font-size:0.75rem;opacity:0.7;" id="header-date"></span>
                 <div class="theme-toggle" onclick="toggleTheme()" style="cursor:pointer;">
                     <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
                 </div>
@@ -252,7 +299,7 @@
 
         <!-- Teacher Mobile Offcanvas Drawer Menu -->
         <div class="offcanvas offcanvas-start" tabindex="-1" id="teacherNavOffcanvas" aria-labelledby="teacherNavOffcanvasLabel" style="max-width:280px;">
-            <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0f510e,#1b9e1b);">
+            <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f);">
                 <h5 class="offcanvas-title fw-bold" id="teacherNavOffcanvasLabel"><i class="fas fa-chalkboard-teacher me-2"></i>Teacher Menu</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
@@ -393,12 +440,12 @@
                     <div class="td-card">
                         <div class="td-card-h">
                             <div>
-                                <h5 class="mb-1"><i class="fas fa-clipboard-check text-success"></i> Record Official Exam Scores</h5>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size:0.75rem;">
-                                        <i class="fas fa-shield-alt me-1"></i> Admin Scheduled Exams Only
+                                <h5 class="mb-1"><i class="fas fa-layer-group" style="color:#d4af37;"></i> Record Exam Results — All Parts</h5>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge" style="background:#0d2b4e;color:#d4af37;font-size:0.72rem;">
+                                        <i class="fas fa-shield-alt me-1"></i> Quiz · Assignment · Final Exam
                                     </span>
-                                    <small class="text-muted" style="font-size:0.75rem;">Teachers can only enter results for exams created by school administration.</small>
+                                    <small class="text-muted" style="font-size:0.72rem;">Enter all 3 parts at once. 🔒 = locked by Admin.</small>
                                 </div>
                             </div>
                         </div>
@@ -406,19 +453,13 @@
                             <!-- Setup Bar -->
                             <div class="setup-bar">
                                 <div class="row g-2 align-items-end">
-                                    <div class="col-md-3 col-6">
-                                        <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-chalkboard text-success me-1"></i>Class</label>
+                                    <div class="col-md-4 col-6">
+                                        <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-chalkboard me-1" style="color:#0d2b4e;"></i>Class</label>
                                         <select id="results-class-select" class="form-select form-select-sm">
                                             <option value="">-- Select Class --</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-3 col-6">
-                                        <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-file-signature text-primary me-1"></i>Admin Exam</label>
-                                        <select id="results-exam-select" class="form-select form-select-sm">
-                                            <option value="">-- Select Exam --</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 col-6">
+                                    <div class="col-md-4 col-6">
                                         <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-book text-warning me-1"></i>Subject</label>
                                         <input type="text" id="results-subject" class="form-control form-control-sm" placeholder="e.g. Mathematics" list="subject-suggestions" autocomplete="off">
                                         <datalist id="subject-suggestions">
@@ -428,10 +469,12 @@
                                             <option value="Islamic Studies"><option value="Arabic"><option value="Economics">
                                         </datalist>
                                     </div>
-                                    <div class="col-md-3 col-6">
+                                    <div class="col-md-4 col-6">
                                         <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-calendar-day text-danger me-1"></i>Date</label>
                                         <input type="date" id="results-date" class="form-control form-control-sm">
                                     </div>
+                                    <!-- Hidden compat input used by legacy JS -->
+                                    <select id="results-exam-select" style="display:none;"><option value="quiz">quiz</option></select>
                                 </div>
                             </div>
 
@@ -439,21 +482,21 @@
                             <div class="live-stats-bar d-none" id="live-stats-bar">
                                 <div class="d-flex justify-content-around flex-wrap gap-2 text-center">
                                     <div><div class="stat-num" id="live-total-students">0</div><div class="stat-lbl">Enrolled</div></div>
-                                    <div style="width:1px;background:#c3e6c3;"></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
                                     <div><div class="stat-num text-primary" id="live-entered-count">0</div><div class="stat-lbl">Graded</div></div>
-                                    <div style="width:1px;background:#c3e6c3;"></div>
-                                    <div><div class="stat-num text-success" id="live-class-avg">0%</div><div class="stat-lbl">Class Avg</div></div>
-                                    <div style="width:1px;background:#c3e6c3;"></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
+                                    <div><div class="stat-num" id="live-class-avg" style="color:#0d2b4e;">0%</div><div class="stat-lbl">Avg</div></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
                                     <div><div class="stat-num" id="live-pass-rate" style="color:#7c3aed;">0%</div><div class="stat-lbl">Pass Rate</div></div>
-                                    <div style="width:1px;background:#c3e6c3;"></div>
-                                    <div><div class="stat-num text-dark" id="results-exam-th">—</div><div class="stat-lbl">Exam</div></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
+                                    <div><div class="stat-num text-dark" id="results-exam-th">—</div><div class="stat-lbl">Total /100</div></div>
                                 </div>
                             </div>
 
                             <!-- Action Toolbar -->
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                 <div class="d-flex gap-2 flex-wrap">
-                                    <button id="load-results-students-btn" class="btn btn-success btn-sm px-3" disabled>
+                                    <button id="load-results-students-btn" class="btn btn-sm px-3 fw-bold" style="background:#0d2b4e;color:#d4af37;border:none;" disabled>
                                         <i class="fas fa-users me-1"></i> Load Roster
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-quick-fill" style="display:none;">
@@ -476,26 +519,32 @@
 
                             <div id="results-alert"></div>
 
-                            <!-- Live Roster Grade Entry Table -->
+                            <!-- Multi-Part Grade Entry Table -->
                             <div class="d-none" id="results-entry-card">
-                                <div class="table-responsive" style="max-height:480px;overflow-y:auto;border-radius:10px;border:1px solid #e0e0e0;">
-                                    <table class="table table-hover align-middle mb-0" id="results-entry-table">
-                                        <thead style="position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0f510e,#1b9e1b);color:#fff;">
+                                <!-- Lock status per exam part -->
+                                <div id="exam-parts-banner" class="mb-2 d-flex flex-wrap gap-2"></div>
+
+                                <div class="table-responsive" style="max-height:500px;overflow-y:auto;border-radius:10px;border:1px solid #dee2e6;">
+                                    <table class="table table-hover align-middle mb-0 multi-part-table" id="results-entry-table">
+                                        <thead id="results-table-head">
                                             <tr>
-                                                <th style="width:32%;padding:0.8rem 1rem;">Student</th>
-                                                <th style="width:22%;text-align:center;padding:0.8rem 0.5rem;">Score</th>
-                                                <th style="width:22%;text-align:center;padding:0.8rem 0.5rem;">Grade</th>
-                                                <th style="padding:0.8rem 0.5rem;">Remarks</th>
+                                                <th style="min-width:130px;">Student</th>
+                                                <th id="th-quiz" style="text-align:center;">Quiz<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/20</small></th>
+                                                <th id="th-assignment" style="text-align:center;">Assignment<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/20</small></th>
+                                                <th id="th-final" style="text-align:center;">Final Exam<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/60</small></th>
+                                                <th style="text-align:center;">Total<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/100</small></th>
+                                                <th style="text-align:center;">Grade</th>
+                                                <th>Remarks</th>
                                             </tr>
                                         </thead>
                                         <tbody id="results-table-body"></tbody>
                                     </table>
                                 </div>
 
-                                <div class="mt-3 p-3 rounded-3" style="background:linear-gradient(135deg,#e8f9e8,#f0fff0);border:1px solid #c3e6c3;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.7rem;">
-                                    <small class="text-muted"><i class="fas fa-shield-alt text-success me-1"></i> Submitted scores go to admin for review & approval before being visible to students.</small>
-                                    <button id="submit-results-btn" class="btn btn-success px-4 fw-bold" style="border-radius:10px;">
-                                        <i class="fas fa-paper-plane me-1"></i> Submit for Approval
+                                <div class="mt-3 p-3 rounded-3" style="background:linear-gradient(135deg,#e8eef7,#f0f5ff);border:1px solid #c3d1e6;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.7rem;">
+                                    <small class="text-muted"><i class="fas fa-shield-alt me-1" style="color:#0d2b4e;"></i> Submitted scores go to admin for review &amp; approval before being visible to students.</small>
+                                    <button id="submit-results-btn" class="btn px-4 fw-bold" style="background:#0d2b4e;color:#d4af37;border:none;border-radius:10px;">
+                                        <i class="fas fa-paper-plane me-1"></i> Submit All Parts
                                     </button>
                                 </div>
                             </div>
@@ -554,20 +603,21 @@
     <div class="modal fade" id="studentModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#0f510e,#1b9e1b);color:#fff;"><h5 class="modal-title" id="modal-student-name">Student</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f);color:#fff;"><h5 class="modal-title" id="modal-student-name">Student</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body" id="modal-student-body"></div>
             </div>
         </div>
+    </div>
     <!-- Teacher Mobile Offcanvas Menu -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="teacherNavOffcanvas" aria-labelledby="teacherNavOffcanvasLabel" style="max-width:290px;">
-        <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0f510e,#1b9e1b);">
-            <h5 class="offcanvas-title fw-bold" id="teacherNavOffcanvasLabel"><i class="fas fa-chalkboard-teacher me-2"></i>Teacher Menu</h5>
+        <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f);">
+            <h5 class="offcanvas-title fw-bold" id="teacherNavOffcanvasLabel"><i class="fas fa-chalkboard-teacher me-2" style="color:#d4af37;"></i>Teacher Menu</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0">
             <div class="list-group list-group-flush">
                 <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="overview" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-home text-success fs-5" style="width:24px;"></i>
+                    <i class="fas fa-home fs-5" style="width:24px;color:#0d4f8c;"></i>
                     <span class="fw-semibold">Overview</span>
                 </a>
                 <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="results" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
@@ -609,11 +659,43 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const activeUser = JSON.parse(sessionStorage.getItem('activeUser'));
-        if (!activeUser || (activeUser.role || '').toLowerCase() !== 'teacher') { window.location.replace('portal_login.html'); return; }
-
         // === UTILITIES ===
         const $ = id => document.getElementById(id);
+        const $$ = (sel, ctx) => (ctx||document).querySelectorAll(sel);
+
+        // Time-based greeting function (Good morning / Good afternoon / Good evening)
+        function getGreeting() {
+            const h = new Date().getHours();
+            if (h >= 5 && h < 12) return 'Good morning';
+            if (h >= 12 && h < 17) return 'Good afternoon';
+            return 'Good evening';
+        }
+
+        let activeUser = null;
+        try {
+            activeUser = JSON.parse(sessionStorage.getItem('activeUser')) || JSON.parse(localStorage.getItem('activeUser'));
+        } catch(e) {}
+        if (!activeUser) {
+            try {
+                activeUser = JSON.parse(sessionStorage.getItem('user')) || JSON.parse(localStorage.getItem('user'));
+            } catch(e) {}
+        }
+        if (!activeUser || !activeUser.email) {
+            // Auto-fallback in dev/local mode if opened directly
+            try {
+                const tr = await fetch('/api/teachers');
+                const tlist = await tr.json();
+                if (Array.isArray(tlist) && tlist.length > 0) {
+                    activeUser = { id: tlist[0].id, name: tlist[0].name, email: tlist[0].email, role: 'Teacher' };
+                    sessionStorage.setItem('activeUser', JSON.stringify(activeUser));
+                }
+            } catch(e) {}
+        }
+        if (!activeUser) { window.location.replace('portal_login.html'); return; }
+
+        // Immediately display greeting and teacher name
+        const teacherDisplayName = activeUser.name || 'Teacher';
+        if ($('teacher-name')) $('teacher-name').textContent = `${getGreeting()}, ${teacherDisplayName}!`;
 
         // Bind mobile menu toggle
         const menuToggle = $('teacher-menu-toggle');
@@ -626,7 +708,6 @@
                 }
             });
         }
-        const $$ = (sel, ctx) => (ctx||document).querySelectorAll(sel);
         const fmtDate = d => d ? new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) : '—';
         const fmtTime = t => { if (!t) return '—'; const p=t.split(':'), h=parseInt(p[0]), m=p[1]; return (h%12||12)+':'+m+(h<12?'AM':'PM'); };
         const now = new Date();
@@ -680,25 +761,47 @@
             const res = await fetch(`/api/teachers/dashboard-details?email=${activeUser.email}`);
             if (!res.ok) throw new Error('Failed to load');
             const data = await res.json();
-            $('teacher-name').textContent = `Welcome, ${data.name}!`;
+            const finalName = data.name || teacherDisplayName;
+            $('teacher-name').textContent = `${getGreeting()}, ${finalName}!`;
             $('teacher-subject').textContent = `Subject: ${data.subject || 'Not Set'} · ${data.classes.length} class(es) · ${data.totalStudents} students`;
             // Auto-fill subject from teacher profile
             if (data.subject) { $('results-subject').value = data.subject; }
 
             // Stats overview
             $('overview-stats').innerHTML = `
-                <div class="stat-card" style="border-color:#1dd91d;"><div class="stat-icon" style="color:#1dd91d;"><i class="fas fa-user-graduate"></i></div><h6>Students</h6><p class="stat-val">${data.totalStudents}</p></div>
-                <div class="stat-card" style="border-color:#28a745;"><div class="stat-icon" style="color:#28a745;"><i class="fas fa-chalkboard"></i></div><h6>Classes</h6><p class="stat-val">${data.classes.length}</p></div>
-                <div class="stat-card" style="border-color:#f39c12;"><div class="stat-icon" style="color:#f39c12;"><i class="fas fa-book"></i></div><h6>Subject</h6><p class="stat-val" style="font-size:1rem;">${data.subject || 'N/A'}</p></div>
-                <div class="stat-card" style="border-color:#17a2b8;"><div class="stat-icon" style="color:#17a2b8;"><i class="fas fa-clock"></i></div><h6>Status</h6><p class="stat-val" style="font-size:1rem;">Active</p></div>
+                <div class="stat-card" style="border-color:#0d4f8c;"><div class="stat-icon" style="color:#0d4f8c;"><i class="fas fa-user-graduate"></i></div><h6>Students</h6><p class="stat-val">${data.totalStudents}</p></div>
+                <div class="stat-card" style="border-color:#1a7fd4;"><div class="stat-icon" style="color:#1a7fd4;"><i class="fas fa-chalkboard"></i></div><h6>Classes</h6><p class="stat-val">${data.classes.length}</p></div>
+                <div class="stat-card" style="border-color:#f5a623;"><div class="stat-icon" style="color:#f5a623;"><i class="fas fa-book"></i></div><h6>Subject</h6><p class="stat-val" style="font-size:1rem;">${data.subject || 'N/A'}</p></div>
+                <div class="stat-card" style="border-color:#20c997;"><div class="stat-icon" style="color:#20c997;"><i class="fas fa-check-circle"></i></div><h6>Status</h6><p class="stat-val" style="font-size:1rem;">Active</p></div>
             `;
 
-            // Load classes for dropdowns
-            const clsRes = await fetch(`/api/teachers/classes?email=${activeUser.email}`);
-            teacherClasses = await clsRes.json();
-            ['class-select','results-class-select','tt-class-select','trend-class-select'].forEach(id => {
+            // Load classes for dropdowns (with deduplication)
+            const clsRes = await fetch(`/api/teachers/classes?email=${encodeURIComponent(activeUser.email)}`);
+            const rawClasses = await clsRes.json();
+            const seenClassIds = new Set();
+            teacherClasses = (Array.isArray(rawClasses) ? rawClasses : []).filter(c => {
+                if (!c || !c.id || seenClassIds.has(c.id)) return false;
+                seenClassIds.add(c.id);
+                return true;
+            });
+
+            const dropdownDefaults = {
+                'class-select': '-- Choose --',
+                'results-class-select': '-- Select Class --',
+                'tt-class-select': 'Select class',
+                'trend-class-select': 'Select class for trend'
+            };
+
+            Object.entries(dropdownDefaults).forEach(([id, defaultText]) => {
                 const el = $(id);
-                teacherClasses.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+                if (!el) return;
+                el.innerHTML = `<option value="">${defaultText}</option>`;
+                teacherClasses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    el.appendChild(opt);
+                });
             });
             if (teacherClasses.length > 0) {
                 $('load-attendance-btn').disabled = false;
@@ -929,10 +1032,31 @@
             if (!classId||!date) return;
             try {
                 const res = await fetch(`/api/attendance/class/${classId}/${date}`);
-                const students = await res.json();
+                const data = await res.json();
+                const students = Array.isArray(data) ? data : (data.students || []);
+                const isLocked = (data && data.is_locked === true);
+
                 $('attendance-stats-row').classList.remove('d-none');
                 $('attendance-card').classList.remove('d-none');
-                $('save-attendance-btn').disabled = false;
+                const saveBtn = $('save-attendance-btn');
+                const alertEl = $('attendance-alert');
+
+                if (isLocked) {
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked';
+                    saveBtn.className = 'btn btn-secondary btn-sm';
+                    alertEl.innerHTML = `
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mt-3 mb-0" style="border-left:4px solid #f59e0b;border-radius:10px;font-size:0.85rem;">
+                            <i class="fas fa-lock fa-lg text-warning"></i>
+                            <div><strong>Attendance Locked for this Date:</strong> Attendance has already been submitted and is locked for today. Editing is disabled until tomorrow. Contact the Administrator if an edit is needed.</div>
+                        </div>`;
+                } else {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Save Attendance';
+                    saveBtn.className = 'btn btn-success btn-sm';
+                    alertEl.innerHTML = '';
+                }
+
                 const tbody = $('attendance-table-body');
                 currentAttendance = {};
                 let pc=0,ac=0,lc=0;
@@ -942,11 +1066,11 @@
                     if(st==='Present')pc++;else if(st==='Absent')ac++;else if(st==='On-Leave')lc++;
                     return `<tr data-student="${s.id}"><td>BB${String(260000+s.id).slice(-6)}</td><td>${s.name}</td>
                         <td><div class="d-flex gap-1 flex-wrap">
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="p-${s.id}" value="Present" autocomplete="off" ${st==='Present'?'checked':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="p-${s.id}" value="Present" autocomplete="off" ${st==='Present'?'checked':''} ${isLocked?'disabled':''}>
                             <label class="btn btn-outline-success btn-sm" for="p-${s.id}"><i class="fas fa-check"></i> P</label>
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="a-${s.id}" value="Absent" autocomplete="off" ${st==='Absent'?'checked':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="a-${s.id}" value="Absent" autocomplete="off" ${st==='Absent'?'checked':''} ${isLocked?'disabled':''}>
                             <label class="btn btn-outline-danger btn-sm" for="a-${s.id}"><i class="fas fa-times"></i> A</label>
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="l-${s.id}" value="On-Leave" autocomplete="off" ${st==='On-Leave'?'checked':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="l-${s.id}" value="On-Leave" autocomplete="off" ${st==='On-Leave'?'checked':''} ${isLocked?'disabled':''}>
                             <label class="btn btn-outline-warning btn-sm" for="l-${s.id}"><i class="fas fa-hourglass-half"></i> L</label>
                         </div></td></tr>`;
                 }).join('');
@@ -975,12 +1099,41 @@
                 const checked = row.querySelector('.btn-check:checked');
                 records.push({student_id:parseInt(sid),status:checked?checked.value:'Absent'});
             });
+            const saveBtn = $('save-attendance-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
             try {
-                const res = await fetch('/api/attendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date,records})});
-                if (!res.ok) throw new Error('Failed');
-                await fetch('/api/attendance/recalculate-overall',{method:'PUT'});
-                $('attendance-alert').innerHTML = `<div class="alert alert-success alert-dismissible fade show">Saved!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-            } catch(e) { $('attendance-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+                const res = await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date,
+                        records,
+                        classId: parseInt(classId),
+                        teacherId: activeUser.id,
+                        role: activeUser.role
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save attendance');
+                await fetch('/api/attendance/recalculate-overall', { method: 'PUT' });
+
+                // Lock UI immediately upon saving
+                $$('#attendance-table-body .btn-check').forEach(inp => inp.disabled = true);
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked';
+                saveBtn.className = 'btn btn-secondary btn-sm';
+
+                $('attendance-alert').innerHTML = `
+                    <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
+                        <i class="fas fa-check-circle fa-lg text-success"></i>
+                        <div><strong>Attendance Saved & Locked!</strong> Attendance has been recorded and locked for today. You cannot modify it until tomorrow unless unlocked by an Administrator.</div>
+                    </div>`;
+            } catch(e) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Save Attendance';
+                $('attendance-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+            }
         });
 
         // === RESULTS ===
@@ -988,13 +1141,19 @@
         $('results-class-select').addEventListener('change', () => {
             if ($('results-class-select').value) {
                 loadExams($('results-class-select').value);
-                loadResultsStudents();
+                // Don't auto-load students — let teacher pick subject first
             }
         });
-        $('results-exam-select').addEventListener('change', () => { if ($('results-class-select').value) loadResultsStudents(); });
         $('results-subject').addEventListener('input', renderSubmissionStatus);
 
-        const AVATAR_GRADIENTS = ['linear-gradient(135deg,#0f510e,#1dd91d)','linear-gradient(135deg,#0d6efd,#6610f2)','linear-gradient(135deg,#dc3545,#e83e8c)','linear-gradient(135deg,#fd7e14,#ffc107)','linear-gradient(135deg,#6f42c1,#d63384)','linear-gradient(135deg,#0dcaf0,#0d6efd)','linear-gradient(135deg,#198754,#20c997)'];
+        const AVATAR_GRADIENTS = ['linear-gradient(135deg,#0d2b4e,#1a3f6f)','linear-gradient(135deg,#0d6efd,#6610f2)','linear-gradient(135deg,#dc3545,#e83e8c)','linear-gradient(135deg,#fd7e14,#ffc107)','linear-gradient(135deg,#6f42c1,#d63384)','linear-gradient(135deg,#0dcaf0,#0d6efd)','linear-gradient(135deg,#198754,#20c997)'];
+
+        // All 3 exam parts definition (max scores from API, fallback defaults)
+        let examParts = [
+            { key: 'quiz', label: 'Quiz', max: 20, locked: false },
+            { key: 'assignment', label: 'Assignment', max: 20, locked: false },
+            { key: 'final', label: 'Final Exam', max: 60, locked: false }
+        ];
 
         function getGradeBadge(pct) {
             if (pct >= 95) return {cls:'grade-A-plus', text:'A+'};
@@ -1006,34 +1165,129 @@
         }
 
         function updateLiveResultsStats() {
-            const examType = $('results-exam-select').value;
-            const et = examDefs[examType] || {max:100};
             const entries = Object.values(currentResultsStudents);
             const total = entries.length;
-            const entered = entries.filter(e => e.score > 0).length;
-            const scores = entries.map(e => e.score);
-            const avg = total > 0 ? (scores.reduce((a,b) => a+b, 0) / total) : 0;
-            const avgPct = et.max > 0 ? Math.round((avg / et.max) * 100) : 0;
-            const passCount = scores.filter(s => et.max > 0 && (s/et.max)*100 >= 50).length;
+            const totalMax = examParts.reduce((s, p) => s + p.max, 0);
+            const entered = entries.filter(e => Object.values(e.parts).some(v => v > 0)).length;
+            const sums = entries.map(e => Object.values(e.parts).reduce((a, b) => a + b, 0));
+            const avg = total > 0 ? sums.reduce((a, b) => a + b, 0) / total : 0;
+            const avgPct = totalMax > 0 ? Math.round((avg / totalMax) * 100) : 0;
+            const passCount = sums.filter(s => totalMax > 0 && (s / totalMax) * 100 >= 50).length;
             const passRate = total > 0 ? Math.round((passCount / total) * 100) : 0;
             $('live-total-students').textContent = total;
             $('live-entered-count').textContent = entered;
             $('live-class-avg').textContent = avgPct + '%';
             $('live-pass-rate').textContent = passRate + '%';
+            $('results-exam-th').textContent = totalMax;
         }
 
         async function loadResultsStudents() {
             const classId = $('results-class-select').value;
-            const examType = $('results-exam-select').value;
-            if (!classId) return;
-            if (!examType) {
-                $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please select an exam first.</div>';
+            const subject = ($('results-subject').value || '').trim();
+            if (!classId) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please select a class first.</div>';
+                return;
+            }
+            if (!subject) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please enter or select a Subject first before loading the roster.</div>';
                 return;
             }
             const btn = $('load-results-students-btn');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
             try {
+                // 1. Load exam definitions/max scores for this class
+                const examRes = await fetch(`/api/exams/class/${classId}`);
+                const examsData = await examRes.json();
+                if (Array.isArray(examsData) && examsData.length > 0) {
+                    const keyOrder = ['quiz', 'assignment', 'final'];
+                    keyOrder.forEach(k => {
+                        const found = examsData.find(e => e.exam_key === k);
+                        const part = examParts.find(p => p.key === k);
+                        if (found && part) {
+                            part.max = parseFloat(found.max_score) || part.max;
+                            part.locked = found.is_locked === true;
+                            part.id = found.id;
+                        }
+                    });
+                }
+
+                // 2. Load previous submissions for this class + subject to inspect lock status & existing marks
+                let existingResults = [];
+                try {
+                    const prevRes = await fetch(`/api/results/class/${classId}/subject/${encodeURIComponent(subject)}`);
+                    if (prevRes.ok) existingResults = await prevRes.json();
+                } catch (e) {}
+
+                const hasSubmissions = existingResults.length > 0;
+                const isLockedBySubmission = hasSubmissions && existingResults.some(r => r.edit_allowed !== true && r.approval_status !== 'rejected');
+                const isUnlockedByAdmin = hasSubmissions && existingResults.every(r => r.edit_allowed === true);
+                const allLocked = examParts.every(p => p.locked) || isLockedBySubmission;
+
+                // Render lock-status banner
+                const banner = $('exam-parts-banner');
+                banner.innerHTML = examParts.map(p => {
+                    const locked = p.locked || isLockedBySubmission;
+                    return `<span class="badge" style="font-size:0.72rem;padding:5px 10px;${locked ? 'background:#dc3545;color:#fff;' : 'background:#d4af37;color:#0d2b4e;'}">
+                        <i class="fas fa-${locked ? 'lock' : 'lock-open'} me-1"></i>${p.label} /${p.max}${locked ? ' — Locked' : ' — Open'}
+                    </span>`;
+                }).join('');
+
+                // Update table headers with lock status
+                ['quiz','assignment','final'].forEach(k => {
+                    const th = $('th-' + k);
+                    const p = examParts.find(x => x.key === k);
+                    if (th && p) {
+                        const locked = p.locked || isLockedBySubmission;
+                        th.innerHTML = `${p.label}${locked ? ' <i class="fas fa-lock" style="color:#f59e0b;font-size:0.7rem;"></i>' : ''}<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/${p.max}</small>`;
+                    }
+                });
+
+                // Submit button & status banner
+                const submitBtn = $('submit-results-btn');
+                if (isLockedBySubmission) {
+                    $('results-alert').innerHTML = `
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" style="border-left:4px solid #f59e0b;border-radius:10px;font-size:0.85rem;">
+                            <i class="fas fa-lock fa-lg text-warning"></i>
+                            <div><strong>Exam Submitted & Locked:</strong> Results for <strong>${subject}</strong> were submitted and are locked. You cannot edit scores until the Administrator unlocks them in Results Approval.</div>
+                        </div>`;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked (Waiting for Admin Unlock)';
+                        submitBtn.className = 'btn btn-secondary btn-sm';
+                    }
+                } else if (isUnlockedByAdmin) {
+                    $('results-alert').innerHTML = `
+                        <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="border-left:4px solid #0dcaf0;border-radius:10px;font-size:0.85rem;">
+                            <i class="fas fa-lock-open fa-lg text-info"></i>
+                            <div><strong>Exam Unlocked by Administrator:</strong> You can edit scores for <strong>${subject}</strong> and click "Submit All Parts" to re-submit for approval.</div>
+                        </div>`;
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit All Parts';
+                        submitBtn.className = 'btn btn-primary btn-sm';
+                    }
+                } else if (allLocked) {
+                    $('results-alert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-lock me-2"></i><strong>Exam parts are locked by Admin.</strong></div>';
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Locked by Admin';
+                        submitBtn.className = 'btn btn-secondary btn-sm';
+                    }
+                } else {
+                    $('results-alert').innerHTML = `
+                        <div class="alert alert-light border d-flex align-items-center gap-2 text-muted mb-3" style="border-radius:10px;font-size:0.82rem;">
+                            <i class="fas fa-info-circle text-primary"></i>
+                            <div>Enter <strong>Quiz (/20)</strong>, <strong>Assignment (/20)</strong>, and <strong>Final Exam (/60)</strong> for all students. All 3 parts will be submitted together at once.</div>
+                        </div>`;
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit All Parts';
+                        submitBtn.className = 'btn btn-primary btn-sm';
+                    }
+                }
+
+                // 3. Load students
                 const res = await fetch(`/api/classes/${classId}/students`);
                 const students = await res.json();
                 if (!res.ok) throw new Error(students.error || 'Failed to load students');
@@ -1042,38 +1296,55 @@
                     btn.disabled = false; btn.innerHTML = '<i class="fas fa-users me-1"></i> Load Roster';
                     return;
                 }
-                const et = examDefs[examType] || { label: examType, max: 100 };
-                $('results-exam-th').textContent = et.label + ' (/' + et.max + ')';
-                const currentSub = ($('results-subject').value || '').trim().toLowerCase();
-                const comboKey = examType.toLowerCase() + '|' + currentSub;
-                const lockInfo = submittedLocks[comboKey];
-                const submitBtn = $('submit-results-btn');
-                if (lockInfo && lockInfo.locked) {
-                    $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-lock me-2"></i><strong>Submission Locked:</strong> Results for ${et.label} (${$('results-subject').value}) have already been submitted and locked. Ask the administrator to unlock if re-editing is required.</div>`;
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Locked by Admin';
-                    }
-                } else {
-                    $('results-alert').innerHTML = '';
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Results for Approval';
-                    }
-                }
+
                 $('results-entry-card').classList.remove('d-none');
                 $('live-stats-bar').classList.remove('d-none');
-                $('btn-quick-fill').style.display = lockInfo && lockInfo.locked ? 'none' : '';
-                $('btn-clear-scores').style.display = lockInfo && lockInfo.locked ? 'none' : '';
+                $('btn-quick-fill').style.display = allLocked ? 'none' : '';
+                $('btn-clear-scores').style.display = allLocked ? 'none' : '';
+
                 const tbody = $('results-table-body');
                 currentResultsStudents = {};
-                tbody.innerHTML = students.map((s, idx) => {
-                    currentResultsStudents[s.id] = {name: s.name, score: 0, max: et.max};
+
+                tbody.innerHTML = students.map((s) => {
+                    const sRecords = existingResults.filter(r => r.student_id === s.id);
+                    const sScores = {};
+                    let sRemark = '';
+                    sRecords.forEach(r => {
+                        sScores[r.exam_type] = parseFloat(r.score) || 0;
+                        if (r.remarks) sRemark = r.remarks;
+                    });
+
+                    currentResultsStudents[s.id] = {
+                        name: s.name,
+                        parts: {
+                            quiz: sScores.quiz !== undefined ? sScores.quiz : 0,
+                            assignment: sScores.assignment !== undefined ? sScores.assignment : 0,
+                            final: sScores.final !== undefined ? sScores.final : 0
+                        }
+                    };
+
                     const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                     const bg = AVATAR_GRADIENTS[s.id % AVATAR_GRADIENTS.length];
                     const bbId = 'BB' + String(260000 + s.id).slice(-6);
+                    const totalMax = examParts.reduce((sum, p) => sum + p.max, 0);
+
+                    // 3 empty input boxes (Quiz, Assignment, Final) or existing values if already submitted
+                    const partInputs = examParts.map(p => {
+                        const existingVal = hasSubmissions && sScores[p.key] !== undefined ? sScores[p.key] : '';
+                        const isInputLocked = allLocked || p.locked;
+                        return `<td style="text-align:center;padding:0.5rem 0.3rem;">
+                            <input type="number" min="0" max="${p.max}" value="${existingVal}" placeholder="0" inputmode="numeric"
+                                class="exam-part-input si-part" data-sid="${s.id}" data-part="${p.key}" data-max="${p.max}"
+                                ${isInputLocked ? 'disabled title="Submitted & Locked"' : ''}>
+                        </td>`;
+                    }).join('');
+
+                    const curTotal = hasSubmissions ? Object.values(currentResultsStudents[s.id].parts).reduce((a, b) => a + b, 0) : 0;
+                    const curPct = totalMax > 0 ? Math.round((curTotal / totalMax) * 100) : 0;
+                    const curGrade = getGradeBadge(curPct);
+
                     return `<tr data-student="${s.id}">
-                        <td style="padding:0.7rem 1rem;">
+                        <td style="padding:0.5rem 0.7rem;">
                             <div class="res-student-row">
                                 <div class="res-avatar" style="background:${bg};">${initials}</div>
                                 <div style="min-width:0;">
@@ -1082,55 +1353,46 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="text-align:center;padding:0.7rem 0.5rem;">
-                            <div class="score-input-wrap d-flex flex-column align-items-center">
-                                <input type="number" min="0" max="${et.max}" value="0" inputmode="numeric"
-                                    class="si" data-sid="${s.id}" data-max="${et.max}"
-                                    style="font-weight:700;font-size:0.95rem;text-align:center;border-radius:8px;padding:0.3rem 0.4rem;width:90px;border:2px solid #e0e0e0;transition:border-color 0.2s;">
-                                <div class="pct-bar-wrap mt-1">
-                                    <div class="pct-bar" id="pctbar-${s.id}" style="width:0%;background:#6c757d;"></div>
-                                </div>
-                            </div>
+                        ${partInputs}
+                        <td style="text-align:center;padding:0.5rem 0.3rem;" class="total-score-cell" id="total-${s.id}">${curTotal}</td>
+                        <td style="text-align:center;padding:0.5rem 0.3rem;">
+                            <span class="grade-badge ${curGrade.cls}" id="grdbadge-${s.id}">${curGrade.text}</span>
+                            <div style="font-size:0.6rem;color:#aaa;margin-top:1px;" id="pctlbl-${s.id}">${curPct}%</div>
                         </td>
-                        <td style="text-align:center;padding:0.7rem 0.5rem;">
-                            <span class="grade-badge grade-F" id="grdbadge-${s.id}">F</span>
-                            <div style="font-size:0.65rem;color:#aaa;margin-top:2px;" id="pctlbl-${s.id}">0%</div>
-                        </td>
-                        <td style="padding:0.7rem 0.5rem;">
+                        <td style="padding:0.5rem 0.3rem;">
                             <input type="text" class="form-control form-control-sm remark-input" data-sid="${s.id}"
-                                placeholder="Optional note..." style="font-size:0.75rem;border-radius:8px;">
+                                value="${sRemark}" placeholder="Note..." style="font-size:0.72rem;border-radius:8px;min-width:90px;"
+                                ${allLocked ? 'disabled' : ''}>
                         </td>
                     </tr>`;
                 }).join('');
 
-                // Wire score inputs
-                tbody.querySelectorAll('.si').forEach(inp => {
-                    const update = () => {
+                // Wire input events
+                tbody.querySelectorAll('.si-part').forEach(inp => {
+                    inp.addEventListener('input', () => {
                         const sid = inp.dataset.sid;
-                        const mx = parseFloat(inp.dataset.max) || 100;
-                        let v = parseFloat(inp.value) || 0;
+                        const part = inp.dataset.part;
+                        const mx = parseFloat(inp.dataset.max) || 20;
+                        let v = inp.value === '' ? 0 : parseFloat(inp.value);
+                        if (isNaN(v)) v = 0;
                         if (v > mx) { v = mx; inp.value = mx; }
                         if (v < 0) { v = 0; inp.value = 0; }
-                        currentResultsStudents[sid].score = v;
-                        const pct = mx > 0 ? Math.round((v / mx) * 100) : 0;
-                        const bar = $('pctbar-' + sid);
+                        inp.style.borderColor = inp.value !== '' ? '#d4af37' : '#e0e0e0';
+                        currentResultsStudents[sid].parts[part] = v;
+                        const totalMax = examParts.reduce((s, p) => s + p.max, 0);
+                        const total = Object.values(currentResultsStudents[sid].parts).reduce((a, b) => a + b, 0);
+                        const pct = totalMax > 0 ? Math.round((total / totalMax) * 100) : 0;
+                        const totalEl = $('total-' + sid);
+                        if (totalEl) totalEl.textContent = total;
                         const badge = $('grdbadge-' + sid);
                         const lbl = $('pctlbl-' + sid);
-                        if (bar) { bar.style.width = pct + '%'; bar.style.background = pct >= 60 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444'; }
                         if (lbl) lbl.textContent = pct + '%';
                         if (badge) { const g = getGradeBadge(pct); badge.className = 'grade-badge ' + g.cls; badge.textContent = g.text; }
-                        // Highlight border
-                        inp.style.borderColor = pct >= 60 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
                         updateLiveResultsStats();
-                    };
-                    inp.addEventListener('input', update);
-                    inp.addEventListener('change', update);
+                    });
                 });
 
-                $('live-total-students').textContent = students.length;
-                $('live-entered-count').textContent = '0';
-                $('live-class-avg').textContent = '0%';
-                $('live-pass-rate').textContent = '0%';
+                updateLiveResultsStats();
 
             } catch(e) { $('results-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
             finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-users me-1"></i> Load Roster'; }
@@ -1138,45 +1400,58 @@
 
         // === QUICK FILL ===
         $('btn-quick-fill').addEventListener('click', () => {
-            const examType = $('results-exam-select').value;
-            const et = examDefs[examType] || {max:100};
-            const val = prompt(`Quick fill: Enter a score for all students (0 – ${et.max}):`);
+            const val = prompt('Quick fill: Enter a score for each open part as percentages (0–100):');
             if (val === null) return;
-            const v = Math.min(Math.max(parseFloat(val) || 0, 0), et.max);
-            $$('#results-table-body .si').forEach(inp => {
-                inp.value = v;
-                inp.dispatchEvent(new Event('input'));
+            const pct = Math.min(Math.max(parseFloat(val) || 0, 0), 100);
+            $$('#results-table-body .si-part').forEach(inp => {
+                if (!inp.disabled) {
+                    const mx = parseFloat(inp.dataset.max) || 20;
+                    inp.value = Math.round((pct / 100) * mx);
+                    inp.dispatchEvent(new Event('input'));
+                }
             });
         });
 
         // === RESET ALL ===
         $('btn-clear-scores').addEventListener('click', () => {
-            if (!confirm('Reset all scores to 0?')) return;
-            $$('#results-table-body .si').forEach(inp => { inp.value = 0; inp.dispatchEvent(new Event('input')); });
+            if (!confirm('Reset all scores to empty?')) return;
+            $$('#results-table-body .si-part').forEach(inp => {
+                if (!inp.disabled) {
+                    inp.value = '';
+                    inp.dispatchEvent(new Event('input'));
+                }
+            });
         });
 
         $('submit-results-btn').addEventListener('click', async () => {
             const subject = $('results-subject').value.trim();
-            const examType = $('results-exam-select').value;
             const date = $('results-date').value;
-            if (!examType) { $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please select an exam.</div>'; return; }
-            if (!subject) { $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please enter a subject name.</div>'; return; }
-            // Build records with remarks
+            if (!subject) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please enter a subject name.</div>';
+                return;
+            }
+            // Build records — one record per student per exam part (Quiz, Assignment, Final)
             const records = [];
             $$('#results-table-body tr').forEach(row => {
                 const sid = row.dataset.student;
                 if (!sid) return;
-                const scoreInp = row.querySelector('.si');
                 const remarkInp = row.querySelector('.remark-input');
-                const score = scoreInp ? (parseFloat(scoreInp.value) || 0) : 0;
                 const remarks = remarkInp ? remarkInp.value.trim() : '';
-                records.push({studentId: parseInt(sid), subject, examType, score, remarks, date});
+                examParts.forEach(p => {
+                    if (p.locked) return; // skip locked parts
+                    const inp = row.querySelector(`.si-part[data-part="${p.key}"]`);
+                    const score = inp && inp.value !== '' ? (parseFloat(inp.value) || 0) : 0;
+                    records.push({ studentId: parseInt(sid), subject, examType: p.key, score, remarks, date });
+                });
             });
-            if (records.length === 0) { $('results-alert').innerHTML = '<div class="alert alert-warning">No students to submit.</div>'; return; }
+            if (records.length === 0) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning">No unlocked parts to submit.</div>';
+                return;
+            }
             const btn = $('submit-results-btn');
             const original = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting All Parts...';
             try {
                 const r = await fetch('/api/results/batch', {
                     method: 'POST',
@@ -1187,26 +1462,42 @@
                 try { data = await r.json(); } catch (e) { throw new Error('Server error (HTTP ' + r.status + '). Please try again.'); }
                 if (!r.ok) {
                     if (r.status === 409 || (data && data.locked)) {
-                        throw new Error(data.error || 'Submission Locked: Results for this exam have already been submitted and locked. Ask administrator to unlock if re-editing is required.');
+                        throw new Error(data.error || 'Submission Locked: Results for this exam have already been submitted and locked.');
                     }
                     throw new Error((data && data.error) || 'Failed to submit results');
                 }
-                submittedExamKeys.add(examType + '|' + subject.toLowerCase());
-                $('results-alert').innerHTML = `<div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i>${data.message || 'Submitted for approval!'}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+
+                // Lock all inputs immediately upon successful submission
+                $$('#results-table-body .si-part').forEach(inp => inp.disabled = true);
+                $$('#results-table-body .remark-input').forEach(inp => inp.disabled = true);
+                $('btn-quick-fill').style.display = 'none';
+                $('btn-clear-scores').style.display = 'none';
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked (Waiting for Admin Unlock)';
+                btn.className = 'btn btn-secondary btn-sm';
+
+                $('results-alert').innerHTML = `
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-3" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
+                        <i class="fas fa-check-circle fa-lg text-success"></i>
+                        <div><strong>All 3 Parts Submitted & Locked!</strong> Quiz, Assignment, and Final Exam results have been submitted. Editing is now locked until an Administrator unlocks them in Results Approval.</div>
+                    </div>`;
+
                 await loadSubmittedResults();
                 renderSubmissionStatus();
-                // Reset scores
-                $$('#results-table-body .si').forEach(i => { i.value = 0; i.dispatchEvent(new Event('input')); });
-                $$('#results-table-body .remark-input').forEach(i => i.value = '');
-                Object.keys(currentResultsStudents).forEach(id => { currentResultsStudents[id].score = 0; });
-                updateLiveResultsStats();
             } catch(e) {
-                $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
-            } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;
+                $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
             }
         });
+
+
+
+
+
+
+
 
         // CSV Upload trigger
         $('upload-results-csv-trigger').addEventListener('click', (e) => {

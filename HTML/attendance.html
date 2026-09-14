@@ -74,7 +74,12 @@
                             <h6 class="m-0">Mark Attendance</h6>
                             <small class="text-muted">Select a date to view and mark attendance.</small>
                         </div>
-                        <input type="date" class="form-control" id="attendance-date" style="width: auto;">
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-outline-warning btn-sm" id="admin-unlock-att-btn" title="Unlock attendance for teachers on this date">
+                                <i class="fas fa-lock-open me-1"></i> Unlock for Teacher
+                            </button>
+                            <input type="date" class="form-control" id="attendance-date" style="width: auto;">
+                        </div>
                     </div>
                     <div class="card-body">
                         <div id="save-alert" class="mb-3"></div>
@@ -190,7 +195,7 @@
                     let response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ date, records })
+                        body: JSON.stringify({ date, records, role: 'Admin' })
                     });
                     if (!response.ok) throw new Error('Failed to save attendance');
 
@@ -208,6 +213,28 @@
                     saveBtn.innerHTML = `<i class="fas fa-save me-2"></i>Save Attendance`;
                 }
             });
+
+            // Admin Unlock for Teacher
+            const unlockBtn = document.getElementById('admin-unlock-att-btn');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', async () => {
+                    const date = datePicker.value;
+                    if (!date) return;
+                    if (!confirm(`Unlock attendance for teachers on ${date}? Teachers will be able to re-edit and save attendance for this date.`)) return;
+                    try {
+                        const res = await fetch(`${API_URL}/lock-status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ date, isLocked: false })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Unlock failed');
+                        alert(`Attendance for ${date} has been unlocked for teachers!`);
+                    } catch (err) {
+                        alert(`Error: ${err.message}`);
+                    }
+                });
+            }
 
             fetchAttendanceForDate(today);
         });

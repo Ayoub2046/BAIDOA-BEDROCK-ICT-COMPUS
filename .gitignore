@@ -23,3 +23,6 @@ Backend/.env
 # OS files
 .DS_Store
 Thumbs.db
+
+# Scratch and temp files
+scratch/

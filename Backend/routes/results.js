@@ -133,6 +133,26 @@ router.get('/class-leaders/:classId', async (req, res) => {
     }
 });
 
+// GET results for a class and subject (to populate existing scores & lock status for teacher)
+router.get('/class/:classId/subject/:subject', async (req, res) => {
+    const { classId, subject } = req.params;
+    try {
+        const { rows } = await query(`
+            SELECT r.id, r.student_id, r.subject, r.score, r.exam_type, r.max_score, r.remarks,
+                   r.approval_status, r.edit_allowed, r.submitted_at
+            FROM results r
+            JOIN students s ON r.student_id = s.id
+            WHERE (s.classid = $1 OR s.id IN (SELECT student_id FROM class_students WHERE class_id = $1))
+              AND LOWER(r.subject) = LOWER($2)
+              AND r.deleted_at IS NULL
+            ORDER BY r.student_id ASC, r.id ASC
+        `, [classId, subject]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET approved results for a specific student (for student/parent view)
 // Optional ?examType= filter returns results for a single exam only
 router.get('/:studentId', async (req, res) => {
