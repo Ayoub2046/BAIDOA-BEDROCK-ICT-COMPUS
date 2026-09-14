@@ -114,7 +114,7 @@ router.post('/restore', async (req, res) => {
 });
 
 // 7. POST /api/backup/clear-all - SECURE SYSTEM DATA RESET ("Start from Scratch")
-// Security: Requires verification phrase "CLEAR ALL DATA" and admin password
+// Security: Requires verification phrase "CLEAR ALL DATA" and admin password (same as login password)
 router.post('/clear-all', async (req, res) => {
     const { confirmationText, adminPassword, adminEmail } = req.body;
 
@@ -135,31 +135,66 @@ router.post('/clear-all', async (req, res) => {
     }
 
     try {
-        // Look up the admin user
-        let adminUser = null;
-        if (adminEmail) {
-            const { rows } = await query(`SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND role = 'Admin' AND deleted_at IS NULL LIMIT 1`, [adminEmail]);
-            adminUser = rows[0];
+        let verifiedAdmin = null;
+
+        // Helper: test a password against a stored hash (bcrypt or plain)
+        const testPassword = async (storedHash, inputPassword) => {
+            if (!storedHash) return false;
+            // Try bcrypt first
+            try {
+                const ok = await bcrypt.compare(inputPassword, storedHash);
+                if (ok) return true;
+            } catch (e) {}
+            // Fallback: plaintext match
+            return inputPassword === storedHash;
+        };
+
+        // 1. If email provided, check that specific admin account first
+        if (adminEmail && adminEmail.trim()) {
+            const { rows } = await query(
+                `SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND role = 'Admin' AND deleted_at IS NULL LIMIT 1`,
+                [adminEmail.trim()]
+            );
+            if (rows.length > 0) {
+                if (await testPassword(rows[0].password, adminPassword)) {
+                    verifiedAdmin = rows[0];
+                }
+            }
         }
 
-        if (!adminUser) {
-            // Find any active admin
-            const { rows } = await query(`SELECT * FROM users WHERE role = 'Admin' AND deleted_at IS NULL ORDER BY id ASC LIMIT 1`);
-            adminUser = rows[0];
+        // 2. If not verified yet, check ALL active admin accounts
+        if (!verifiedAdmin) {
+            const { rows: adminUsers } = await query(
+                `SELECT * FROM users WHERE role = 'Admin' AND deleted_at IS NULL ORDER BY id ASC`
+            );
+
+            if (adminUsers.length === 0) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'No active Administrator account found in the system.'
+                });
+            }
+
+            for (const a of adminUsers) {
+                if (await testPassword(a.password, adminPassword)) {
+                    verifiedAdmin = a;
+                    break;
+                }
+            }
         }
 
-        if (!adminUser) {
-            return res.status(403).json({ success: false, error: 'No active Administrator account found to authorize this action.' });
+        if (!verifiedAdmin) {
+            console.warn('[BackupRoute] Clear-all: password mismatch for email:', adminEmail || '(not provided)');
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid administrator password. Please use the same password you use to log in to the admin panel.'
+            });
         }
 
-        // Verify password
-        const passwordMatches = await bcrypt.compare(adminPassword, adminUser.password);
-        if (!passwordMatches && adminPassword !== 'admin123') {
-            return res.status(401).json({ success: false, error: 'Invalid administrator password. Access denied.' });
-        }
+        console.log(`[BackupRoute] System clear authorized by admin: ${verifiedAdmin.name} (${verifiedAdmin.email})`);
 
-        // Execute clear with mandatory safety snapshot
-        const clearResult = await backupService.clearSystemData(adminUser.id);
+        // Execute clear with mandatory safety snapshot before wiping
+        const clearResult = await backupService.clearSystemData(verifiedAdmin.id);
 
         res.json({
             success: true,

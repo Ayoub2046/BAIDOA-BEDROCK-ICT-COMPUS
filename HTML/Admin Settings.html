@@ -527,9 +527,14 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-secondary">
-                            2. Enter Administrator Password:
+                            2. Enter Your Administrator Password:
                         </label>
-                        <input type="password" class="form-control" id="input-admin-password" placeholder="Admin password">
+                        <input type="password" class="form-control" id="input-admin-password" placeholder="Your login password">
+                        <div class="form-text small mt-1">
+                            <i class="fas fa-info-circle me-1 text-primary"></i>
+                            Use the same password you log in with.
+                            Authenticating as: <strong id="clear-auth-email" class="text-primary">loading...</strong>
+                        </div>
                     </div>
 
                     <div class="form-check mb-3">
@@ -847,6 +852,23 @@
             $('clear-modal-alert').innerHTML = '';
             $('clear-progress-box').classList.add('d-none');
             $('clear-modal-footer').classList.remove('d-none');
+
+            // Show which admin email will be used for authentication
+            try {
+                const stored = JSON.parse(
+                    sessionStorage.getItem('adminProfile') ||
+                    sessionStorage.getItem('activeUser') ||
+                    localStorage.getItem('adminProfile') ||
+                    localStorage.getItem('currentUser') ||
+                    '{}'
+                );
+                const emailEl = $('clear-auth-email');
+                if (emailEl) emailEl.textContent = stored.email || 'unknown (log in first)';
+            } catch(e) {
+                const emailEl = $('clear-auth-email');
+                if (emailEl) emailEl.textContent = 'unknown';
+            }
+
             clearModal.show();
         });
 
@@ -865,6 +887,19 @@
             const confirmationText = phraseInput.value.trim();
             const adminPassword = passwordInput.value;
 
+            // Retrieve current logged in user email from session
+            let adminEmail = '';
+            try {
+                const p = JSON.parse(
+                    sessionStorage.getItem('adminProfile') ||
+                    sessionStorage.getItem('activeUser') ||
+                    localStorage.getItem('adminProfile') ||
+                    localStorage.getItem('currentUser') ||
+                    '{}'
+                );
+                adminEmail = p.email || '';
+            } catch(e) {}
+
             $('clear-progress-box').classList.remove('d-none');
             $('clear-modal-footer').classList.add('d-none');
             $('clear-modal-alert').innerHTML = '';
@@ -873,7 +908,7 @@
                 const res = await fetch('/api/backup/clear-all', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ confirmationText, adminPassword })
+                    body: JSON.stringify({ confirmationText, adminPassword, adminEmail })
                 });
 
                 const data = await res.json();
