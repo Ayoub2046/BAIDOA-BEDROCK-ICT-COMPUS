@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0d4f8c">
@@ -8,121 +9,952 @@
     <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
     <meta charset="UTF-8">
-    <title>Admin Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings, Backup & Reset | Baidoa Bedrock ICT Campus</title>
     <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        body[data-theme="dark"] {
-            background: #222;
-            color: #fff;
+        :root {
+            --primary: #0d4f8c;
+            --primary-light: #1a7fd4;
+            --secondary: #d4af37;
+            --danger-soft: #fff5f5;
+            --danger-border: #feb2b2;
+            --danger-dark: #c53030;
         }
-        body[data-theme="dark"] .card,
+
+        body[data-theme="dark"] {
+            background: #181b18;
+            color: #e8f8e8;
+        }
+
+        body[data-theme="dark"] .card {
+            background: #222622;
+            border-color: #333a33;
+            color: #e8f8e8;
+        }
+
+        body[data-theme="dark"] .table {
+            color: #e8f8e8;
+            border-color: #333a33;
+        }
+
+        body[data-theme="dark"] .table-light {
+            background-color: #2b302b;
+            color: #e8f8e8;
+        }
+
         body[data-theme="dark"] .form-control,
         body[data-theme="dark"] .form-select {
-            background: #333;
+            background: #2b302b;
+            color: #e8f8e8;
+            border-color: #444c44;
+        }
+
+        body[data-theme="dark"] .modal-content {
+            background: #222622;
+            color: #e8f8e8;
+            border-color: #444c44;
+        }
+
+        body[data-theme="dark"] .list-group-item {
+            background: #222622;
+            color: #e8f8e8;
+            border-color: #333a33;
+        }
+
+        .settings-nav-pills .nav-link {
+            border-radius: 10px;
+            font-weight: 600;
+            color: #4a5568;
+            padding: 0.65rem 1.2rem;
+            margin-right: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="dark"] .settings-nav-pills .nav-link {
+            color: #a0aec0;
+        }
+
+        .settings-nav-pills .nav-link.active {
+            background: var(--primary);
             color: #fff;
-            border-color: #444;
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.25);
+        }
+
+        .backup-stat-card {
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        body[data-theme="dark"] .backup-stat-card {
+            background: #222622;
+            border-color: #333a33;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .backup-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+        .backup-stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .status-pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Danger Zone Styling */
+        .danger-card {
+            border: 2px solid #e53e3e;
+            border-radius: 16px;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body[data-theme="dark"] .danger-card {
+            background: #271d1d;
+            border-color: #9b2c2c;
+        }
+
+        .danger-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: #e53e3e;
+        }
+
+        .badge-reason-daily { background: #d1fae5; color: #065f46; font-weight: 600; }
+        .badge-reason-manual { background: #dbeafe; color: #1e40af; font-weight: 600; }
+        .badge-reason-pre_wipe { background: #fee2e2; color: #991b1b; font-weight: 700; }
+
+        body[data-theme="dark"] .badge-reason-daily { background: #064e3b; color: #a7f3d0; }
+        body[data-theme="dark"] .badge-reason-manual { background: #1e3a8a; color: #bfdbfe; }
+        body[data-theme="dark"] .badge-reason-pre_wipe { background: #7f1d1d; color: #fecaca; }
+
+        .btn-action-sm {
+            padding: 3px 10px;
+            font-size: 0.8rem;
+            border-radius: 8px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container mt-5">
-        <h2>Settings</h2>
-        <form id="settingsForm">
-            <div class="mb-3">
-                <label for="themeSelect" class="form-label">Theme</label>
-                <select class="form-select" id="themeSelect">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Backdrop for Mobile -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <img src="/images/BEDRCOK LOGO.JPG" style="width:55px;height:55px;border-radius:50px;object-fit:cover;" alt="Bedrock Logo">
+                    <span style="font-size: 19px;">Baidoa Bedrock ICT</span>
+                </h3>
             </div>
-            <button type="submit" class="btn btn-primary">Save Settings</button>
-            <div id="settingsMsg" class="mt-3"></div>
-        </form>
+            <ul class="sidebar-nav">
+                <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+                <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+                <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+                <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+                <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+                <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+                <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+                <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+                <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+                <li><a href="exams-admin.html"><i class="fas fa-pen-fancy"></i> <span>Manage Exams</span></a></li>
+                <li><a href="exam-schedule.html"><i class="fas fa-calendar-check"></i> <span>Exam Schedule</span></a></li>
+                <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+                <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+                <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+                <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+                <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+                <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+                <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+                <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+                <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+                <li><a href="Admin Settings.html" class="active"><i class="fas fa-database"></i> <span>Backup & Reset</span></a></li>
+                <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <div class="d-flex align-items-center ms-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-database text-primary me-2"></i>System Backup, Recovery & Reset</h5>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
+                        <i class="fas fa-moon theme-toggle-icon fs-5" id="themeIcon"></i>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                            <img src="/images/BEDRCOK LOGO.JPG" alt="Admin" class="rounded-circle border" style="width:34px;height:34px;object-fit:cover;">
+                            <strong class="ms-2 d-none d-sm-inline">Admin</strong>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="admin.html"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/HTML/index.html"><i class="fas fa-sign-out-alt me-2"></i>Sign out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content-area p-3 p-lg-4">
+
+                <!-- Alert Message Banner -->
+                <div id="global-alert"></div>
+
+                <!-- Live System Records Summary Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="backup-stat-card">
+                            <div class="backup-stat-icon bg-primary-subtle text-primary">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Students</div>
+                                <div class="fs-4 fw-bold" id="stat-students">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="backup-stat-card">
+                            <div class="backup-stat-icon bg-success-subtle text-success">
+                                <i class="fas fa-chalkboard"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Classes & Records</div>
+                                <div class="fs-4 fw-bold" id="stat-classes">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="backup-stat-card">
+                            <div class="backup-stat-icon bg-warning-subtle text-warning">
+                                <i class="fas fa-poll-h"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Exam Results</div>
+                                <div class="fs-4 fw-bold" id="stat-results">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="backup-stat-card">
+                            <div class="backup-stat-icon bg-info-subtle text-info">
+                                <i class="fas fa-hard-drive"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Saved Backups</div>
+                                <div class="fs-4 fw-bold" id="stat-backups-count">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-pills settings-nav-pills mb-4" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pills-backup-tab" data-bs-toggle="pill" data-bs-target="#pills-backup" type="button" role="tab">
+                            <i class="fas fa-cloud-arrow-down me-1"></i> Backups & Download Center
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-reset-tab" data-bs-toggle="pill" data-bs-target="#pills-reset" type="button" role="tab">
+                            <i class="fas fa-triangle-exclamation text-danger me-1"></i> Start from Scratch (Clear Data)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-general-tab" data-bs-toggle="pill" data-bs-target="#pills-general" type="button" role="tab">
+                            <i class="fas fa-sliders me-1"></i> General Settings
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="pills-tabContent">
+
+                    <!-- ================= TAB 1: BACKUPS & DOWNLOAD CENTER ================= -->
+                    <div class="tab-pane fade show active" id="pills-backup" role="tabpanel">
+
+                        <!-- Automated Daily Status Card -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-8">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="status-pulse"></span>
+                                            <h5 class="fw-bold mb-0">Automated Daily Backup Active</h5>
+                                            <span class="badge bg-success-subtle text-success ms-2">Enabled (24h Routine)</span>
+                                        </div>
+                                        <p class="text-muted mb-0" style="font-size: 0.92rem;">
+                                            The system automatically archives a complete snapshot of all database tables (students, marks, attendance, fees, schedules, and configurations) every 24 hours. You can download these backups at any time, or trigger an instant snapshot right now.
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                                        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                                            <button class="btn btn-primary" id="btn-create-backup">
+                                                <i class="fas fa-camera me-1"></i> Create Backup Now
+                                            </button>
+                                            <a href="/api/backup/download-latest" class="btn btn-outline-success" id="btn-download-latest">
+                                                <i class="fas fa-download me-1"></i> Download Latest (.JSON)
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Backups History & Management Table -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-header bg-transparent py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <h6 class="mb-0 fw-bold"><i class="fas fa-box-archive text-primary me-2"></i>Saved Backup Snapshots</h6>
+                                    <small class="text-muted">All snapshots stored safely in system backup storage.</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" id="btn-refresh-backups">
+                                        <i class="fas fa-sync-alt me-1"></i> Refresh List
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadBackupModal">
+                                        <i class="fas fa-upload me-1"></i> Restore from File
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="backups-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Snapshot File</th>
+                                                <th>Trigger Reason</th>
+                                                <th>Date & Time</th>
+                                                <th>Records</th>
+                                                <th>File Size</th>
+                                                <th class="text-end pe-3">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="backups-tbody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">
+                                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading backups...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= TAB 2: DANGER ZONE - START FROM SCRATCH ================= -->
+                    <div class="tab-pane fade" id="pills-reset" role="tabpanel">
+
+                        <div class="card danger-card shadow-sm mb-4">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div style="width: 54px; height: 54px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
+                                        <i class="fas fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold text-danger mb-1">Clear All System Data ("Start from Scratch")</h4>
+                                        <p class="text-muted mb-0">Reset operational records to start a fresh school term or clean out test data.</p>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning border-0 d-flex align-items-start gap-3 my-4 p-3" style="background: #fffbeb; border-left: 4px solid #f59e0b !important; border-radius: 10px;">
+                                    <i class="fas fa-shield-halved fa-2x text-warning flex-shrink-0 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-bold text-warning-emphasis mb-1">Automatic Safety Pre-Wipe Backup Guarantee</h6>
+                                        <p class="mb-0 small text-dark">
+                                            Before a single record is cleared, the system will <strong>automatically generate and save a complete snapshot</strong> of your current database. You will be provided with an immediate download link and can restore your data at any time from the Backup Center!
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="row g-4 my-2">
+                                    <div class="col-md-6">
+                                        <div class="border rounded-3 p-3 h-100" style="background: #fff5f5; border-color: #fecaca !important;">
+                                            <h6 class="fw-bold text-danger mb-2"><i class="fas fa-trash-can me-2"></i>Data that will be cleared:</h6>
+                                            <ul class="mb-0 small ps-3 text-secondary">
+                                                <li>All registered Students and their credentials (BB IDs)</li>
+                                                <li>All daily Attendance records and daily lock states</li>
+                                                <li>All Exam Results (Quiz, Assignment, Final)</li>
+                                                <li>All Classes, Student-Class enrollments & Timetables</li>
+                                                <li>All Student Fees, Payments & Clearance Cards</li>
+                                                <li>All Internal Messages, Announcements & Admissions</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="border rounded-3 p-3 h-100" style="background: #f0fdf4; border-color: #bbf7d0 !important;">
+                                            <h6 class="fw-bold text-success mb-2"><i class="fas fa-lock me-2"></i>Data preserved safely:</h6>
+                                            <ul class="mb-0 small ps-3 text-secondary">
+                                                <li><strong>Administrator Accounts</strong> (You will stay logged in)</li>
+                                                <li>School Profile & Core Settings (School name, motto, email)</li>
+                                                <li>Color Themes & UI Customizations</li>
+                                                <li>Standard 3-Part Exam Rules (Quiz/20, Assignment/20, Final/60)</li>
+                                                <li>All past Backups & Snapshots in the backup archive</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 pt-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div>
+                                        <span class="text-muted small">Authorized action only. Administrator password and typed confirmation required.</span>
+                                    </div>
+                                    <button class="btn btn-danger btn-lg px-4" id="btn-open-clear-modal">
+                                        <i class="fas fa-bomb me-2"></i> Clear All Data & Start Fresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= TAB 3: GENERAL SETTINGS ================= -->
+                    <div class="tab-pane fade" id="pills-general" role="tabpanel">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-sliders text-primary me-2"></i>Platform Preferences</h5>
+                                <form id="settingsForm">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="themeSelect" class="form-label fw-semibold">Interface Theme</label>
+                                            <select class="form-select" id="themeSelect">
+                                                <option value="light">Light Mode (Default)</option>
+                                                <option value="dark">Dark Mode</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Academic Year</label>
+                                            <input type="text" class="form-control" id="academicYearInput" value="2026-2027">
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">School Name</label>
+                                            <input type="text" class="form-control" id="schoolNameInput" value="Baidoa Bedrock ICT Campus">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Contact Email</label>
+                                            <input type="email" class="form-control" id="schoolEmailInput" value="info@bbict.edu.so">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary px-4 mt-2">
+                                        <i class="fas fa-save me-1"></i> Save Preferences
+                                    </button>
+                                    <div id="settingsMsg" class="mt-3"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
     </div>
+
+    <!-- ================= CONFIRMATION MODAL FOR SYSTEM CLEAR ================= -->
+    <div class="modal fade" id="clearDataModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-triangle-exclamation me-2"></i>Confirm Factory Reset
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="clear-modal-alert"></div>
+
+                    <p class="text-danger fw-bold mb-2">
+                        Are you sure you want to clear all operational data and start from scratch?
+                    </p>
+                    <p class="small text-muted mb-3">
+                        A full safety snapshot will be automatically created first. However, all current students, results, attendance, and classes will be emptied from the live system.
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">
+                            1. Type <span class="badge bg-danger">CLEAR ALL DATA</span> below to confirm:
+                        </label>
+                        <input type="text" class="form-control" id="input-confirm-phrase" placeholder="Type CLEAR ALL DATA" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">
+                            2. Enter Administrator Password:
+                        </label>
+                        <input type="password" class="form-control" id="input-admin-password" placeholder="Admin password">
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="check-safety-ack">
+                        <label class="form-check-label small text-muted" for="check-safety-ack">
+                            I understand this clears all active records and that a pre-wipe safety backup snapshot will be saved.
+                        </label>
+                    </div>
+
+                    <div id="clear-progress-box" class="d-none text-center py-3">
+                        <div class="spinner-border text-danger mb-2" role="status"></div>
+                        <div class="fw-bold small text-muted" id="clear-progress-text">Creating safety backup and clearing tables...</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" id="clear-modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="btn-execute-clear" disabled>
+                        <i class="fas fa-trash-can me-1"></i> Yes, Wipe Data & Start Fresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RESTORE SUCCESS / DOWNLOAD MODAL ================= -->
+    <div class="modal fade" id="wipeSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i>System Reset Complete!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-sparkles text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-success mb-2">Ready to Start from Scratch!</h5>
+                    <p class="text-muted small mb-4">
+                        All student records, attendance, grades, and classes have been cleanly reset. Your pre-wipe data was preserved in a safety backup snapshot.
+                    </p>
+
+                    <div class="card bg-light border p-3 mb-4 text-start">
+                        <div class="small fw-bold text-secondary mb-1"><i class="fas fa-file-shield text-success me-1"></i> Pre-Wipe Safety Snapshot:</div>
+                        <div class="small text-truncate font-monospace" id="pre-wipe-filename">backup_pre_wipe.json</div>
+                        <a href="#" class="btn btn-outline-success btn-sm mt-2 w-100" id="pre-wipe-download-link">
+                            <i class="fas fa-download me-1"></i> Download Pre-Wipe Backup
+                        </a>
+                    </div>
+
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i> Continue to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RESTORE FROM UPLOAD MODAL ================= -->
+    <div class="modal fade" id="uploadBackupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-upload me-2"></i>Restore Database from JSON Backup</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="upload-restore-alert"></div>
+                    <p class="small text-muted mb-3">
+                        Select a valid Baidoa Bedrock ICT Campus backup file (.json) to restore records back into the database.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Choose Backup File (.json)</label>
+                        <input type="file" class="form-control" id="restore-file-input" accept=".json">
+                    </div>
+                    <div id="restore-progress" class="d-none text-center py-2">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        <span class="small text-muted">Restoring database records...</span>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-submit-upload-restore" disabled>
+                        <i class="fas fa-rotate-left me-1"></i> Restore Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Load current theme from localStorage
-        window.addEventListener('DOMContentLoaded', function() {
-            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
-            if(profile.theme) {
-                document.getElementById('themeSelect').value = profile.theme;
-                document.body.setAttribute('data-theme', profile.theme);
+        // DOM Elements & State
+        const $ = id => document.getElementById(id);
+        const globalAlert = $('global-alert');
+        let currentBackups = [];
+
+        // Global Alert helper
+        function showNotification(msg, type = 'success') {
+            globalAlert.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${msg}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+            setTimeout(() => {
+                const al = globalAlert.querySelector('.alert');
+                if (al) al.remove();
+            }, 6000);
+        }
+
+        // Format Date Time
+        function formatDateTime(isoStr) {
+            if (!isoStr) return '--';
+            const d = new Date(isoStr);
+            if (isNaN(d.getTime())) return isoStr;
+            return d.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+
+        // 1. Fetch live system stats
+        async function loadSystemStats() {
+            try {
+                const res = await fetch('/api/backup/stats');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.stats) {
+                    $('stat-students').textContent = data.stats.students || 0;
+                    $('stat-classes').textContent = `${data.stats.classes || 0} (${data.stats.attendance_records || 0} att)`;
+                    $('stat-results').textContent = data.stats.results || 0;
+                }
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+
+        // 2. Fetch and render backup list
+        async function loadBackupsList() {
+            const tbody = $('backups-tbody');
+            try {
+                const res = await fetch('/api/backup/list');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to load backups');
+
+                currentBackups = data.backups || [];
+                $('stat-backups-count').textContent = currentBackups.length;
+
+                if (currentBackups.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
+                                No backups found. Click <strong>"Create Backup Now"</strong> to generate your first snapshot.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = currentBackups.map(b => {
+                    let badgeClass = 'badge-reason-manual';
+                    let reasonLabel = 'Manual';
+                    if (b.triggerReason === 'daily_auto') {
+                        badgeClass = 'badge-reason-daily';
+                        reasonLabel = '<i class="fas fa-clock me-1"></i> Daily Auto';
+                    } else if (b.triggerReason === 'pre_wipe') {
+                        badgeClass = 'badge-reason-pre_wipe';
+                        reasonLabel = '<i class="fas fa-shield-halved me-1"></i> Pre-Wipe Safety';
+                    } else if (b.triggerReason === 'initial_setup') {
+                        reasonLabel = 'Setup';
+                    }
+
+                    const recText = b.totalRecords !== null ? `${b.totalRecords} records` : '--';
+
+                    return `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-file-code text-primary fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold text-truncate" style="max-width: 280px;" title="${b.filename}">${b.filename}</div>
+                                        <small class="text-muted">${b.triggeredBy || 'System'}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge ${badgeClass} px-2 py-1">${reasonLabel}</span></td>
+                            <td><small class="text-muted">${formatDateTime(b.createdAt)}</small></td>
+                            <td><span class="badge bg-light text-dark border">${recText}</span></td>
+                            <td><span class="text-secondary small fw-semibold">${b.sizeFormatted || 'N/A'}</span></td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a href="/api/backup/download/${encodeURIComponent(b.filename)}" class="btn btn-outline-success btn-action-sm" title="Download backup file">
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                    <button class="btn btn-outline-warning btn-action-sm btn-restore-snapshot" data-filename="${b.filename}" title="Restore this snapshot">
+                                        <i class="fas fa-rotate-left me-1"></i> Restore
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                }).join('');
+
+                // Attach restore handlers
+                tbody.querySelectorAll('.btn-restore-snapshot').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const filename = btn.dataset.filename;
+                        if (confirm(`Restore system state from snapshot "${filename}"?\n\nThis will repopulate tables with records from this backup.`)) {
+                            executeRestore({ filename });
+                        }
+                    });
+                });
+
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${err.message}</td></tr>`;
+            }
+        }
+
+        // 3. Trigger manual backup
+        $('btn-create-backup').addEventListener('click', async () => {
+            const btn = $('btn-create-backup');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creating Snapshot...';
+
+            try {
+                const res = await fetch('/api/backup/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: 'manual', triggeredBy: 'Administrator' })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to create backup');
+
+                showNotification(`Backup snapshot created successfully! (${data.backup?.totalRecords} records, ${data.backup?.sizeFormatted})`);
+                await loadBackupsList();
+            } catch (err) {
+                showNotification(err.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-camera me-1"></i> Create Backup Now';
             }
         });
 
-        // Change theme instantly on select
-        document.getElementById('themeSelect').addEventListener('change', function() {
-            document.body.setAttribute('data-theme', this.value);
+        // 4. Refresh backups button
+        $('btn-refresh-backups').addEventListener('click', async () => {
+            await loadBackupsList();
+            await loadSystemStats();
+            showNotification('Backups list refreshed.', 'info');
         });
 
-        // Save settings and redirect
-        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+        // 5. Restore execution
+        async function executeRestore(payload) {
+            try {
+                showNotification('Restoring data from backup snapshot...', 'warning');
+                const res = await fetch('/api/backup/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Restore failed');
+
+                showNotification(data.message || 'Database successfully restored!', 'success');
+                await loadSystemStats();
+                await loadBackupsList();
+            } catch (err) {
+                showNotification(`Restore error: ${err.message}`, 'danger');
+            }
+        }
+
+        // 6. Restore from uploaded file
+        const fileInput = $('restore-file-input');
+        const submitUploadBtn = $('btn-submit-upload-restore');
+
+        fileInput.addEventListener('change', () => {
+            submitUploadBtn.disabled = !fileInput.files.length;
+        });
+
+        submitUploadBtn.addEventListener('click', async () => {
+            if (!fileInput.files.length) return;
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            $('restore-progress').classList.remove('d-none');
+            submitUploadBtn.disabled = true;
+
+            reader.onload = async (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    await executeRestore({ backupData: parsed });
+                    bootstrap.Modal.getInstance($('uploadBackupModal')).hide();
+                    fileInput.value = '';
+                } catch (err) {
+                    $('upload-restore-alert').innerHTML = `<div class="alert alert-danger py-2">${err.message}</div>`;
+                } finally {
+                    $('restore-progress').classList.add('d-none');
+                    submitUploadBtn.disabled = false;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // 7. Danger Zone: System Data Wipe / Start from Scratch
+        const clearModal = new bootstrap.Modal($('clearDataModal'));
+        const wipeSuccessModal = new bootstrap.Modal($('wipeSuccessModal'));
+        const phraseInput = $('input-confirm-phrase');
+        const passwordInput = $('input-admin-password');
+        const ackCheck = $('check-safety-ack');
+        const executeClearBtn = $('btn-execute-clear');
+
+        $('btn-open-clear-modal').addEventListener('click', () => {
+            phraseInput.value = '';
+            passwordInput.value = '';
+            ackCheck.checked = false;
+            executeClearBtn.disabled = true;
+            $('clear-modal-alert').innerHTML = '';
+            $('clear-progress-box').classList.add('d-none');
+            $('clear-modal-footer').classList.remove('d-none');
+            clearModal.show();
+        });
+
+        function validateClearForm() {
+            const phraseOk = phraseInput.value.trim().toUpperCase() === 'CLEAR ALL DATA';
+            const pwdOk = passwordInput.value.length > 0;
+            const ackOk = ackCheck.checked;
+            executeClearBtn.disabled = !(phraseOk && pwdOk && ackOk);
+        }
+
+        phraseInput.addEventListener('input', validateClearForm);
+        passwordInput.addEventListener('input', validateClearForm);
+        ackCheck.addEventListener('change', validateClearForm);
+
+        executeClearBtn.addEventListener('click', async () => {
+            const confirmationText = phraseInput.value.trim();
+            const adminPassword = passwordInput.value;
+
+            $('clear-progress-box').classList.remove('d-none');
+            $('clear-modal-footer').classList.add('d-none');
+            $('clear-modal-alert').innerHTML = '';
+
+            try {
+                const res = await fetch('/api/backup/clear-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ confirmationText, adminPassword })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'System wipe failed');
+
+                clearModal.hide();
+
+                // Setup success modal
+                const safetyFile = data.safetyBackup?.filename || 'backup_pre_wipe.json';
+                $('pre-wipe-filename').textContent = safetyFile;
+                $('pre-wipe-download-link').href = `/api/backup/download/${encodeURIComponent(safetyFile)}`;
+
+                wipeSuccessModal.show();
+
+                // Refresh dashboard counters & backups list
+                await loadSystemStats();
+                await loadBackupsList();
+
+            } catch (err) {
+                $('clear-progress-box').classList.add('d-none');
+                $('clear-modal-footer').classList.remove('d-none');
+                $('clear-modal-alert').innerHTML = `<div class="alert alert-danger py-2 mb-3">${err.message}</div>`;
+            }
+        });
+
+        // 8. General Preferences Form
+        const settingsForm = $('settingsForm');
+        settingsForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const theme = document.getElementById('themeSelect').value;
-            // Get old profile data
-            const oldProfile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
-            // Save new theme
-            localStorage.setItem('adminProfile', JSON.stringify({
-                ...oldProfile,
-                theme: theme
-            }));
-            // Show message and redirect
-            const btn = document.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.textContent = "Settings Saved! Redirecting...";
-            setTimeout(function() {
-                window.location.href = "admin.html";
-            }, 1200);
+            const theme = $('themeSelect').value;
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            localStorage.setItem('adminProfile', JSON.stringify({ ...profile, theme }));
+            document.body.setAttribute('data-theme', theme);
+            $('settingsMsg').innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check-circle me-1"></i>Preferences saved successfully!</div>';
+            setTimeout(() => { $('settingsMsg').innerHTML = ''; }, 3000);
+        });
+
+        // 9. Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const cur = body.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            $('themeSelect').value = next;
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            localStorage.setItem('adminProfile', JSON.stringify({ ...profile, theme: next }));
+            const icon = $('themeIcon');
+            if (icon) icon.className = next === 'dark' ? 'fas fa-sun theme-toggle-icon fs-5' : 'fas fa-moon theme-toggle-icon fs-5';
+        }
+
+        // Sidebar Toggler for Mobile
+        const sidebar = document.querySelector('.sidebar');
+        const toggler = $('sidebar-toggler');
+        const backdrop = $('sidebar-backdrop');
+
+        if (toggler && sidebar) {
+            toggler.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                if (backdrop) backdrop.classList.toggle('active');
+            });
+        }
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                backdrop.classList.remove('active');
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            if (profile.theme) {
+                $('themeSelect').value = profile.theme;
+                document.body.setAttribute('data-theme', profile.theme);
+                const icon = $('themeIcon');
+                if (icon) icon.className = profile.theme === 'dark' ? 'fas fa-sun theme-toggle-icon fs-5' : 'fas fa-moon theme-toggle-icon fs-5';
+            }
+            loadSystemStats();
+            loadBackupsList();
         });
     </script>
-
-
-<script>
-    // JS/admin.js
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    // --- Global Sidebar Toggle Logic for all Admin Pages ---
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarToggler = document.getElementById('sidebar-toggler');
-
-    // Only run this code if a sidebar and a toggler button exist on the page
-    if (sidebar && sidebarToggler) {
-        sidebarToggler.addEventListener('click', () => {
-            // This adds or removes the 'toggled' class, which our CSS uses to show/hide the menu
-            sidebar.classList.toggle('toggled');
-        });
-    }
-
-    // --- Global Logout Logic ---
-    const logoutLink = document.getElementById('logout-link');
-    const logoutLinkDropdown = document.getElementById('logout-link-dropdown');
-
-    const logout = () => {
-        sessionStorage.removeItem('isAdminLoggedIn');
-        sessionStorage.removeItem('activeUser');
-        window.location.href = 'admin-login.html'; // Redirect to the admin login page
-    };
-
-    if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-        });
-    }
-
-    if (logoutLinkDropdown) {
-        logoutLinkDropdown.addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-        });
-    }
-});
-</script>
-
-    
-
-    <script src="/JS/pwa.js"></script>
 </body>
+
 </html>

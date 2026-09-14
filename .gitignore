@@ -26,3 +26,6 @@ Thumbs.db
 
 # Scratch and temp files
 scratch/
+
+# Backup dump archives (keep folder via .gitkeep)
+backups/*.json

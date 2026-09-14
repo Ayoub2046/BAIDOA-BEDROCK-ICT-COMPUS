@@ -148,6 +148,7 @@ app.use('/api/upload', require('./routes/upload.js'));
 app.use('/api/exams', require('./routes/exams.js'));
 app.use('/api/announcements', require('./routes/announcements.js'));
 app.use('/api/student-auth', require('./routes/student-auth.js'));
+app.use('/api/backup', require('./routes/backup.js'));
 
 // --- Auto-create class_students junction table if it doesn't exist ---
 // --- Auto-create activation columns if they don't exist ---
@@ -447,6 +448,10 @@ const { query } = require('./database');
             )
         `);
         console.log('class_attendance_locks table ready.');
+
+        // Initialize automated daily backup scheduler
+        const backupService = require('./services/backupService.js');
+        backupService.initAutomatedDailyBackup();
     } catch (err) {
         console.error('Error creating tables:', err.message);
     }
