@@ -82,20 +82,20 @@ router.get('/:id/students', async (req, res) => {
     }
 });
 
-// GET students NOT yet assigned to this class (checks both class_students and students.classid)
+// GET students NOT yet assigned to ANY class (checks both class_students and students.classid)
 router.get('/:id/unassigned-students', async (req, res) => {
     try {
         const { rows } = await query(`
             SELECT s.id, s.name, s.grade
             FROM students s
             WHERE s.deleted_at IS NULL
+              AND s.classid IS NULL
               AND s.id NOT IN (
                 SELECT student_id FROM class_students
-                WHERE class_id = $1 AND deleted_at IS NULL
+                WHERE deleted_at IS NULL
               )
-              AND (s.classid IS NULL OR s.classid != $1)
             ORDER BY s.name
-        `, [req.params.id]);
+        `);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });

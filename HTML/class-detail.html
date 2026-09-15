@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="manifest" href="/manifest.json">
@@ -14,17 +14,229 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .assign-panel {
+            background: linear-gradient(135deg, #f0f6ff 0%, #e8f0fe 100%);
+            border: 1.5px solid #c4d8f8;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+        [data-theme="dark"] .assign-panel {
+            background: linear-gradient(135deg, #0d2140 0%, #0a1a33 100%);
+            border-color: #1a3a6e;
+        }
+        .assign-panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0d4f8c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        [data-theme="dark"] .assign-panel-title { color: #5ba3f5; }
+        .assign-panel-title .icon-badge {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #0d4f8c, #1a73e8);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.9rem;
+        }
+        .student-search-wrap { position: relative; margin-bottom: 14px; }
+        .student-search-wrap .fa-search {
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            color: #8899bb; font-size: 0.85rem;
+        }
+        #student-search {
+            padding-left: 36px;
+            border-radius: 10px;
+            border: 1.5px solid #c4d8f8;
+            font-size: 0.9rem;
+            height: 40px;
+        }
+        #student-search:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,.15); }
+        [data-theme="dark"] #student-search { background: #0e1e36; border-color: #1a3a6e; color: #e0e6f0; }
+        .student-pick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 4px 2px;
+        }
+        .student-pick-grid::-webkit-scrollbar { width: 6px; }
+        .student-pick-grid::-webkit-scrollbar-thumb { background: #c4d8f8; border-radius: 8px; }
+        .student-card {
+            background: #fff;
+            border: 2px solid #e0eafc;
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all .18s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            user-select: none;
+        }
+        [data-theme="dark"] .student-card { background: #0e1e36; border-color: #1a3a6e; color: #e0e6f0; }
+        .student-card:hover {
+            border-color: #1a73e8;
+            box-shadow: 0 4px 14px rgba(26,115,232,.15);
+            transform: translateY(-1px);
+        }
+        .student-card.selected {
+            border-color: #1a73e8;
+            background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
+            box-shadow: 0 4px 16px rgba(26,115,232,.2);
+        }
+        [data-theme="dark"] .student-card.selected {
+            background: linear-gradient(135deg, #0d2e5a, #0a1e40);
+            border-color: #4a90d9;
+        }
+        .student-card .s-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #0d4f8c, #1a73e8);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.85rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .student-card .s-info { flex: 1; min-width: 0; }
+        .student-card .s-name {
+            font-size: 0.82rem; font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            color: #1a2a4a;
+        }
+        [data-theme="dark"] .student-card .s-name { color: #c8d8f0; }
+        .student-card.selected .s-name { color: #0d4f8c; }
+        .student-card .s-grade { font-size: 0.72rem; color: #6b80a0; }
+        .student-card .s-check {
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 2px solid #c4d8f8;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all .15s;
+        }
+        .student-card.selected .s-check {
+            background: #1a73e8; border-color: #1a73e8; color: #fff;
+        }
+        .student-card .s-check i { font-size: 0.6rem; display: none; }
+        .student-card.selected .s-check i { display: block; }
+        .assign-empty {
+            text-align: center; padding: 30px 20px; color: #7a90b5;
+        }
+        .assign-empty i { font-size: 2.2rem; margin-bottom: 8px; color: #b0c4e0; display: block; }
+        .assign-footer {
+            margin-top: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+        }
+        .selected-count-label { font-size: 0.85rem; color: #5080c0; font-weight: 600; }
+        [data-theme="dark"] .selected-count-label { color: #7ab0f0; }
+        #btn-assign-students {
+            background: linear-gradient(135deg, #0d4f8c, #1a73e8);
+            border: none; border-radius: 10px; padding: 9px 24px;
+            font-weight: 600; font-size: 0.9rem; color: #fff;
+            transition: all .2s; cursor: pointer;
+        }
+        #btn-assign-students:hover {
+            background: linear-gradient(135deg, #0a3d6e, #1558c0);
+            transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,79,140,.3);
+        }
+        #btn-assign-students:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+        .class-info-card {
+            border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(13,79,140,.1);
+        }
+        .class-info-header {
+            background: linear-gradient(135deg, #0d4f8c 0%, #1a73e8 100%);
+            padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .class-info-header h4 { color: #fff; margin: 0; font-weight: 700; font-size: 1.2rem; }
+        .class-badge {
+            background: rgba(255,255,255,.2); color: #fff;
+            border-radius: 20px; padding: 4px 14px;
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .class-meta-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        .class-meta-item { padding: 18px 24px; border-right: 1px solid #eef2ff; }
+        [data-theme="dark"] .class-meta-item { border-color: #1a2a40; }
+        .class-meta-item:last-child { border-right: none; }
+        .class-meta-label { font-size: 0.75rem; color: #8899bb; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
+        .class-meta-value { font-size: 1rem; font-weight: 700; color: #1a2a4a; margin-top: 4px; }
+        [data-theme="dark"] .class-meta-value { color: #c8d8f0; }
+        .util-bar { height: 8px; border-radius: 10px; background: #e0eafc; margin-top: 8px; overflow: hidden; }
+        .util-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #1a73e8, #0d4f8c); transition: width .5s ease; }
+        .enrolled-card { border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(13,79,140,.08); }
+        .enrolled-header {
+            background: linear-gradient(135deg, #0d4f8c, #1a73e8);
+            padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .enrolled-header h5 { color: #fff; margin: 0; font-weight: 700; }
+        .enrolled-badge {
+            background: rgba(255,255,255,.2); color: #fff;
+            border-radius: 20px; padding: 3px 12px; font-size: 0.82rem; font-weight: 700;
+        }
+        .enrolled-table { width: 100%; border-collapse: collapse; }
+        .enrolled-table thead tr { background: #f0f6ff; }
+        [data-theme="dark"] .enrolled-table thead tr { background: #0a1e36; }
+        .enrolled-table th {
+            padding: 12px 16px; font-size: 0.78rem; font-weight: 700;
+            color: #4a6080; text-transform: uppercase; letter-spacing: .6px;
+            border-bottom: 2px solid #e0eafc;
+        }
+        [data-theme="dark"] .enrolled-table th { color: #6a90c0; border-color: #1a2a40; }
+        .enrolled-table td {
+            padding: 13px 16px; vertical-align: middle;
+            border-bottom: 1px solid #f0f4ff;
+            font-size: 0.9rem; color: #1a2a4a;
+        }
+        [data-theme="dark"] .enrolled-table td { border-color: #0d1e34; color: #c0d0e8; }
+        .enrolled-table tbody tr:hover { background: #f7faff; }
+        [data-theme="dark"] .enrolled-table tbody tr:hover { background: #0a1830; }
+        .student-avatar-sm {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: linear-gradient(135deg, #0d4f8c, #1a73e8);
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.78rem; font-weight: 700;
+            margin-right: 10px; flex-shrink: 0;
+        }
+        .btn-remove {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+            border: none; border-radius: 8px; padding: 5px 14px;
+            font-size: 0.8rem; font-weight: 600; color: #fff;
+            transition: all .18s; cursor: pointer;
+        }
+        .btn-remove:hover {
+            background: linear-gradient(135deg, #e60000, #990000);
+            transform: translateY(-1px); box-shadow: 0 4px 12px rgba(204,0,0,.3);
+        }
+        .attendance-pill {
+            background: #e8f5e9; color: #2e7d32;
+            border-radius: 12px; padding: 3px 10px;
+            font-size: 0.78rem; font-weight: 600;
+        }
+        .row-num {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: #e8f0fe; color: #0d4f8c;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.78rem; font-weight: 700;
+        }
+        [data-theme="dark"] .row-num { background: #0d2a50; color: #5ba3f5; }
+    </style>
 </head>
 <body>
 <div class="dashboard-wrapper">
-    <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
-            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
-                <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width:60px;height:60px;border-radius:50px;" alt="">
+                <span style="font-size:20px;">Baidoa Bedrock ICT Campus</span>
             </h3>
         </div>
-                <ul class="sidebar-nav">
+        <ul class="sidebar-nav">
             <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
             <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
             <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
@@ -42,7 +254,7 @@
             <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
             <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
             <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
-            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security &amp; Permissions</span></a></li>
             <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
             <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
             <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
@@ -50,9 +262,7 @@
         </ul>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Navbar -->
         <nav class="top-navbar">
             <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
             <h4 class="mb-0 ms-3" id="page-title">Class Details</h4>
@@ -64,246 +274,266 @@
             </div>
         </nav>
 
-        <!-- Content Area -->
         <div class="content-area">
+
             <!-- Class Info Card -->
-            <div class="card mb-4">
-                <div class="card-header" id="class-header" style="background-color: #4e73df; color: white;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" id="class-name">Loading...</h5>
-                        <span class="badge bg-light text-dark" id="class-student-count">0 students</span>
-                    </div>
+            <div class="class-info-card">
+                <div class="class-info-header">
+                    <h4 id="class-name"><i class="fas fa-spinner fa-spin me-2"></i>Loading...</h4>
+                    <span class="class-badge" id="class-student-count">0 students</span>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <small class="text-muted">Teacher</small>
-                            <p class="mb-0 fw-bold" id="class-teacher">-</p>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Room</small>
-                            <p class="mb-0 fw-bold" id="class-room">-</p>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Capacity</small>
-                            <p class="mb-0 fw-bold" id="class-capacity">-</p>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Utilization</small>
-                            <div class="progress mt-1" style="height: 20px;">
-                                <div class="progress-bar" id="class-progress" style="width: 0%;">0%</div>
-                            </div>
-                        </div>
+                <div class="class-meta-grid">
+                    <div class="class-meta-item">
+                        <div class="class-meta-label"><i class="fas fa-chalkboard-teacher me-1"></i>Teacher</div>
+                        <div class="class-meta-value" id="class-teacher">-</div>
+                    </div>
+                    <div class="class-meta-item">
+                        <div class="class-meta-label"><i class="fas fa-door-open me-1"></i>Room</div>
+                        <div class="class-meta-value" id="class-room">-</div>
+                    </div>
+                    <div class="class-meta-item">
+                        <div class="class-meta-label"><i class="fas fa-users me-1"></i>Capacity</div>
+                        <div class="class-meta-value" id="class-capacity">-</div>
+                    </div>
+                    <div class="class-meta-item" style="border-right:none;">
+                        <div class="class-meta-label"><i class="fas fa-chart-bar me-1"></i>Utilization</div>
+                        <div class="class-meta-value" id="class-util-label">0%</div>
+                        <div class="util-bar"><div class="util-bar-fill" id="class-progress" style="width:0%"></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Assign Students Section -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Assign Students</h5>
+            <!-- Assign Students Panel -->
+            <div class="assign-panel">
+                <div class="assign-panel-title">
+                    <div class="icon-badge"><i class="fas fa-user-plus"></i></div>
+                    Assign Students to Class
+                    <span class="ms-auto" style="font-size:0.78rem;font-weight:500;color:#8899bb;" id="avail-count-label"></span>
+                </div>
+                <div class="student-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="student-search" class="form-control" placeholder="Search unassigned students by name or grade...">
+                </div>
+                <div class="student-pick-grid" id="student-pick-grid">
+                    <div class="assign-empty" style="grid-column:1/-1;">
+                        <i class="fas fa-circle-notch fa-spin"></i>Loading...
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-md-9">
-                            <select id="unassigned-students-select" class="form-select" multiple size="5">
-                                <option disabled>Loading students...</option>
-                            </select>
-                            <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple students</small>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-start">
-                            <button class="btn btn-primary w-100" id="btn-assign-students"><i class="fas fa-user-plus me-1"></i> Assign Selected</button>
-                        </div>
-                    </div>
+                </div>
+                <div class="assign-footer">
+                    <span class="selected-count-label" id="selected-count-label">0 students selected</span>
+                    <button id="btn-assign-students" disabled>
+                        <i class="fas fa-user-plus me-2"></i>Assign Selected
+                    </button>
                 </div>
             </div>
 
-            <!-- Students Table -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Enrolled Students</h5>
-                    <span class="badge bg-primary" id="enrolled-count">0</span>
+            <!-- Enrolled Students Table -->
+            <div class="enrolled-card">
+                <div class="enrolled-header">
+                    <h5><i class="fas fa-users me-2"></i>Enrolled Students</h5>
+                    <span class="enrolled-badge" id="enrolled-count">0</span>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Grade</th>
-                                    <th>Enrollment Date</th>
-                                    <th>Attendance</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="students-table-body">
-                                <tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="enrolled-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Grade / Class</th>
+                                <th>Enrollment Date</th>
+                                <th>Attendance</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body">
+                            <tr><td colspan="6" style="text-align:center;padding:30px;color:#8899bb;">
+                                <i class="fas fa-circle-notch fa-spin me-2"></i>Loading...
+                            </td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const classId = params.get('id');
-    if (!classId) {
-        window.location.href = 'classmanagment.html';
-        return;
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    var classId = params.get('id');
+    if (!classId) { window.location.href = 'classmanagment.html'; return; }
 
-    const API_BASE = '/api/classes';
+    var API_BASE = '/api/classes';
+    var allUnassigned = [];
+    var selectedIds = new Set();
+
+    function initials(name) {
+        return (name || '?').split(' ').slice(0,2).map(function(w){ return w[0]; }).join('').toUpperCase();
+    }
 
     async function loadClassInfo() {
         try {
-            const res = await fetch(`${API_BASE}`);
-            if (!res.ok) throw new Error('Failed to load classes');
-            const classes = await res.json();
-            const cls = classes.find(c => c.id === parseInt(classId));
-            if (!cls) {
-                alert('Class not found.');
-                window.location.href = 'classmanagment.html';
-                return;
-            }
-
+            var res = await fetch(API_BASE);
+            if (!res.ok) throw new Error();
+            var classes = await res.json();
+            var cls = classes.find(function(c){ return c.id === parseInt(classId); });
+            if (!cls) { alert('Class not found.'); window.location.href = 'classmanagment.html'; return; }
             document.getElementById('page-title').textContent = cls.name + ' - Students';
             document.getElementById('class-name').textContent = cls.name;
-            document.getElementById('class-header').style.backgroundColor = cls.color || '#4e73df';
             document.getElementById('class-teacher').textContent = cls.teacherName || 'Unassigned';
             document.getElementById('class-room').textContent = cls.room || '-';
             document.getElementById('class-capacity').textContent = cls.students + ' / ' + cls.capacity;
             document.getElementById('class-student-count').textContent = cls.students + ' students';
-
-            const progress = cls.capacity > 0 ? (cls.students / cls.capacity) * 100 : 0;
-            document.getElementById('class-progress').style.width = progress + '%';
-            document.getElementById('class-progress').textContent = Math.round(progress) + '%';
-        } catch (err) {
-            console.error(err);
-        }
+            var pct = cls.capacity > 0 ? Math.round((cls.students / cls.capacity) * 100) : 0;
+            document.getElementById('class-util-label').textContent = pct + '%';
+            document.getElementById('class-progress').style.width = pct + '%';
+        } catch(e){ console.error(e); }
     }
 
     async function loadEnrolledStudents() {
+        var tbody = document.getElementById('students-table-body');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#8899bb;"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading...</td></tr>';
         try {
-            const res = await fetch(`${API_BASE}/${classId}/students`);
-            if (!res.ok) throw new Error('Failed to load students');
-            const students = await res.json();
-            const tbody = document.getElementById('students-table-body');
+            var res = await fetch(API_BASE + '/' + classId + '/students');
+            if (!res.ok) throw new Error();
+            var students = await res.json();
             document.getElementById('enrolled-count').textContent = students.length;
-
             if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No students assigned to this class yet.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#8899bb;"><i class="fas fa-user-slash" style="font-size:2rem;display:block;margin-bottom:10px;color:#c0d0e8;"></i>No students assigned yet.</td></tr>';
                 return;
             }
-
-            tbody.innerHTML = students.map((s, i) => `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td><i class="fas fa-user-circle me-2 text-primary"></i>${s.name}</td>
-                    <td>${s.grade || '-'}</td>
-                    <td>${s.enrollmentdate ? new Date(s.enrollmentdate).toLocaleDateString() : '-'}</td>
-                    <td>${s.attendance != null ? s.attendance + '%' : '-'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger btn-remove-student" data-student-id="${s.id}" data-student-name="${s.name}">
-                            <i class="fas fa-user-minus me-1"></i> Remove
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        } catch (err) {
-            console.error(err);
-        }
+            tbody.innerHTML = students.map(function(s, i) {
+                var date = s.enrollmentdate ? new Date(s.enrollmentdate).toLocaleDateString() : '-';
+                var att = s.attendance != null ? s.attendance + '%' : '-';
+                return '<tr>' +
+                    '<td><span class="row-num">' + (i+1) + '</span></td>' +
+                    '<td><div style="display:flex;align-items:center;"><span class="student-avatar-sm">' + initials(s.name) + '</span><span style="font-weight:600;">' + s.name + '</span></div></td>' +
+                    '<td><span style="font-size:0.82rem;color:#5080c0;font-weight:600;">' + (s.grade || '-') + '</span></td>' +
+                    '<td style="font-size:0.85rem;color:#6b80a0;">' + date + '</td>' +
+                    '<td><span class="attendance-pill">' + att + '</span></td>' +
+                    '<td><button class="btn-remove btn-remove-student" data-student-id="' + s.id + '" data-student-name="' + s.name + '"><i class="fas fa-user-minus me-1"></i>Remove</button></td>' +
+                    '</tr>';
+            }).join('');
+        } catch(e){ console.error(e); }
     }
 
     async function loadUnassignedStudents() {
+        var grid = document.getElementById('student-pick-grid');
+        grid.innerHTML = '<div class="assign-empty" style="grid-column:1/-1;"><i class="fas fa-circle-notch fa-spin"></i>Loading...</div>';
+        selectedIds.clear();
+        updateAssignBtn();
         try {
-            const res = await fetch(`${API_BASE}/${classId}/unassigned-students`);
-            if (!res.ok) throw new Error('Failed to load unassigned students');
-            const students = await res.json();
-            const select = document.getElementById('unassigned-students-select');
-
-            if (students.length === 0) {
-                select.innerHTML = '<option disabled>All students are already assigned</option>';
-                return;
-            }
-
-            select.innerHTML = students.map(s =>
-                `<option value="${s.id}">${s.name} (${s.grade || 'No grade'})</option>`
-            ).join('');
-        } catch (err) {
-            console.error(err);
+            var res = await fetch(API_BASE + '/' + classId + '/unassigned-students');
+            if (!res.ok) throw new Error();
+            allUnassigned = await res.json();
+            renderStudentCards(allUnassigned);
+        } catch(e) {
+            grid.innerHTML = '<div class="assign-empty" style="grid-column:1/-1;"><i class="fas fa-exclamation-circle" style="color:red;"></i>Failed to load.</div>';
         }
     }
 
-    document.getElementById('btn-assign-students').addEventListener('click', async () => {
-        const select = document.getElementById('unassigned-students-select');
-        const selected = Array.from(select.selectedOptions).map(o => parseInt(o.value));
-        if (selected.length === 0) {
-            alert('Please select at least one student to assign.');
+    function renderStudentCards(list) {
+        var grid = document.getElementById('student-pick-grid');
+        var label = document.getElementById('avail-count-label');
+        label.textContent = list.length + ' available';
+        if (list.length === 0) {
+            grid.innerHTML = '<div class="assign-empty" style="grid-column:1/-1;"><i class="fas fa-check-circle" style="color:#4caf50;font-size:2rem;display:block;margin-bottom:8px;"></i>All students are already assigned to a class.</div>';
             return;
         }
+        grid.innerHTML = list.map(function(s) {
+            var sel = selectedIds.has(s.id) ? ' selected' : '';
+            return '<div class="student-card' + sel + '" data-id="' + s.id + '" onclick="toggleCard(this,' + s.id + ')">' +
+                '<div class="s-avatar">' + initials(s.name) + '</div>' +
+                '<div class="s-info"><div class="s-name" title="' + s.name + '">' + s.name + '</div><div class="s-grade">' + (s.grade || 'No grade') + '</div></div>' +
+                '<div class="s-check"><i class="fas fa-check"></i></div>' +
+                '</div>';
+        }).join('');
+    }
+
+    window.toggleCard = function(el, id) {
+        el.classList.toggle('selected');
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        updateAssignBtn();
+    };
+
+    function updateAssignBtn() {
+        var n = selectedIds.size;
+        document.getElementById('selected-count-label').textContent = n + ' student' + (n !== 1 ? 's' : '') + ' selected';
+        document.getElementById('btn-assign-students').disabled = (n === 0);
+    }
+
+    document.getElementById('student-search').addEventListener('input', function(e) {
+        var q = e.target.value.toLowerCase().trim();
+        var filtered = q ? allUnassigned.filter(function(s){ return s.name.toLowerCase().includes(q) || (s.grade||'').toLowerCase().includes(q); }) : allUnassigned;
+        renderStudentCards(filtered);
+    });
+
+    document.getElementById('btn-assign-students').addEventListener('click', async function() {
+        var btn = document.getElementById('btn-assign-students');
+        if (selectedIds.size === 0) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Assigning...';
         try {
-            const res = await fetch(`${API_BASE}/${classId}/students`, {
+            var res = await fetch(API_BASE + '/' + classId + '/students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentIds: selected })
+                body: JSON.stringify({ studentIds: Array.from(selectedIds) })
             });
-            if (!res.ok) throw new Error('Failed to assign students');
-            alert('Students assigned successfully!');
-            refreshAll();
-        } catch (err) {
-            alert('Error: ' + err.message);
+            if (!res.ok) throw new Error('Failed to assign');
+            await refreshAll();
+        } catch(e) {
+            alert('Error: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Assign Selected';
         }
     });
 
-    document.getElementById('students-table-body').addEventListener('click', async (e) => {
-        const btn = e.target.closest('.btn-remove-student');
+    document.getElementById('students-table-body').addEventListener('click', async function(e) {
+        var btn = e.target.closest('.btn-remove-student');
         if (!btn) return;
-        const studentId = btn.dataset.studentId;
-        const studentName = btn.dataset.studentName;
-        if (!confirm(`Remove "${studentName}" from this class?`)) return;
+        var sid = btn.dataset.studentId;
+        var sname = btn.dataset.studentName;
+        if (!confirm('Remove "' + sname + '" from this class?')) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-1"></i>Removing...';
         try {
-            const res = await fetch(`${API_BASE}/${classId}/students/${studentId}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to remove student');
+            var res = await fetch(API_BASE + '/' + classId + '/students/' + sid, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to remove');
             refreshAll();
-        } catch (err) {
-            alert('Error: ' + err.message);
+        } catch(e) {
+            alert('Error: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-minus me-1"></i>Remove';
         }
     });
 
-    function refreshAll() {
-        loadClassInfo();
-        loadEnrolledStudents();
-        loadUnassignedStudents();
+    async function refreshAll() {
+        document.getElementById('student-search').value = '';
+        await Promise.all([loadClassInfo(), loadEnrolledStudents(), loadUnassignedStudents()]);
     }
 
     refreshAll();
 });
 </script>
 <script>
-// Theme Toggle
 function toggleTheme() {
-    const body = document.body;
-    const current = body.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    var body = document.body;
+    var next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     body.setAttribute('data-theme', next);
-    localStorage.setItem('elif-theme', next);
-    const icon = document.getElementById('themeIcon');
+    localStorage.setItem('bedrock-theme', next);
+    var icon = document.getElementById('themeIcon');
     if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
 (function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
+    var saved = localStorage.getItem('bedrock-theme') || localStorage.getItem('elif-theme') || 'light';
     document.body.setAttribute('data-theme', saved);
-    const icon = document.getElementById('themeIcon');
+    var icon = document.getElementById('themeIcon');
     if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 })();
 </script>
-
     <script src="/HTML/js/admin.js"></script>
     <script src="/JS/pwa.js"></script>
 </body>
