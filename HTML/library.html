@@ -57,11 +57,22 @@
         <div class="content-area p-4">
             <div class="card main-table-card mb-4">
                 <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <input type="text" id="book-search" class="form-control me-2" placeholder="Search by title or author...">
-                        <select id="category-filter" class="form-select" style="width: auto;"><option value="all">All Categories</option><option value="Science Fiction">Science Fiction</option><option value="History">History</option><option value="Mathematics">Mathematics</option><option value="Literature">Literature</option></select>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <input type="text" id="book-search" class="form-control" placeholder="Search title, author, subject..." style="min-width: 220px;">
+                        <select id="category-filter" class="form-select" style="width: auto;">
+                            <option value="all">All Categories</option>
+                            <option value="Textbooks">Textbooks</option>
+                            <option value="Past Papers">Past Papers</option>
+                            <option value="Lecture Notes">Lecture Notes</option>
+                            <option value="School Documents">School Documents</option>
+                            <option value="Reference & ICT">Reference & ICT</option>
+                            <option value="Science Fiction">Science Fiction</option>
+                            <option value="History">History</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Literature">Literature</option>
+                        </select>
                     </div>
-                    <button class="btn btn-primary mt-2 mt-md-0" id="btn-add-book"><i class="fas fa-plus me-1"></i> Add New Book</button>
+                    <button class="btn btn-primary mt-2 mt-md-0" id="btn-add-book"><i class="fas fa-plus me-1"></i> Add New Resource</button>
                 </div>
             </div>
             <div class="row g-4" id="books-container">
@@ -73,29 +84,72 @@
 
 <!-- Book Modal (Add/Edit) -->
 <div class="modal fade" id="bookModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
         <form id="bookForm">
-            <div class="modal-header"><h5 class="modal-title" id="bookModalTitle">Book Information</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title" id="bookModalTitle">Resource Information</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <div class="mb-3"><label class="form-label">Title</label><input type="text" name="title" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Title / Document Name</label><input type="text" name="title" class="form-control" required placeholder="e.g. Grade 10 Mathematics Term 1"></div>
                 <div class="row">
-                    <div class="col-md-6 mb-3"><label class="form-label">Author</label><input type="text" name="author" class="form-control" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Category</label><select class="form-select" name="category"><option>Science Fiction</option><option>History</option><option>Mathematics</option><option>Literature</option></select></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Author / Instructor</label><input type="text" name="author" class="form-control" required placeholder="e.g. Bedrock Faculty / Teacher Name"></div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="Textbooks">Textbooks</option>
+                            <option value="Past Papers">Past Papers</option>
+                            <option value="Lecture Notes">Lecture Notes</option>
+                            <option value="School Documents">School Documents</option>
+                            <option value="Reference & ICT">Reference & ICT</option>
+                            <option value="Science Fiction">Science Fiction</option>
+                            <option value="History">History</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Literature">Literature</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Mathematics, ICT, English">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Academic Year</label>
+                        <select class="form-select" name="academic_year">
+                            <option value="All">All Years</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Target Audience</label>
+                        <select class="form-select" name="target_audience">
+                            <option value="all">All (Students, Alumni, Teachers)</option>
+                            <option value="students">Current Students Only</option>
+                            <option value="alumni">Alumni & Graduates</option>
+                            <option value="teachers">Teachers Only</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Cover Image</label>
-                    <input type="file" id="cover-file" class="form-control" accept="image/*">
-                    <input type="hidden" name="cover">
-                    <div class="mt-2" id="cover-preview" style="display:none;"><img src="" alt="Cover preview" style="max-height:120px;border-radius:6px;border:2px solid #dee2e6;"></div>
+                    <label class="form-label">Description / Summary</label>
+                    <textarea name="description" class="form-control" rows="2" placeholder="Brief details about this resource..."></textarea>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Digital Book File (PDF)</label>
-                    <input type="file" id="digital-file" class="form-control" accept=".pdf,.doc,.docx,.epub">
-                    <input type="hidden" name="digitalLink">
-                    <div class="mt-2"><small class="text-muted" id="digital-file-name"></small></div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cover Image</label>
+                        <input type="file" id="cover-file" class="form-control" accept="image/*">
+                        <input type="hidden" name="cover">
+                        <div class="mt-2" id="cover-preview" style="display:none;"><img src="" alt="Cover preview" style="max-height:100px;border-radius:6px;border:2px solid #dee2e6;"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Digital Document File (PDF / DOC)</label>
+                        <input type="file" id="digital-file" class="form-control" accept=".pdf,.doc,.docx,.epub">
+                        <input type="hidden" name="digitalLink">
+                        <div class="mt-2"><small class="text-muted" id="digital-file-name"></small></div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Book</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Resource</button></div>
         </form>
     </div></div>
 </div>
@@ -212,19 +266,32 @@
             }
             booksContainer.innerHTML = filteredBooks.map(book => {
                 const statusColor = book.status === 'Available' ? 'bg-success' : 'bg-danger';
-                const coverStyle = book.cover ? `background-image: url('${book.cover}')` : `background-image: linear-gradient(45deg, #6c757d, #343a40)`;
+                const coverStyle = book.cover ? `background-image: url('${book.cover}')` : `background-image: linear-gradient(135deg, #1e3c72, #2a5298)`;
+                const docUrl = book.file_path || book.digitallink || book.digitalLink || '';
                 return `
                 <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="book-card">
-                        <div class="book-cover" style="${coverStyle}">${!book.cover ? book.title : ''}</div>
-                        <div class="card-body">
-                            <h5 class="book-title" title="${book.title}">${book.title}</h5>
-                            <p class="book-author mb-2">${book.author}</p>
-                            <span class="badge ${statusColor}">${book.status}</span>
-                            ${book.status === 'Checked Out' ? `<small class="d-block text-muted mt-1">To: ${book.checkedOutTo}</small>` : ''}
+                    <div class="book-card shadow-sm border-0 h-100 d-flex flex-column">
+                        <div class="book-cover" style="${coverStyle}; min-height: 180px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-weight:bold; padding:10px;">
+                            ${!book.cover ? (book.title || 'Resource') : ''}
                         </div>
-                        <div class="card-footer d-flex justify-content-between">
-                            <button class="btn btn-sm btn-secondary btn-edit-book" data-id="${book.id}">Edit</button>
+                        <div class="card-body d-flex flex-column flex-grow-1">
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <span class="badge bg-primary">${book.category || 'General'}</span>
+                                ${book.subject ? `<span class="badge bg-info text-dark">${book.subject}</span>` : ''}
+                                ${book.academic_year && book.academic_year !== 'All' ? `<span class="badge bg-secondary">${book.academic_year}</span>` : ''}
+                            </div>
+                            <h5 class="book-title fw-bold mb-1" title="${book.title}">${book.title}</h5>
+                            <p class="book-author text-muted small mb-2"><i class="fas fa-user-edit me-1"></i>${book.author || 'Bedrock Faculty'}</p>
+                            ${book.description ? `<p class="small text-muted mb-2 text-truncate" title="${book.description}">${book.description}</p>` : ''}
+                            <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
+                                <span class="badge ${statusColor}">${book.status}</span>
+                                <small class="text-muted text-capitalize"><i class="fas fa-users me-1"></i>${book.target_audience || 'All'}</small>
+                            </div>
+                            ${book.status === 'Checked Out' ? `<small class="d-block text-muted mt-1">To: ${book.checkedOutTo || book.checkedoutto}</small>` : ''}
+                        </div>
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center gap-1">
+                            <button class="btn btn-sm btn-outline-secondary btn-edit-book" data-id="${book.id}"><i class="fas fa-edit me-1"></i>Edit</button>
+                            ${docUrl ? `<a href="${docUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="Download Document"><i class="fas fa-file-download me-1"></i>File</a>` : ''}
                             ${book.status === 'Available' ? `<button class="btn btn-sm btn-primary btn-checkout-book" data-id="${book.id}">Check Out</button>` : `<button class="btn btn-sm btn-success btn-checkin-book" data-id="${book.id}">Check In</button>`}
                         </div>
                     </div>
@@ -233,7 +300,7 @@
         }
 
         document.getElementById('btn-add-book').addEventListener('click', () => {
-            document.getElementById('bookModalTitle').textContent = 'Add New Book';
+            document.getElementById('bookModalTitle').textContent = 'Add New Resource';
             bookForm.reset();
             bookForm.dataset.mode = 'add';
             delete bookForm.dataset.id;
@@ -252,14 +319,18 @@
             if (!book) return;
 
             if (button.classList.contains('btn-edit-book')) {
-                document.getElementById('bookModalTitle').textContent = 'Edit Book';
+                document.getElementById('bookModalTitle').textContent = 'Edit Resource';
                 bookForm.dataset.mode = 'edit';
                 bookForm.dataset.id = id;
                 bookForm.elements.title.value = book.title;
                 bookForm.elements.author.value = book.author;
                 bookForm.elements.category.value = book.category;
+                if (bookForm.elements.subject) bookForm.elements.subject.value = book.subject || '';
+                if (bookForm.elements.academic_year) bookForm.elements.academic_year.value = book.academic_year || 'All';
+                if (bookForm.elements.target_audience) bookForm.elements.target_audience.value = book.target_audience || 'all';
+                if (bookForm.elements.description) bookForm.elements.description.value = book.description || '';
                 bookForm.elements.cover.value = book.cover || '';
-                bookForm.elements.digitalLink.value = book.digitalLink || '';
+                bookForm.elements.digitalLink.value = book.digitalLink || book.digitallink || book.file_path || '';
                 const coverPreview = document.getElementById('cover-preview');
                 if (book.cover) {
                     coverPreview.style.display = 'block';
@@ -268,18 +339,22 @@
                     coverPreview.style.display = 'none';
                     coverPreview.querySelector('img').src = '';
                 }
-                document.getElementById('digital-file-name').textContent = book.digitalLink ? 'Current file: ' + book.digitalLink.split('/').pop() : '';
+                const existingFile = book.digitalLink || book.digitallink || book.file_path;
+                document.getElementById('digital-file-name').textContent = existingFile ? 'Current file: ' + existingFile.split('/').pop() : '';
                 bookModal.show();
             } else if (button.classList.contains('btn-checkout-book')) {
                 const studentSelect = checkoutForm.elements.studentId;
                 checkoutForm.elements.bookId.value = id;
                 document.getElementById('checkout-book-title').textContent = book.title;
                 studentSelect.innerHTML = '<option value="" disabled selected>Select a student...</option>';
-                students.forEach(s => studentSelect.innerHTML += `<option value="${s.id}">BB${260000 + s.id} - ${s.name}</option>`);
+                students.forEach(s => {
+                    const code = s.student_id_code || ('BB' + (260000 + s.id));
+                    studentSelect.innerHTML += `<option value="${s.id}">${code} - ${s.name}</option>`;
+                });
                 checkoutModal.show();
             } else if (button.classList.contains('btn-checkin-book')) {
                 if (confirm('Check this book in?')) {
-                    const updatedBook = { ...book, status: 'Available', checkedOutTo: null };
+                    const updatedBook = { ...book, status: 'Available', checkedOutTo: null, checkedoutto: null };
                     fetch(`${BOOKS_API_URL}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedBook) })
                     .then(res => res.ok ? loadPageData() : alert('Check-in failed.'));
                 }
@@ -295,8 +370,13 @@
                 title: bookForm.elements.title.value,
                 author: bookForm.elements.author.value,
                 category: bookForm.elements.category.value,
+                subject: bookForm.elements.subject ? bookForm.elements.subject.value : '',
+                academic_year: bookForm.elements.academic_year ? bookForm.elements.academic_year.value : 'All',
+                target_audience: bookForm.elements.target_audience ? bookForm.elements.target_audience.value : 'all',
+                description: bookForm.elements.description ? bookForm.elements.description.value : '',
                 cover: bookForm.elements.cover.value,
                 digitalLink: bookForm.elements.digitalLink.value,
+                digitallink: bookForm.elements.digitalLink.value,
                 status: mode === 'edit' ? book.status : 'Available',
                 checkedOutTo: mode === 'edit' ? book.checkedOutTo : null
             };
@@ -337,12 +417,12 @@ function toggleTheme() {
     const current = body.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     body.setAttribute('data-theme', next);
-    localStorage.setItem('elif-theme', next);
+    localStorage.setItem('bedrock-theme', next);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
 (function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
+    const saved = localStorage.getItem('bedrock-theme') || 'light';
     document.body.setAttribute('data-theme', saved);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';

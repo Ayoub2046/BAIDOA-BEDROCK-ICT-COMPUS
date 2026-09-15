@@ -271,8 +271,8 @@ body[data-theme="dark"] .alert-success {
     align-items: center;
     justify-content: center;
     background:
-        radial-gradient(1200px 600px at 100% -10%, rgba(65, 190, 65, 0.35), transparent 60%),
-        radial-gradient(1000px 500px at -10% 110%, rgba(29, 217, 29, 0.25), transparent 60%),
+        radial-gradient(1200px 600px at 100% -10%, rgba(26, 127, 212, 0.35), transparent 60%),
+        radial-gradient(1000px 500px at -10% 110%, rgba(13, 79, 140, 0.3), transparent 60%),
         linear-gradient(135deg, var(--primary-darker), var(--primary-dark));
     padding: 1.5rem;
     overflow: hidden;

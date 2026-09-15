@@ -30,8 +30,35 @@ function parseBBId(bbId) {
 }
 
 // ---------------------------------------------------------------
+// Helper: find student by any ID format (e.g. BB26-0001, BB260001, numeric ID, or legacy)
+// ---------------------------------------------------------------
+async function findStudentByIdOrCode(input) {
+    const raw = String(input).trim();
+    const cleanNoDash = raw.toUpperCase().replace(/-/g, '');
+    const legacyNumeric = parseBBId(raw);
+
+    const { rows } = await query(`
+        SELECT s.id, s.name, s.grade, s.department, s.period, s.image, s.gpa, s.classid,
+               s.student_id_code, s.status, s.academic_year,
+               sa.password_hash, sa.must_change
+        FROM students s
+        JOIN student_auth sa ON sa.student_id = s.id
+        WHERE s.deleted_at IS NULL
+          AND (
+            UPPER(s.student_id_code) = UPPER($1)
+            OR UPPER(REPLACE(s.student_id_code, '-', '')) = $2
+            OR s.id = $3
+            OR ($4::int IS NOT NULL AND s.id = $4)
+          )
+        LIMIT 1
+    `, [raw, cleanNoDash, parseInt(raw) || -1, legacyNumeric || null]);
+
+    return rows[0] || null;
+}
+
+// ---------------------------------------------------------------
 // POST /api/student-auth/login
-// Body: { bbId: 'BB260001', password: '...' }
+// Body: { bbId: 'BB26-0001' or 'BB260001', password: '...' }
 // Returns student dashboard data on success
 // ---------------------------------------------------------------
 router.post('/login', async (req, res) => {
@@ -40,25 +67,14 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Student ID and password are required.' });
     }
 
-    const studentId = parseBBId(bbId);
-    if (!studentId) {
-        return res.status(401).json({ error: 'Invalid Student ID format. Expected BB260001.' });
-    }
-
     try {
-        // Get student and their auth record
-        const { rows: studentRows } = await query(
-            `SELECT s.id, s.name, s.grade, s.department, s.period, s.image, s.gpa, s.classid,
-                    sa.password_hash, sa.must_change
-             FROM students s
-             JOIN student_auth sa ON sa.student_id = s.id
-             WHERE s.id = $1 AND s.deleted_at IS NULL`,
-            [studentId]
-        );
-
-        const student = studentRows[0];
+        const student = await findStudentByIdOrCode(bbId);
         if (!student) {
             return res.status(401).json({ error: 'Invalid Student ID or password.' });
+        }
+
+        if (student.status && student.status.toLowerCase() === 'inactive') {
+            return res.status(403).json({ error: 'Your account is currently inactive. Please contact school administration.' });
         }
 
         // Verify password
@@ -67,12 +83,16 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid Student ID or password.' });
         }
 
+        const isAlumni = (student.status && (student.status.toLowerCase() === 'graduated' || student.status.toLowerCase() === 'alumni'));
+        const displayId = student.student_id_code || makeBBId(student.id);
+
         return res.json({
             success: true,
             mustChange: student.must_change,
             student: {
                 id: student.id,
-                bbId: makeBBId(student.id),
+                bbId: displayId,
+                student_id_code: displayId,
                 name: student.name,
                 grade: student.grade,
                 department: student.department,
@@ -80,7 +100,10 @@ router.post('/login', async (req, res) => {
                 image: student.image,
                 gpa: student.gpa,
                 classid: student.classid,
-                role: 'Student'
+                status: student.status || 'Active',
+                academic_year: student.academic_year || '2026',
+                isAlumni,
+                role: isAlumni ? 'Alumni' : 'Student'
             }
         });
     } catch (err) {

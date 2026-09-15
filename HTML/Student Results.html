@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -367,7 +367,7 @@
             color: var(--primary-dark);
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e8f5e8;
+            border-bottom: 2px solid var(--primary-lightest, #e8f1fa);
         }
 
         /* ========== TAB NAV (hidden, used by JS) ========== */
@@ -735,12 +735,12 @@
         }
         body[data-theme="dark"] .bottom-nav { background: #252825; border-color: #3a3d3a; }
         body[data-theme="dark"] .bottom-nav .nav-item { color: #888; }
-        body[data-theme="dark"] .bottom-nav .nav-item.active { color: #1dd91d; }
+        body[data-theme="dark"] .bottom-nav .nav-item.active { color: var(--primary); }
         body[data-theme="dark"] .custom-table tbody tr { background: #252825; color: #e8f8e8; }
         body[data-theme="dark"] .custom-table tbody tr:hover { background: #2a3a2a !important; }
 
         body[data-theme="dark"] .warning-banner { background: linear-gradient(135deg, #3a2a10, #2e2010); }
-        body[data-theme="dark"] .clearance-card-cleared { background: linear-gradient(135deg, #1a2e1a, #153513) !important; border-color: #1dd91d !important; }
+        body[data-theme="dark"] .clearance-card-cleared { background: linear-gradient(135deg, #102a43, #0b1f33) !important; border-color: var(--primary) !important; }
         body[data-theme="dark"] .clearance-card-not-cleared { background: linear-gradient(135deg, #2e1a1a, #3a1515) !important; border-color: #e74c3c !important; }
         body[data-theme="dark"] .greeting-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium)); }
         body[data-theme="dark"] .profile-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium)); }
@@ -797,22 +797,22 @@
         body[data-theme="dark"] .tt-hero-weekdays .tt-hero-day.today { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
         body[data-theme="dark"] .tt-pgrid { border-color: #2a3a2a; }
         body[data-theme="dark"] .tt-pgrid .tt-p-cell { background: #252825; border-color: #2a3a2a; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell:hover { background: #2a3a2a; box-shadow: inset 0 0 0 1px rgba(29,217,29,0.2); }
-        body[data-theme="dark"] .tt-pgrid .tt-p-time { background: #1a2e1a; color: #ccc; border-color: #2a3a2a; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-start { color: #1dd91d; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-divider { background: #3a5a3a; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-subject { background: rgba(29,217,29,0.12); color: #1dd91d; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell:hover { background: #132247; box-shadow: inset 0 0 0 1px rgba(26,127,212,0.2); }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time { background: #0f1c3f; color: #ccc; border-color: #1e3a6a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-start { color: var(--primary-light); }
+        body[data-theme="dark"] .tt-pgrid .tt-p-time .tt-p-time-divider { background: #1e3a6a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-subject { background: rgba(26,127,212,0.12); color: var(--primary-light); }
         body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-teacher { color: #aaa; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-room { background: #2a3a2a; color: #888; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty { background: #1a1d1a; color: #444; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty:hover { background: #1a1d1a; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell { background: #1a2e1a; }
-        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell:hover { background: #1a351a; }
-        body[data-theme="dark"] .perf-summary-card { border-color: #2a3a2a; }
-        body[data-theme="dark"] .perf-divider { background: #3a3d3a; }
-        body[data-theme="dark"] .exam-card { border-left-color: #1dd91d; }
-        body[data-theme="dark"] .exam-h-count { background: #1a2e1a; }
-        body[data-theme="dark"] .rc-footer { background: #1a1d1a; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell .tt-p-room { background: #132247; color: #888; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty { background: #0b1329; color: #444; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.empty:hover { background: #0b1329; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell { background: #102a43; }
+        body[data-theme="dark"] .tt-pgrid .tt-p-cell.today-cell:hover { background: #133555; }
+        body[data-theme="dark"] .perf-summary-card { border-color: #1e3a6a; }
+        body[data-theme="dark"] .perf-divider { background: #1e3a6a; }
+        body[data-theme="dark"] .exam-card { border-left-color: var(--primary); }
+        body[data-theme="dark"] .exam-h-count { background: #102a43; }
+        body[data-theme="dark"] .rc-footer { background: #0b1329; }
 
         /* ========== RESPONSIVE ========== */
         @media (max-width: 768px) {
@@ -989,7 +989,7 @@
         .empty-modern .empty-icon {
             width: 64px; height: 64px;
             border-radius: 50%;
-            background: #e8f5e8;
+            background: var(--primary-lightest, #e8f4fd);
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1rem;
             font-size: 1.5rem; color: var(--primary);
@@ -1006,7 +1006,7 @@
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 1rem;
-            border: 1px solid #e8f5e8;
+            border: 1px solid #e2e8f0;
             margin-bottom: 1rem;
         }
         .perf-left { display: flex; align-items: center; gap: 0.8rem; }
@@ -1093,7 +1093,7 @@
         }
         .att-rate-inner { position: relative; width: 120px; height: 120px; }
         .att-ring { width: 100%; height: 100%; }
-        .att-ring-bg { stroke: #e8f5e8; }
+        .att-ring-bg { stroke: #e8f4fd; }
         .att-ring-fill { transition: stroke-dashoffset 1.5s ease-out; }
         .att-rate-text {
             position: absolute; inset: 0;
@@ -1183,7 +1183,7 @@
         .exam-h-title { font-weight: 700; color: var(--primary-dark); margin: 0; font-size: 1rem; }
         .exam-h-sub { font-size: 0.72rem; color: #888; margin: 0; }
         .exam-h-count {
-            background: #e8f5e8;
+            background: var(--primary-lightest, #e8f4fd);
             color: var(--primary-dark);
             font-weight: 700;
             font-size: 0.75rem;
@@ -1330,8 +1330,8 @@
             justify-content: center;
             text-align: center;
             min-height: 76px;
-            border-bottom: 1px solid #e8f5e8;
-            border-right: 1px solid #e8f5e8;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
             line-height: 1.3;
         }
         .tt-pgrid .tt-p-time .tt-p-time-start {
@@ -1423,13 +1423,13 @@
 
         /* ---- today highlight ---- */
         .tt-pgrid .tt-p-cell.today-cell {
-            background: #f0faf0;
+            background: #f0f7fe;
         }
         .tt-pgrid .tt-p-cell.today-cell:hover {
-            background: #e8f5e8;
+            background: #e4f1fd;
         }
         .tt-pgrid .tt-p-header.today-header {
-            background: linear-gradient(135deg, #1b9e1b, #2ecc71);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             box-shadow: inset 0 -2px 0 rgba(255,255,255,0.3);
         }
 
@@ -2083,6 +2083,85 @@
         body[data-theme="dark"] .rc3-pct-text { color: #e8f8e8; }
         body[data-theme="dark"] .rc3-total-label { color: #666; }
         body[data-theme="dark"] .rc3-score { color: #e8f8e8; }
+
+        /* Period Filter Card */
+        .exam-period-bar {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 0.9rem 1.1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 1rem;
+        }
+        .period-chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 13px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .period-chip-btn:hover {
+            border-color: var(--primary, #1a7fd4);
+            color: var(--primary-dark, #0d4f8c);
+            background: #eff6ff;
+        }
+        .period-chip-btn.active {
+            background: var(--primary-dark, #0d4f8c);
+            border-color: var(--primary-dark, #0d4f8c);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.25);
+        }
+
+        /* Certificates Card */
+        .cert-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+        .cert-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        .cert-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Book Card */
+        .book-mini-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 1.1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .book-mini-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
     </style>
 </head>
 
@@ -2175,7 +2254,7 @@
             <button class="eye-toggle" onclick="toggleProfileVisibility()" title="Toggle visibility">
                 <i class="fas fa-eye" id="eyeIcon"></i>
             </button>
-            <div class="badge-elif">BEDROCK STUDENT</div>
+            <div class="badge-elif" id="profile-role-badge">BEDROCK STUDENT</div>
             <h2 class="student-name" id="profile-name">Student Name</h2>
             <div class="info-grid" id="profile-info">
                 <div class="info-item">
@@ -2236,6 +2315,14 @@
                 <button class="action-btn" onclick="switchToTab('subjects')">
                     <div class="action-icon icon-purple"><i class="fas fa-book-open"></i></div>
                     <span class="action-label">Subjects</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('certificates')">
+                    <div class="action-icon icon-teal"><i class="fas fa-certificate"></i></div>
+                    <span class="action-label">Certificates</span>
+                </button>
+                <button class="action-btn" onclick="switchToTab('library')">
+                    <div class="action-icon icon-blue"><i class="fas fa-book-reader"></i></div>
+                    <span class="action-label">Library</span>
                 </button>
                 <button class="action-btn" onclick="openStudentNav()" title="Navigation Menu">
                     <div class="action-icon icon-orange-light"><i class="fas fa-bars"></i></div>
@@ -2304,6 +2391,12 @@
                         <button class="nav-link" data-tab="subjects" type="button"><i class="fas fa-book"></i>Subjects</button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="certificates" type="button"><i class="fas fa-certificate"></i>Certificates</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-tab="library" type="button"><i class="fas fa-book-reader"></i>Library</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" data-tab="clearance" type="button"><i class="fas fa-check-circle"></i>Clearance</button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -2327,6 +2420,25 @@
                             <p class="hold-release mb-0" id="hold-release-text"></p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Exam Period Filter Bar -->
+                <div class="exam-period-bar no-print">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary text-white p-2 rounded-3"><i class="fas fa-calendar-alt"></i></span>
+                            <div>
+                                <h6 class="mb-0 fw-bold" style="font-size:0.9rem;">Exam Period Filter</h6>
+                                <small class="text-muted" style="font-size:0.75rem;">Select an exam period to view results by month/year</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="period-filter-select" class="form-select form-select-sm fw-semibold" style="border-radius:20px; min-width:190px;">
+                                <option value="">All Periods (Cumulative)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="period-chips-scroll" class="exam-chips-scroll mt-2 pt-1" style="display:none;"></div>
                 </div>
 
                 <!-- Report Card Header -->
@@ -2465,7 +2577,7 @@
                     <div class="att-rate-card">
                         <div class="att-rate-inner">
                             <svg class="att-ring" viewBox="0 0 120 120" id="att-ring-svg">
-                                <circle class="att-ring-bg" cx="60" cy="60" r="52" fill="none" stroke="#e8f5e8" stroke-width="8"/>
+                                <circle class="att-ring-bg" cx="60" cy="60" r="52" fill="none" stroke="#e8f4fd" stroke-width="8"/>
                                 <circle class="att-ring-fill" id="att-ring-fill" cx="60" cy="60" r="52" fill="none" stroke="#27ae60" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
                             </svg>
                             <div class="att-rate-text">
@@ -2590,6 +2702,69 @@
                 </div>
             </div>
 
+            <!-- TAB 8: CERTIFICATES -->
+            <div class="tab-pane-content d-none" id="tab-certificates">
+                <div class="section-card">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fas fa-certificate text-warning me-2"></i>Official Institutional Certificates</h5>
+                            <p class="text-muted small mb-0">Certificates and diplomas issued by Baidoa Bedrock ICT Campus</p>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold" id="cert-count-badge">0 Certificates</span>
+                    </div>
+                    <div id="certificates-container" class="row g-3"></div>
+                    <div id="certificates-empty" class="text-center py-5 d-none">
+                        <div class="mb-3" style="font-size:3rem;color:#cbd5e1;"><i class="fas fa-award"></i></div>
+                        <h6 class="fw-bold text-dark">No Certificates Available Yet</h6>
+                        <p class="text-muted small mb-0">Official diplomas or completion certificates uploaded by the administration will appear here for download anytime.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 9: DIGITAL LIBRARY -->
+            <div class="tab-pane-content d-none" id="tab-library">
+                <div class="section-card">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fas fa-book-reader text-primary me-2"></i>Campus Digital Library</h5>
+                            <p class="text-muted small mb-0">Browse course textbooks, reference manuals, and digital study resources</p>
+                        </div>
+                        <a href="/HTML/student-library.html" onclick="openFullLibrary(event)" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="fas fa-external-link-alt me-1"></i> Open Full Library
+                        </a>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="library-search-input" class="form-control border-start-0" placeholder="Search resources by title, author, or subject...">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <select id="library-category-select" class="form-select form-select-sm" style="border-radius:10px; height:38px;">
+                                <option value="all">All Categories</option>
+                                <option value="Textbooks">Textbooks</option>
+                                <option value="Past Papers">Past Papers</option>
+                                <option value="Lecture Notes">Lecture Notes</option>
+                                <option value="School Documents">School Documents</option>
+                                <option value="Reference & ICT">Reference & ICT</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <select id="library-year-select" class="form-select form-select-sm" style="border-radius:10px; height:38px;">
+                                <option value="all">All Years</option>
+                                <option value="2026">2026</option>
+                                <option value="2025">2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="student-books-container" class="row g-3"></div>
+                    <div id="student-books-empty" class="text-center py-4 d-none">
+                        <p class="text-muted small mb-0">No books found matching your search.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -2681,6 +2856,14 @@
                     <i class="fas fa-file-alt text-warning fs-5" style="width:24px;"></i>
                     <span class="fw-semibold">Exam Schedule</span>
                 </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('certificates'); closeStudentNav();">
+                    <i class="fas fa-certificate text-warning fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Official Certificates</span>
+                </a>
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('library'); closeStudentNav();">
+                    <i class="fas fa-book-reader text-primary fs-5" style="width:24px;"></i>
+                    <span class="fw-semibold">Digital Library</span>
+                </a>
                 <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="switchToTab('attendance'); closeStudentNav();">
                     <i class="fas fa-user-check text-info fs-5" style="width:24px;"></i>
                     <span class="fw-semibold">Attendance Record</span>
@@ -2719,13 +2902,13 @@
             <i class="fas fa-poll"></i>
             <span>Results</span>
         </button>
-        <button type="button" class="nav-item" data-bottom-tab="attendance">
-            <i class="fas fa-user-check"></i>
-            <span>Attendance</span>
+        <button type="button" class="nav-item" data-bottom-tab="certificates">
+            <i class="fas fa-certificate"></i>
+            <span>Certificates</span>
         </button>
-        <button type="button" class="nav-item" data-bottom-tab="exams">
-            <i class="fas fa-file-alt"></i>
-            <span>Exams</span>
+        <button type="button" class="nav-item" data-bottom-tab="library">
+            <i class="fas fa-book-reader"></i>
+            <span>Library</span>
         </button>
         <button type="button" class="nav-item" data-bottom-tab="more" onclick="openStudentNav()">
             <i class="fas fa-bars"></i>
@@ -3051,12 +3234,11 @@
 
             loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                var studentIdInput = document.getElementById('inputStudentId').value.trim().toUpperCase();
+                var studentIdInput = document.getElementById('inputStudentId').value.trim();
                 var passwordInput = document.getElementById('inputPassword').value;
 
-                var realDbId = parseElpId(studentIdInput);
-                if (realDbId === null || realDbId < 1) {
-                    showAlert('Invalid Student ID format. Use BB followed by 6 digits (e.g. BB260001).', 'danger');
+                if (!studentIdInput) {
+                    showAlert('Please enter your Student ID (e.g. BB26-0001 or BB260001).', 'danger');
                     return;
                 }
 
@@ -3064,13 +3246,12 @@
                 showLoading();
 
                 try {
-                    var formattedBBId = 'BB' + String(260000 + realDbId).padStart(6, '0');
-                    // Authenticate via /api/student-auth/login
+                    // Authenticate via /api/student-auth/login (supports BB26-0001, BB260001, numeric ID, legacy)
                     var authRes = await fetch('/api/student-auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            bbId: formattedBBId,
+                            bbId: studentIdInput,
                             password: passwordInput
                         })
                     });
@@ -3080,17 +3261,28 @@
                         throw new Error(authResult.error || 'WRONG_PASSWORD');
                     }
 
+                    var realDbId = authResult.student.id;
+                    var displayCode = authResult.student.student_id_code || authResult.student.bbId || ('BB' + (260000 + realDbId));
+
                     // Fetch full student dashboard details
                     var response = await fetch(API_BASE + '/' + realDbId);
                     if (!response.ok) {
                         throw new Error('NOT_FOUND');
                     }
                     var data = await response.json();
+                    if (data.student) {
+                        data.student.student_id_code = displayCode;
+                        data.student.status = authResult.student.status;
+                        data.student.isAlumni = authResult.student.isAlumni;
+                    }
 
                     sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
                         dbId: realDbId,
-                        bbId: formattedBBId,
-                        elpId: formattedBBId,
+                        bbId: displayCode,
+                        student_id_code: displayCode,
+                        elpId: displayCode,
+                        isAlumni: authResult.student.isAlumni,
+                        status: authResult.student.status,
                         data: data
                     }));
 
@@ -3199,7 +3391,24 @@
                 if (bottomNav) bottomNav.classList.remove('d-none');
 
                 var stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
-                var elpId = stored ? (stored.bbId || stored.elpId) : 'BB' + String(260000 + data.student.id).padStart(6, '0');
+                var elpId = (data.student && data.student.student_id_code) || (stored ? (stored.student_id_code || stored.bbId || stored.elpId) : '') || ('BB' + String(260000 + data.student.id).padStart(6, '0'));
+                var isAlumni = (data.student && (data.student.status === 'Graduated' || data.student.status === 'Alumni')) || (stored && (stored.isAlumni || stored.status === 'Graduated' || stored.status === 'Alumni'));
+
+                // Alumni Badge update
+                var roleBadge = document.getElementById('profile-role-badge');
+                if (roleBadge) {
+                    if (isAlumni) {
+                        roleBadge.innerHTML = '<i class="fas fa-user-graduate me-1"></i>BEDROCK ALUMNI';
+                        roleBadge.style.background = 'linear-gradient(135deg, #d35400, #f39c12)';
+                        roleBadge.style.color = '#fff';
+                        roleBadge.style.border = 'none';
+                    } else {
+                        roleBadge.innerHTML = 'BEDROCK STUDENT';
+                        roleBadge.style.background = '';
+                        roleBadge.style.color = '';
+                        roleBadge.style.border = '';
+                    }
+                }
 
                 // Header
                 document.getElementById('header-greeting').textContent = 'Hi, ' + (data.student.name || 'Student') + '!';
@@ -3227,7 +3436,10 @@
                 initBottomNav();
                 loadAnnouncements(data);
                 setupExamDefs(data);
+                initPeriodFilter(data, elpId);
                 loadResults(data, elpId);
+                loadCertificates(data);
+                loadStudentLibrary(data);
                 loadAttendance(data);
                 loadExams(data);
                 loadTimetable(data);
@@ -3468,20 +3680,87 @@
                     '</div>';
             }
 
+            // ========== PERIOD FILTER & RESULTS ==========
+
+            function initPeriodFilter(data, elpId) {
+                var selectEl = document.getElementById('period-filter-select');
+                var chipsEl = document.getElementById('period-chips-scroll');
+                if (!selectEl) return;
+
+                var periods = data.examPeriods || [];
+                selectEl.innerHTML = '<option value="">All Periods (Cumulative)</option>';
+                
+                var chipsHtml = '<button type="button" class="period-chip-btn active" data-period-id=""><i class="fas fa-layer-group me-1"></i>All Periods</button>';
+
+                periods.forEach(function(p) {
+                    var label = p.name || (p.month_name ? (p.month_name + ' ' + p.year) : ('Year ' + p.year));
+                    var countBadge = p.my_result_count ? ' (' + p.my_result_count + ')' : '';
+                    selectEl.innerHTML += '<option value="' + p.id + '">' + label + countBadge + '</option>';
+                    chipsHtml += '<button type="button" class="period-chip-btn" data-period-id="' + p.id + '"><i class="fas fa-calendar-check me-1"></i>' + label + '</button>';
+                });
+
+                if (chipsEl) {
+                    chipsEl.innerHTML = chipsHtml;
+                    chipsEl.style.display = periods.length > 0 ? 'flex' : 'none';
+                    chipsEl.querySelectorAll('.period-chip-btn').forEach(function(chip) {
+                        chip.addEventListener('click', function() {
+                            var pid = chip.getAttribute('data-period-id');
+                            selectEl.value = pid;
+                            onPeriodChange(pid);
+                        });
+                    });
+                }
+
+                selectEl.onchange = function() {
+                    onPeriodChange(selectEl.value);
+                };
+
+                async function onPeriodChange(periodId) {
+                    if (chipsEl) {
+                        chipsEl.querySelectorAll('.period-chip-btn').forEach(function(btn) {
+                            btn.classList.toggle('active', btn.getAttribute('data-period-id') === String(periodId || ''));
+                        });
+                    }
+
+                    if (!periodId) {
+                        renderResultsCards(data.results || {}, data, elpId, 'All Periods');
+                        return;
+                    }
+
+                    try {
+                        showLoading();
+                        var res = await fetch(API_BASE + '/' + data.student.id + '/period/' + periodId);
+                        if (!res.ok) throw new Error('Could not fetch period results');
+                        var periodData = await res.json();
+                        hideLoading();
+                        var selectedPeriod = periods.find(function(p) { return String(p.id) === String(periodId); });
+                        var periodName = selectedPeriod ? selectedPeriod.name : 'Selected Period';
+                        renderResultsCards(periodData.results || {}, data, elpId, periodName);
+                    } catch(e) {
+                        hideLoading();
+                        console.error('Error loading period results:', e);
+                    }
+                }
+            }
+
             function loadResults(data, elpId) {
                 document.getElementById('rc-student-id').textContent = elpId;
                 document.getElementById('rc-student-name').textContent = data.student.name || 'N/A';
                 document.getElementById('rc-student-grade').textContent = data.student.grade || 'N/A';
                 document.getElementById('rc-enrollment-date').textContent = formatDate(data.student.enrollmentdate);
 
+                // Load honor roll
+                loadClassLeaders(data, '');
+
+                renderResultsCards(data.results || {}, data, elpId, 'All Periods');
+            }
+
+            function renderResultsCards(results, data, elpId, periodName) {
                 var container = document.getElementById('results-cards-container');
                 var emptyState = document.getElementById('results-empty');
                 var summaryEl = document.getElementById('results-summary');
                 var holdBanner = document.getElementById('results-hold-banner');
                 var holdReleaseText = document.getElementById('hold-release-text');
-
-                // Load honor roll (always overall)
-                loadClassLeaders(data, '');
 
                 // Check if results are on hold
                 if (data.resultsOnHold) {
@@ -3498,8 +3777,7 @@
                 }
                 holdBanner.classList.add('d-none');
 
-                var results = data.results || {};
-                var subjects = Object.keys(results);
+                var subjects = Object.keys(results || {});
 
                 if (subjects.length === 0) {
                     container.innerHTML = '';
@@ -3520,9 +3798,8 @@
                     var subjectData = results[subject];
                     var color = getSubjectColor(index);
 
-                    // Dynamic: Render all admin-defined exam parts
                     var hasAnyScore = (subjectData.scores && Object.keys(subjectData.scores).length > 0);
-                    if (!hasAnyScore) return; // skip subjects with no scores yet
+                    if (!hasAnyScore) return;
 
                     var subjectTotal = 0;
                     var subjectMax   = 0;
@@ -3595,9 +3872,9 @@
                     // Exam parts score rows
                     html += '<div class="rc-body rc3-body">';
                     html += partRows;
-                    html += '</div>'; // end rc3-body
+                    html += '</div>';
 
-                    // Card footer — total
+                    // Card footer
                     html += '<div class="rc-footer rc3-footer">';
                     html += '  <div>';
                     html += '    <span class="rc3-total-label">Total Score</span>';
@@ -3605,16 +3882,16 @@
                     html += '  </div>';
                     html += '  <div class="rc3-pct-ring">';
                     html += '    <svg viewBox="0 0 36 36" class="rc3-svg">';
-                    html += '      <circle class="rc3-ring-bg" cx="18" cy="18" r="15.9155" fill="none" stroke="#e8f5e8" stroke-width="3"/>';
+                    html += '      <circle class="rc3-ring-bg" cx="18" cy="18" r="15.9155" fill="none" stroke="#e8f4fd" stroke-width="3"/>';
                     var dash = Math.round(percentage * 100) / 1000;
                     html += '      <circle class="rc3-ring-fill" cx="18" cy="18" r="15.9155" fill="none" stroke="' + (percentage >= 50 ? '#27ae60' : percentage >= 35 ? '#f39c12' : '#e74c3c') + '" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + dash + ' 100" transform="rotate(-90 18 18)"/>';
                     html += '    </svg>';
                     html += '    <span class="rc3-pct-text">' + percentage + '%</span>';
                     html += '  </div>';
-                    html += '</div>'; // end rc3-footer
+                    html += '</div>';
 
-                    html += '</div>'; // end result-card
-                    html += '</div>'; // end col
+                    html += '</div>';
+                    html += '</div>';
                 });
 
                 if (subjectCount === 0) {
@@ -3639,6 +3916,129 @@
                 } else {
                     warningEl.classList.add('d-none');
                 }
+            }
+
+            // ========== TAB: CERTIFICATES ==========
+
+            function loadCertificates(data) {
+                var container = document.getElementById('certificates-container');
+                var emptyEl = document.getElementById('certificates-empty');
+                var badgeEl = document.getElementById('cert-count-badge');
+                if (!container) return;
+
+                var certs = data.certificates || [];
+                if (badgeEl) badgeEl.textContent = certs.length + ' Certificate' + (certs.length === 1 ? '' : 's');
+
+                if (certs.length === 0) {
+                    container.innerHTML = '';
+                    if (emptyEl) emptyEl.classList.remove('d-none');
+                    return;
+                }
+
+                if (emptyEl) emptyEl.classList.add('d-none');
+                var html = '';
+                certs.forEach(function(c) {
+                    var issueDate = c.issue_date ? formatDate(c.issue_date) : (c.uploaded_at ? formatDate(c.uploaded_at) : 'N/A');
+                    var filePath = c.file_path || '#';
+                    var certType = c.cert_type ? (c.cert_type.charAt(0).toUpperCase() + c.cert_type.slice(1)) : 'Official';
+                    html += '<div class="col-md-6 col-lg-4">';
+                    html += '  <div class="cert-card shadow-sm border-0 h-100 d-flex flex-column">';
+                    html += '    <div class="flex-grow-1">';
+                    html += '      <div class="d-flex align-items-center justify-content-between mb-2">';
+                    html += '        <div class="cert-icon-box"><i class="fas fa-certificate"></i></div>';
+                    html += '        <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill fw-bold" style="font-size:0.7rem;"><i class="fas fa-shield-alt me-1"></i>' + certType + '</span>';
+                    html += '      </div>';
+                    html += '      <h6 class="fw-bold text-dark mb-1" style="font-size:0.95rem;">' + (c.title || 'Certificate of Completion') + '</h6>';
+                    html += '      <p class="text-muted small mb-2"><i class="fas fa-university me-1 text-primary"></i>Baidoa Bedrock ICT Campus</p>';
+                    html += '      <div class="p-2 bg-light rounded-3 mb-3" style="font-size:0.75rem; color:#64748b;">';
+                    if (c.certificate_number) html += '<div><strong>Cert No:</strong> <span class="font-monospace text-primary">' + c.certificate_number + '</span></div>';
+                    if (c.academic_year) html += '<div><strong>Academic Year:</strong> ' + c.academic_year + '</div>';
+                    html += '        <div><strong>Issued:</strong> ' + issueDate + '</div>';
+                    if (c.description) html += '<div class="mt-1 text-muted"><em>' + c.description + '</em></div>';
+                    html += '      </div>';
+                    html += '    </div>';
+                    html += '    <a href="' + filePath + '" target="_blank" download class="btn btn-primary btn-sm rounded-pill w-100 py-2 fw-semibold mt-auto">';
+                    html += '      <i class="fas fa-download me-2"></i>Download Certificate';
+                    html += '    </a>';
+                    html += '  </div>';
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+            }
+
+            // ========== TAB: DIGITAL LIBRARY ==========
+
+            function loadStudentLibrary(data) {
+                var container = document.getElementById('student-books-container');
+                var emptyEl = document.getElementById('student-books-empty');
+                var searchInput = document.getElementById('library-search-input');
+                var categorySelect = document.getElementById('library-category-select');
+                var yearSelect = document.getElementById('library-year-select');
+                if (!container) return;
+
+                var books = data.books || [];
+
+                function filterAndRender() {
+                    var q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+                    var cat = categorySelect ? categorySelect.value : 'all';
+                    var yr = yearSelect ? yearSelect.value : 'all';
+
+                    var filtered = books.filter(function(b) {
+                        var matchesQ = !q || (b.title && b.title.toLowerCase().includes(q)) ||
+                                       (b.author && b.author.toLowerCase().includes(q)) ||
+                                       (b.category && b.category.toLowerCase().includes(q)) ||
+                                       (b.subject && b.subject.toLowerCase().includes(q)) ||
+                                       (b.isbn && b.isbn.toLowerCase().includes(q));
+                        var matchesCat = (cat === 'all') || (b.category && b.category.toLowerCase() === cat.toLowerCase());
+                        var matchesYr = (yr === 'all') || (!b.academic_year || b.academic_year === 'All' || b.academic_year === yr);
+                        return matchesQ && matchesCat && matchesYr;
+                    });
+
+                    if (filtered.length === 0) {
+                        container.innerHTML = '';
+                        if (emptyEl) emptyEl.classList.remove('d-none');
+                        return;
+                    }
+                    if (emptyEl) emptyEl.classList.add('d-none');
+                    var html = '';
+                    filtered.forEach(function(b) {
+                        var isAvail = !b.checkedoutto && (!b.status || b.status === 'Available');
+                        var docUrl = b.file_path || b.digitallink || b.digitalLink || '';
+                        html += '<div class="col-md-6 col-lg-4">';
+                        html += '  <div class="book-mini-card shadow-sm border-0 h-100 d-flex flex-column p-3 bg-white rounded-3">';
+                        html += '    <div class="flex-grow-1">';
+                        html += '      <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">';
+                        html += '        <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill fw-semibold" style="font-size:0.7rem;">' + (b.category || 'Textbook') + '</span>';
+                        if (b.subject) html += '<span class="badge bg-info-subtle text-info px-2 py-1 rounded-pill" style="font-size:0.7rem;">' + b.subject + '</span>';
+                        html += '        <span class="badge ' + (isAvail ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary') + ' px-2 py-1 rounded-pill" style="font-size:0.7rem;">' + (isAvail ? 'Available' : 'Checked Out') + '</span>';
+                        html += '      </div>';
+                        html += '      <h6 class="fw-bold text-dark mb-1" style="font-size:0.95rem;">' + (b.title || 'Untitled Resource') + '</h6>';
+                        html += '      <p class="text-muted small mb-2"><i class="fas fa-user-edit me-1 text-secondary"></i>' + (b.author || 'Bedrock Faculty') + '</p>';
+                        if (b.description) {
+                            html += '      <p class="small text-muted mb-2 text-truncate" title="' + b.description + '">' + b.description + '</p>';
+                        }
+                        if (b.academic_year && b.academic_year !== 'All') {
+                            html += '      <div class="text-muted small mb-2" style="font-size:0.75rem;"><i class="fas fa-calendar me-1"></i>Year: ' + b.academic_year + '</div>';
+                        }
+                        html += '    </div>';
+                        if (docUrl) {
+                            html += '    <a href="' + docUrl + '" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-2 fw-semibold">';
+                            html += '      <i class="fas fa-file-pdf me-2"></i>Read / Download Resource';
+                            html += '    </a>';
+                        } else {
+                            html += '    <div class="text-center text-muted small py-1 mt-2" style="font-size:0.75rem;"><i class="fas fa-map-marker-alt me-1"></i>Campus Physical Library</div>';
+                        }
+                        html += '  </div>';
+                        html += '</div>';
+                    });
+                    container.innerHTML = html;
+                }
+
+                filterAndRender();
+
+                if (searchInput) searchInput.oninput = filterAndRender;
+                if (categorySelect) categorySelect.onchange = filterAndRender;
+                if (yearSelect) yearSelect.onchange = filterAndRender;
             }
 
             // ========== TAB 2: ATTENDANCE ==========
@@ -3724,13 +4124,13 @@
                         datasets: [{
                             label: 'Attendance %',
                             data: pctData,
-                            borderColor: '#1dd91d',
-                            backgroundColor: 'rgba(29, 217, 29, 0.08)',
+                            borderColor: '#1a7fd4',
+                            backgroundColor: 'rgba(26, 127, 212, 0.08)',
                             fill: true,
                             tension: 0.4,
                             borderWidth: 3,
                             pointRadius: 4,
-                            pointBackgroundColor: '#1dd91d',
+                            pointBackgroundColor: '#0d4f8c',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2
                         }]
@@ -4090,10 +4490,10 @@
                             datasets: [{
                                 label: 'Score %',
                                 data: scores,
-                                backgroundColor: 'rgba(29, 217, 29, 0.2)',
-                                borderColor: '#1dd91d',
+                                backgroundColor: 'rgba(26, 127, 212, 0.2)',
+                                borderColor: '#1a7fd4',
                                 borderWidth: 2,
-                                pointBackgroundColor: '#0f510e',
+                                pointBackgroundColor: '#0d4f8c',
                                 pointRadius: 5
                             }]
                         },
@@ -4304,32 +4704,52 @@
                 // Support direct launch from admin panel (via viewingStudentId)
                 var viewingStudentId = sessionStorage.getItem('viewingStudentId');
                 if (viewingStudentId) {
-                    var realId = parseElpId(viewingStudentId);
-                    if (realId && realId > 0) {
-                        showLoading();
-                        fetch(API_BASE + '/' + realId)
-                            .then(function (res) {
-                                if (!res.ok) throw new Error('Not found');
-                                return res.json();
-                            })
-                            .then(function (data) {
-                                hideLoading();
-                                var formattedBBId = 'BB' + String(260000 + realId).padStart(6, '0');
-                                sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-                                    dbId: realId,
-                                    bbId: formattedBBId,
-                                    elpId: formattedBBId,
-                                    data: data
-                                }));
-                                loadDashboard(data);
-                            })
-                            .catch(function () {
-                                hideLoading();
-                                sessionStorage.removeItem('viewingStudentId');
-                            });
-                    }
+                    showLoading();
+                    fetch(API_BASE + '/' + encodeURIComponent(viewingStudentId))
+                        .then(function (res) {
+                            if (!res.ok) throw new Error('Not found');
+                            return res.json();
+                        })
+                        .then(function (data) {
+                            hideLoading();
+                            var realId = data.student ? data.student.id : null;
+                            var displayCode = (data.student && data.student.student_id_code) || viewingStudentId;
+                            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                                dbId: realId,
+                                bbId: displayCode,
+                                student_id_code: displayCode,
+                                elpId: displayCode,
+                                isAlumni: data.student ? (data.student.status === 'Graduated' || data.student.status === 'Alumni') : false,
+                                status: data.student ? data.student.status : 'Active',
+                                data: data
+                            }));
+                            loadDashboard(data);
+                        })
+                        .catch(function () {
+                            hideLoading();
+                            sessionStorage.removeItem('viewingStudentId');
+                        });
                 }
             }
+
+            window.openFullLibrary = function (e) {
+                try {
+                    var raw = sessionStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        var parsed = JSON.parse(raw);
+                        var studentObj = (parsed.data && parsed.data.student) || parsed.student || parsed;
+                        var session = {
+                            name: studentObj.name || parsed.name || 'Student',
+                            id: studentObj.id || parsed.dbId || parsed.id,
+                            bbId: studentObj.student_id_code || parsed.bbId || parsed.elpId || '',
+                            student_id_code: studentObj.student_id_code || parsed.bbId || parsed.elpId || ''
+                        };
+                        sessionStorage.setItem('bedrock-library-session', JSON.stringify(session));
+                    }
+                } catch (err) {
+                    console.error('Error setting library session:', err);
+                }
+            };
 
             checkStoredSession();
 
@@ -4341,13 +4761,13 @@
             const current = body.getAttribute('data-theme');
             const next = current === 'dark' ? 'light' : 'dark';
             body.setAttribute('data-theme', next);
-            localStorage.setItem('elif-theme', next);
+            localStorage.setItem('bedrock-theme', next);
             const icon = document.getElementById('themeIcon');
             if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-cog';
         }
         // Load saved theme
         (function() {
-            const saved = localStorage.getItem('elif-theme') || 'light';
+            const saved = localStorage.getItem('bedrock-theme') || localStorage.getItem('elif-theme') || 'light';
             document.body.setAttribute('data-theme', saved);
             const icon = document.getElementById('themeIcon');
             if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-cog';

@@ -211,17 +211,55 @@ router.get('/:studentId', async (req, res) => {
     }
 });
 
-// GET all results (admin view - all statuses)
+// GET all results (admin view - with multi-year & period filtering)
 router.get('/', async (req, res) => {
     try {
-        const { rows } = await query(`
-            SELECT r.id, r.student_id, r.subject, r.score, r.exam_type, r.approval_status, r.submitted_by, r.submitted_at, r.edit_allowed,
-                   s.name AS "studentName", s.grade
+        const periodId = req.query.periodId ? parseInt(req.query.periodId) : null;
+        const academicYear = req.query.academic_year || req.query.academicYear || null;
+        const classId = req.query.classId || req.query.class_id ? parseInt(req.query.classId || req.query.class_id) : null;
+        const approvalStatus = req.query.status || req.query.approval_status || null;
+        const studentId = req.query.studentId || req.query.student_id ? parseInt(req.query.studentId || req.query.student_id) : null;
+
+        let sql = `
+            SELECT r.id, r.student_id, r.subject, r.score, r.max_score, r.exam_type, r.approval_status, 
+                   r.submitted_by, r.submitted_at, r.edit_allowed, r.academic_year, r.is_locked,
+                   r.period_id, ep.name AS period_name, ep.year AS period_year, ep.month AS period_month,
+                   s.name AS "studentName", s.student_id_code, s.grade,
+                   c.name AS class_name
             FROM results r
             JOIN students s ON r.student_id = s.id
+            LEFT JOIN classes c ON c.id = r.classid
+            LEFT JOIN exam_periods ep ON r.period_id = ep.id
             WHERE r.deleted_at IS NULL
-            ORDER BY r.submitted_at DESC, r.student_id
-        `);
+        `;
+        const params = [];
+        let idx = 1;
+
+        if (periodId) {
+            sql += ` AND r.period_id = $${idx++}`;
+            params.push(periodId);
+        }
+        if (academicYear && academicYear !== 'all') {
+            sql += ` AND (r.academic_year = $${idx} OR ep.academic_year = $${idx} OR ep.year = CAST($${idx} AS INT))`;
+            params.push(academicYear);
+            idx++;
+        }
+        if (classId && classId !== 'all') {
+            sql += ` AND (r.classid = $${idx} OR s.classid = $${idx})`;
+            params.push(classId);
+            idx++;
+        }
+        if (approvalStatus && approvalStatus !== 'all') {
+            sql += ` AND r.approval_status = $${idx++}`;
+            params.push(approvalStatus);
+        }
+        if (studentId) {
+            sql += ` AND r.student_id = $${idx++}`;
+            params.push(studentId);
+        }
+
+        sql += ` ORDER BY r.submitted_at DESC, r.student_id`;
+        const { rows } = await query(sql, params);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -233,9 +271,11 @@ router.get('/pending/all', async (req, res) => {
     try {
         const { rows } = await query(`
             SELECT r.id, r.student_id, r.subject, r.score, r.exam_type, r.approval_status, r.submitted_by, r.submitted_at, r.edit_allowed,
+                   r.period_id, ep.name AS period_name,
                    s.name AS "studentName", s.grade
             FROM results r
             JOIN students s ON r.student_id = s.id
+            LEFT JOIN exam_periods ep ON r.period_id = ep.id
             WHERE r.approval_status = 'pending' AND r.deleted_at IS NULL
             ORDER BY r.submitted_at DESC, r.student_id
         `);
@@ -252,9 +292,11 @@ router.get('/teacher/:teacherId', async (req, res) => {
         // Match either integer ID or name in submitted_by
         const { rows } = await query(`
             SELECT r.id, r.student_id, r.subject, r.score, r.exam_type, r.approval_status, r.submitted_at, r.edit_allowed,
+                   r.period_id, ep.name AS period_name,
                    s.name AS "studentName", s.grade
             FROM results r
             JOIN students s ON r.student_id = s.id
+            LEFT JOIN exam_periods ep ON r.period_id = ep.id
             WHERE (r.submitted_by = $1 OR r.submitted_by = (SELECT name FROM users WHERE id = $2 LIMIT 1))
               AND r.deleted_at IS NULL
             ORDER BY r.submitted_at DESC, r.student_id
@@ -269,7 +311,7 @@ router.get('/teacher/:teacherId', async (req, res) => {
 // RULE: Once submitted, teacher cannot re-submit the same exam+subject combo
 //       unless admin has unlocked it (edit_allowed = true).
 router.post('/', async (req, res) => {
-    const { studentId, subject, examType, score, teacherId, teacherName } = req.body;
+    const { studentId, subject, examType, score, teacherId, teacherName, periodId } = req.body;
     if (!studentId || !subject) {
         return res.status(400).json({ error: 'studentId and subject are required.' });
     }
@@ -277,20 +319,28 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Please select an exam (examType) to record a result for.' });
     }
     try {
-        // Check if a result already exists for this student/subject/exam and is locked
+        let targetPeriodId = periodId ? parseInt(periodId) : null;
+        if (!targetPeriodId) {
+            try {
+                const { rows: actP } = await query(`SELECT id FROM exam_periods WHERE is_active = true AND deleted_at IS NULL ORDER BY year DESC, month DESC LIMIT 1`);
+                if (actP[0]) targetPeriodId = actP[0].id;
+            } catch(e) {}
+        }
+
+        // Check if a result already exists for this student/subject/exam/period and is locked
         const { rows: existing } = await query(
             `SELECT id, approval_status, edit_allowed FROM results
              WHERE student_id = $1 AND subject = $2 AND exam_type = $3
-               AND submitted_by = $4 AND deleted_at IS NULL
+               AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5) AND deleted_at IS NULL
              ORDER BY id DESC LIMIT 1`,
-            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`]
+            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`, targetPeriodId]
         );
         if (existing[0]) {
             const rec = existing[0];
             // If approved/pending and not unlocked → block
             if (!rec.edit_allowed && rec.approval_status !== 'rejected') {
                 return res.status(409).json({
-                    error: `Result already submitted for this student/subject/exam. Wait for admin approval or ask admin to unlock for re-edit.`,
+                    error: `Result already submitted for this student/subject/exam in this period. Wait for admin approval or ask admin to unlock for re-edit.`,
                     locked: true
                 });
             }
@@ -313,17 +363,17 @@ router.post('/', async (req, res) => {
 
         // Delete any existing result so we can re-insert (only gets here if unlocked or rejected)
         await query(
-            `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4`,
-            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`]
+            `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5)`,
+            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`, targetPeriodId]
         );
 
         // Insert new result with pending status, lock it (edit_allowed = false)
         await query(
-            `INSERT INTO results (student_id, subject, score, exam_type, max_score, approval_status, submitted_by, submitted_at, edit_allowed)
-             VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW(), false)`,
-            [studentId, subject, parsedScore, examType, maxScore, teacherName || `Teacher-${teacherId}`]
+            `INSERT INTO results (student_id, subject, score, exam_type, max_score, approval_status, submitted_by, submitted_at, edit_allowed, period_id)
+             VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW(), false, $7)`,
+            [studentId, subject, parsedScore, examType, maxScore, teacherName || `Teacher-${teacherId}`, targetPeriodId]
         );
-        res.status(201).json({ message: 'Result submitted for approval.' });
+        res.status(201).json({ message: 'Result submitted for approval.', periodId: targetPeriodId });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -332,17 +382,26 @@ router.post('/', async (req, res) => {
 // POST submit multiple results in one transaction (fast, single connection)
 // RULE: Blocks any exam+subject already submitted and locked (not edit_allowed)
 router.post('/batch', async (req, res) => {
-    const { records, teacherId, teacherName } = req.body;
+    const { records, teacherId, teacherName, periodId } = req.body;
     if (!records || !Array.isArray(records) || records.length === 0) {
         return res.status(400).json({ error: 'records array is required.' });
     }
     const tName = teacherName || `Teacher-${teacherId}`;
     let client = null;
     try {
+        let defaultPeriodId = periodId ? parseInt(periodId) : null;
+        if (!defaultPeriodId) {
+            try {
+                const { rows: actP } = await query(`SELECT id FROM exam_periods WHERE is_active = true AND deleted_at IS NULL ORDER BY year DESC, month DESC LIMIT 1`);
+                if (actP[0]) defaultPeriodId = actP[0].id;
+            } catch(e) {}
+        }
+
         // Pre-check for locked exams or already submitted locked results before opening transaction
         for (const rec of records) {
             const { studentId, subject, examType } = rec;
             if (!studentId || !subject || !examType) continue;
+            const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
 
             // 1. Check if the exam itself is locked globally by admin
             const { rows: examLock } = await query(
@@ -362,13 +421,13 @@ router.post('/batch', async (req, res) => {
             const { rows: existing } = await query(
                 `SELECT id, approval_status, edit_allowed FROM results
                  WHERE student_id = $1 AND subject = $2 AND exam_type = $3
-                   AND submitted_by = $4 AND deleted_at IS NULL
+                   AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5) AND deleted_at IS NULL
                  ORDER BY id DESC LIMIT 1`,
-                [studentId, subject, examType, tName]
+                [studentId, subject, examType, tName, recPeriodId]
             );
             if (existing[0] && !existing[0].edit_allowed && existing[0].approval_status !== 'rejected') {
                 return res.status(409).json({
-                    error: `Results for "${subject}" (${examType}) were already submitted and locked. Ask the admin to unlock for re-editing.`,
+                    error: `Results for "${subject}" (${examType}) were already submitted and locked for this period. Ask the admin to unlock for re-editing.`,
                     locked: true,
                     subject,
                     examType
@@ -383,6 +442,7 @@ router.post('/batch', async (req, res) => {
             if (!studentId || !subject || !examType) {
                 throw new Error('studentId, subject and examType are required for every record.');
             }
+            const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
             const { rows: examRows } = await client.query(
                 `SELECT id, max_score FROM exams WHERE exam_key = $1 AND deleted_at IS NULL LIMIT 1`,
                 [examType]
@@ -393,13 +453,13 @@ router.post('/batch', async (req, res) => {
 
             // Delete existing (only reachable if unlocked or rejected, due to pre-check above)
             await client.query(
-                `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4`,
-                [studentId, subject, examType, tName]
+                `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5)`,
+                [studentId, subject, examType, tName, recPeriodId]
             );
             await client.query(
-                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed)
-                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false)`,
-                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName]
+                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed, period_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8)`,
+                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId]
             );
         }
         await client.query('COMMIT');
@@ -470,11 +530,12 @@ router.put('/unlock', async (req, res) => {
 
 // PUT admin directly corrects / updates scores for a student+subject
 router.put('/admin/direct-update', async (req, res) => {
-    const { studentId, subject, scores, approvalStatus } = req.body;
+    const { studentId, subject, scores, approvalStatus, periodId } = req.body;
     if (!studentId || !subject || !scores || typeof scores !== 'object') {
         return res.status(400).json({ error: 'studentId, subject, and scores object are required.' });
     }
     try {
+        const targetPeriodId = periodId ? parseInt(periodId) : null;
         for (const [examType, scoreVal] of Object.entries(scores)) {
             const score = parseFloat(scoreVal);
             if (isNaN(score)) continue;
@@ -482,19 +543,19 @@ router.put('/admin/direct-update', async (req, res) => {
             const status = approvalStatus || 'approved';
             
             const { rows: existing } = await query(
-                `SELECT id FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND deleted_at IS NULL`,
-                [studentId, subject, examType]
+                `SELECT id FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND ($4::INTEGER IS NULL OR period_id = $4) AND deleted_at IS NULL`,
+                [studentId, subject, examType, targetPeriodId]
             );
             if (existing.length > 0) {
                 await query(
-                    `UPDATE results SET score = $1, max_score = $2, approval_status = $3, edit_allowed = false WHERE id = $4`,
-                    [score, maxScore, status, existing[0].id]
+                    `UPDATE results SET score = $1, max_score = $2, approval_status = $3, edit_allowed = false, period_id = COALESCE($4, period_id) WHERE id = $5`,
+                    [score, maxScore, status, targetPeriodId, existing[0].id]
                 );
             } else {
                 await query(
-                    `INSERT INTO results (student_id, subject, exam_type, score, max_score, approval_status, submitted_by, edit_allowed)
-                     VALUES ($1, $2, $3, $4, $5, $6, 'Admin', false)`,
-                    [studentId, subject, examType, score, maxScore, status]
+                    `INSERT INTO results (student_id, subject, exam_type, score, max_score, approval_status, submitted_by, edit_allowed, period_id)
+                     VALUES ($1, $2, $3, $4, $5, $6, 'Admin', false, $7)`,
+                    [studentId, subject, examType, score, maxScore, status, targetPeriodId]
                 );
             }
         }

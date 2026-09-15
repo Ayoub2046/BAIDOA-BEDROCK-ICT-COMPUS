@@ -302,6 +302,21 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-batches-tab" data-bs-toggle="pill" data-bs-target="#pills-batches" type="button" role="tab">
+                            <i class="fas fa-id-card-clip me-1"></i> Admission Batches & Student IDs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-periods-tab" data-bs-toggle="pill" data-bs-target="#pills-periods" type="button" role="tab">
+                            <i class="fas fa-calendar-days me-1"></i> Exam Periods & Archiver
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-certificates-tab" data-bs-toggle="pill" data-bs-target="#pills-certificates" type="button" role="tab">
+                            <i class="fas fa-award me-1"></i> Student Certificates
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pills-reset-tab" data-bs-toggle="pill" data-bs-target="#pills-reset" type="button" role="tab">
                             <i class="fas fa-triangle-exclamation text-danger me-1"></i> Start from Scratch (Clear Data)
                         </button>
@@ -382,6 +397,203 @@
                                                 </td>
                                             </tr>
                                         </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= TAB: ADMISSION BATCHES & STUDENT IDs ================= -->
+                    <div class="tab-pane fade" id="pills-batches" role="tabpanel">
+
+                        <!-- Active Batch Banner -->
+                        <div class="card shadow-sm border-0 mb-4" id="active-batch-banner" style="display:none!important;">
+                            <div class="card-body p-3 d-flex align-items-center gap-3">
+                                <div style="width:44px;height:44px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+                                    <i class="fas fa-id-card-clip"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">Active Batch: <span id="active-batch-name" class="text-success">—</span></div>
+                                    <div class="small text-muted">Prefix: <strong id="active-batch-prefix">—</strong> &nbsp;|&nbsp; Offset: <strong id="active-batch-offset">0</strong> &nbsp;|&nbsp; Students admitted so far use this ID format.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create New Batch -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-primary me-2"></i>Create New Admission Batch</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Year Label <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="batch-year-label" placeholder="e.g. 2024-2025">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">ID Prefix <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="batch-id-prefix" placeholder="e.g. BB" maxlength="6">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">ID Offset</label>
+                                        <input type="number" class="form-control" id="batch-id-offset" value="0" min="0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Description</label>
+                                        <input type="text" class="form-control" id="batch-description" placeholder="Optional note">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-primary w-100" id="btn-create-batch">
+                                            <i class="fas fa-plus me-1"></i> Create
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="batch-msg" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Batches List -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-list text-secondary me-2"></i>All Admission Batches</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Year</th><th>Prefix</th><th>Offset</th><th>Description</th><th>Status</th><th>ID Preview</th><th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="batches-table-body">
+                                            <tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Loading batches...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= TAB: EXAM PERIODS & ARCHIVER ================= -->
+                    <div class="tab-pane fade" id="pills-periods" role="tabpanel">
+
+                        <!-- Create Period -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-calendar-plus text-primary me-2"></i>Create New Exam Period</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">Year <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="period-year" value="2025" min="2020" max="2035">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">Month</label>
+                                        <select class="form-select" id="period-month">
+                                            <option value="">— Full Year —</option>
+                                            <option value="1">January</option><option value="2">February</option>
+                                            <option value="3">March</option><option value="4">April</option>
+                                            <option value="5">May</option><option value="6">June</option>
+                                            <option value="7">July</option><option value="8">August</option>
+                                            <option value="9">September</option><option value="10">October</option>
+                                            <option value="11">November</option><option value="12">December</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Label <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="period-label" placeholder="e.g. Semester 1 Finals">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Description</label>
+                                        <input type="text" class="form-control" id="period-description" placeholder="Optional">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-primary w-100" id="btn-create-period">
+                                            <i class="fas fa-plus me-1"></i> Create
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="period-msg" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Periods List -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h5 class="fw-bold mb-0"><i class="fas fa-archive text-secondary me-2"></i>Exam Periods Archive</h5>
+                                    <select class="form-select form-select-sm w-auto" id="periods-year-filter">
+                                        <option value="">All Years</option>
+                                    </select>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Year</th><th>Month</th><th>Label</th><th>Results</th><th>Status</th><th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="periods-table-body">
+                                            <tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Loading periods...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= TAB: STUDENT CERTIFICATES ================= -->
+                    <div class="tab-pane fade" id="pills-certificates" role="tabpanel">
+
+                        <!-- Upload Certificate -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-upload text-primary me-2"></i>Upload Certificate for a Student</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Student ID / Name Search</label>
+                                        <input type="text" class="form-control" id="cert-student-search" placeholder="Search by name or ID...">
+                                        <div id="cert-student-results" class="list-group mt-1" style="position:absolute;z-index:999;width:inherit;max-height:200px;overflow-y:auto;display:none;"></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small">Certificate Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="cert-title" placeholder="e.g. Academic Excellence Award">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">Type</label>
+                                        <select class="form-select" id="cert-type">
+                                            <option value="completion">Completion</option>
+                                            <option value="excellence">Excellence</option>
+                                            <option value="participation">Participation</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold small">File (PDF/Image) <span class="text-danger">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" id="cert-file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-success w-100" id="btn-upload-cert">
+                                            <i class="fas fa-award me-1"></i> Upload
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="cert-student-id" value="">
+                                <div id="cert-msg" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Certificates List -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3"><i class="fas fa-award text-secondary me-2"></i>All Issued Certificates</h5>
+                                <div id="cert-list-loading" class="text-center py-4 text-muted">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>Loading certificates...
+                                </div>
+                                <div class="table-responsive d-none" id="cert-table-wrap">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr><th>Student</th><th>Title</th><th>Type</th><th>Uploaded</th><th>Actions</th></tr>
+                                        </thead>
+                                        <tbody id="cert-table-body"></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -644,6 +856,14 @@
                 const al = globalAlert.querySelector('.alert');
                 if (al) al.remove();
             }, 6000);
+        }
+
+        // Inline message helper for form feedback (used by new tabs)
+        function showMsg(elId, msg, type = 'info') {
+            const el = $(elId);
+            if (!el) return;
+            el.innerHTML = `<div class="alert alert-${type} py-2 px-3 small mb-0">${msg}</div>`;
+            setTimeout(() => { el.innerHTML = ''; }, 5000);
         }
 
         // Format Date Time
@@ -990,6 +1210,270 @@
             loadSystemStats();
             loadBackupsList();
         });
+
+        // ================================================================
+        // ADMISSION BATCHES TAB
+        // ================================================================
+        let batchesLoaded = false;
+        async function loadBatches() {
+            const tbody = $('batches-table-body');
+            try {
+                const res = await fetch('/api/admission-batches');
+                const batches = await res.json();
+                // Load active batch info
+                const activeRes = await fetch('/api/admission-batches/active');
+                const active = await activeRes.json();
+                if (active) {
+                    $('active-batch-banner').style.cssText = '';
+                    $('active-batch-name').textContent = active.year_label;
+                    $('active-batch-prefix').textContent = active.id_prefix;
+                    $('active-batch-offset').textContent = active.id_offset;
+                }
+                if (!batches.length) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No admission batches yet.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = batches.map(b => {
+                    const preview = `${b.id_prefix}${String(b.year_label).slice(-2)}${String(b.id_offset + 1).padStart(4,'0')}`;
+                    const badge = b.is_active
+                        ? `<span class="badge bg-success">Active</span>`
+                        : `<span class="badge bg-secondary">Inactive</span>`;
+                    const activateBtn = !b.is_active
+                        ? `<button class="btn btn-outline-success btn-action-sm me-1" onclick="activateBatch(${b.id})"><i class="fas fa-check me-1"></i>Activate</button>`
+                        : '';
+                    return `<tr>
+                        <td class="fw-semibold">${b.year_label}</td>
+                        <td><span class="badge bg-primary">${b.id_prefix}</span></td>
+                        <td>${b.id_offset}</td>
+                        <td class="text-muted small">${b.description || '—'}</td>
+                        <td>${badge}</td>
+                        <td><code class="small">${preview}…</code></td>
+                        <td>
+                            ${activateBtn}
+                            <button class="btn btn-outline-danger btn-action-sm" onclick="deleteBatch(${b.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error loading batches.</td></tr>`;
+            }
+        }
+        async function activateBatch(id) {
+            if (!confirm('Activate this batch? New students will use its prefix.')) return;
+            await fetch(`/api/admission-batches/${id}/activate`, { method: 'PUT' });
+            loadBatches();
+            showMsg('batch-msg', 'Batch activated!', 'success');
+        }
+        async function deleteBatch(id) {
+            if (!confirm('Delete this batch?')) return;
+            await fetch(`/api/admission-batches/${id}`, { method: 'DELETE' });
+            loadBatches();
+        }
+        $('btn-create-batch')?.addEventListener('click', async () => {
+            const year_label = $('batch-year-label').value.trim();
+            const id_prefix = $('batch-id-prefix').value.trim();
+            const id_offset = parseInt($('batch-id-offset').value) || 0;
+            const description = $('batch-description').value.trim();
+            if (!year_label || !id_prefix) return showMsg('batch-msg', 'Year label and prefix are required.', 'danger');
+            const res = await fetch('/api/admission-batches', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({year_label, id_prefix, id_offset, description})
+            });
+            const data = await res.json();
+            if (!res.ok) return showMsg('batch-msg', data.error || 'Error', 'danger');
+            showMsg('batch-msg', 'Batch created!', 'success');
+            $('batch-year-label').value = ''; $('batch-id-prefix').value = ''; $('batch-id-offset').value = '0'; $('batch-description').value = '';
+            loadBatches();
+        });
+
+        // ================================================================
+        // EXAM PERIODS TAB
+        // ================================================================
+        let periodsLoaded = false;
+        async function loadPeriods() {
+            const tbody = $('periods-table-body');
+            const yearFilter = $('periods-year-filter').value;
+            try {
+                const url = yearFilter ? `/api/exam-periods?year=${yearFilter}` : '/api/exam-periods';
+                const res = await fetch(url);
+                const periods = await res.json();
+                if (!periods.length) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No exam periods found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = periods.map(p => {
+                    const monthName = p.month_name || '—';
+                    const badge = p.is_active
+                        ? `<span class="badge bg-success">Active</span>`
+                        : p.is_archived ? `<span class="badge bg-secondary">Archived</span>` : `<span class="badge bg-info">Open</span>`;
+                    return `<tr>
+                        <td class="fw-semibold">${p.year}</td>
+                        <td>${monthName}</td>
+                        <td>${p.name || p.label || '—'}</td>
+                        <td><span class="badge bg-light text-dark border">${p.result_count || 0} results</span></td>
+                        <td>${badge}</td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-action-sm" onclick="deletePeriod(${p.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading periods.</td></tr>`;
+            }
+        }
+        async function loadPeriodsYears() {
+            const sel = $('periods-year-filter');
+            try {
+                const res = await fetch('/api/exam-periods/years');
+                const years = await res.json();
+                years.forEach(y => {
+                    const o = document.createElement('option');
+                    o.value = y; o.textContent = y;
+                    sel.appendChild(o);
+                });
+            } catch(e) {}
+        }
+        async function deletePeriod(id) {
+            if (!confirm('Delete this exam period? This will NOT delete results.')) return;
+            await fetch(`/api/exam-periods/${id}`, { method: 'DELETE' });
+            loadPeriods();
+        }
+        $('periods-year-filter')?.addEventListener('change', loadPeriods);
+        $('btn-create-period')?.addEventListener('click', async () => {
+            const year = parseInt($('period-year').value);
+            const month = $('period-month').value ? parseInt($('period-month').value) : null;
+            const label = $('period-label').value.trim();
+            const description = $('period-description').value.trim();
+            if (!year || !label) return showMsg('period-msg', 'Year and label are required.', 'danger');
+            const res = await fetch('/api/exam-periods', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({year, month, name: label, label, description})
+            });
+            const data = await res.json();
+            if (!res.ok) return showMsg('period-msg', data.error || 'Error', 'danger');
+            showMsg('period-msg', 'Exam period created!', 'success');
+            $('period-label').value = ''; $('period-description').value = '';
+            loadPeriods();
+        });
+
+        // ================================================================
+        // STUDENT CERTIFICATES TAB
+        // ================================================================
+        let certsLoaded = false;
+        async function loadCertificates() {
+            $('cert-list-loading').classList.remove('d-none');
+            $('cert-table-wrap').classList.add('d-none');
+            try {
+                const res = await fetch('/api/certificates');
+                const certs = await res.json();
+                $('cert-list-loading').classList.add('d-none');
+                $('cert-table-wrap').classList.remove('d-none');
+                const tbody = $('cert-table-body');
+                if (!certs.length) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No certificates issued yet.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = certs.map(c => {
+                    const date = c.uploaded_at ? new Date(c.uploaded_at).toLocaleDateString() : '—';
+                    const typeBadge = {completion:'bg-primary',excellence:'bg-warning text-dark',participation:'bg-info',other:'bg-secondary'}[c.cert_type] || 'bg-secondary';
+                    const downloadBtn = c.file_url
+                        ? `<a href="${c.file_url}" target="_blank" class="btn btn-outline-primary btn-action-sm me-1"><i class="fas fa-download"></i></a>`
+                        : '';
+                    return `<tr>
+                        <td class="fw-semibold">${c.student_name || '—'}</td>
+                        <td>${c.title}</td>
+                        <td><span class="badge ${typeBadge}">${c.cert_type || 'other'}</span></td>
+                        <td class="small text-muted">${date}</td>
+                        <td>
+                            ${downloadBtn}
+                            <button class="btn btn-outline-danger btn-action-sm" onclick="deleteCert(${c.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                $('cert-list-loading').innerHTML = `<span class="text-danger">Error loading certificates.</span>`;
+            }
+        }
+        async function deleteCert(id) {
+            if (!confirm('Delete this certificate?')) return;
+            await fetch(`/api/certificates/${id}`, { method: 'DELETE' });
+            loadCertificates();
+        }
+        // Student search for cert upload
+        let certSearchTimer;
+        $('cert-student-search')?.addEventListener('input', function() {
+            clearTimeout(certSearchTimer);
+            certSearchTimer = setTimeout(async () => {
+                const q = this.value.trim();
+                const resultsBox = $('cert-student-results');
+                if (q.length < 2) { resultsBox.style.display = 'none'; return; }
+                try {
+                    const res = await fetch(`/api/students?search=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    const students = Array.isArray(data) ? data : (data.students || []);
+                    if (!students.length) { resultsBox.style.display = 'none'; return; }
+                    resultsBox.innerHTML = students.slice(0,8).map(s =>
+                        `<a href="#" class="list-group-item list-group-item-action small py-2" data-id="${s.id}" data-name="${s.name}">
+                            ${s.name} <span class="text-muted">#${s.id}</span>
+                        </a>`
+                    ).join('');
+                    resultsBox.style.display = 'block';
+                } catch(e) { resultsBox.style.display = 'none'; }
+            }, 300);
+        });
+        $('cert-student-results')?.addEventListener('click', function(e) {
+            const a = e.target.closest('a[data-id]');
+            if (!a) return;
+            e.preventDefault();
+            $('cert-student-search').value = a.dataset.name;
+            $('cert-student-id').value = a.dataset.id;
+            this.style.display = 'none';
+        });
+        $('btn-upload-cert')?.addEventListener('click', async () => {
+            const studentId = $('cert-student-id').value;
+            const title = $('cert-title').value.trim();
+            const certType = $('cert-type').value;
+            const file = $('cert-file').files[0];
+            if (!studentId) return showMsg('cert-msg', 'Please search and select a student.', 'danger');
+            if (!title) return showMsg('cert-msg', 'Certificate title is required.', 'danger');
+            if (!file) return showMsg('cert-msg', 'Please select a file.', 'danger');
+            const fd = new FormData();
+            fd.append('student_id', studentId);
+            fd.append('title', title);
+            fd.append('cert_type', certType);
+            fd.append('file', file);
+            const btn = $('btn-upload-cert');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading...';
+            try {
+                const res = await fetch('/api/certificates', { method: 'POST', body: fd });
+                const data = await res.json();
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-award me-1"></i> Upload';
+                if (!res.ok) return showMsg('cert-msg', data.error || 'Upload failed.', 'danger');
+                showMsg('cert-msg', 'Certificate uploaded successfully!', 'success');
+                $('cert-title').value = ''; $('cert-file').value = '';
+                loadCertificates();
+            } catch(e) {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-award me-1"></i> Upload';
+                showMsg('cert-msg', 'Upload error.', 'danger');
+            }
+        });
+
+        // Lazy-load tab data on first show
+        document.querySelectorAll('#pills-tab button[data-bs-toggle="pill"]').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', (e) => {
+                const target = e.target.getAttribute('data-bs-target');
+                if (target === '#pills-batches' && !batchesLoaded) {
+                    batchesLoaded = true; loadBatches();
+                } else if (target === '#pills-periods' && !periodsLoaded) {
+                    periodsLoaded = true; loadPeriodsYears(); loadPeriods();
+                } else if (target === '#pills-certificates' && !certsLoaded) {
+                    certsLoaded = true; loadCertificates();
+                }
+            });
+        });
+
     </script>
 </body>
 

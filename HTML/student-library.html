@@ -4,379 +4,1059 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Library | Baidoa Bedrock ICT Campus</title>
+    <title>Bedrock Digital Library | Baidoa Bedrock ICT Campus</title>
     <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
     <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Elif Library">
+    <meta name="apple-mobile-web-app-title" content="Bedrock Library">
     <link rel="apple-touch-icon" href="/images/BEDRCOK LOGO.JPG">
+
+    <!-- Fonts & CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+
     <style>
         :root {
-            --primary-dark: #0f510e;
-            --primary: #1dd91d;
-            --primary-light: #41be41;
-            --primary-medium: #359335;
-            --red: #e74c3c;
-            --yellow: #f39c12;
+            --primary-darker: #092d52;
+            --primary-dark: #0d4f8c;
+            --primary: #1a7fd4;
+            --primary-medium: #2a6ab0;
+            --primary-light: #4a9fe0;
+            --primary-lightest: #e8f4fd;
+            --accent: #f5a623;
+            --accent-dark: #d4891a;
+            --accent-light: #fef3df;
+            --bg-body: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-title: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 20px rgba(13, 79, 140, 0.08);
+            --card-hover-shadow: 0 12px 30px rgba(13, 79, 140, 0.16);
+        }
+
+        body[data-theme="dark"] {
+            --bg-body: #0b1329;
+            --card-bg: #132247;
+            --text-title: #f8fafc;
+            --text-body: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #1e3a6a;
+            --primary-lightest: #162b55;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            --card-hover-shadow: 0 12px 30px rgba(26, 127, 212, 0.25);
         }
 
         * { box-sizing: border-box; }
 
         body {
-            background: #f0f2f5;
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-body);
+            font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        body[data-theme="dark"] { background: #1a1d1a; }
+        h1, h2, h3, h4, h5, h6, .brand-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ========== LOGIN VIEW ========== */
+        .login-view-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background:
+                radial-gradient(1200px 600px at 100% -10%, rgba(26, 127, 212, 0.35), transparent 60%),
+                radial-gradient(1000px 500px at -10% 110%, rgba(13, 79, 140, 0.3), transparent 60%),
+                linear-gradient(135deg, var(--primary-darker), var(--primary-dark));
+        }
+
+        .login-card-bedrock {
+            max-width: 440px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        body[data-theme="dark"] .login-card-bedrock {
+            background: #132247;
+            border-color: #1e3a6a;
+        }
+
+        .login-card-head {
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 50%, var(--primary) 100%);
+            padding: 2.2rem 1.8rem 1.8rem;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .login-card-head::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .login-logo-img {
+            width: 82px;
+            height: 82px;
+            border-radius: 20px;
+            padding: 4px;
+            background: #ffffff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            margin-bottom: 0.8rem;
+            object-fit: contain;
+        }
+
+        .login-card-head h3 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .login-card-head p {
+            font-size: 0.82rem;
+            opacity: 0.88;
+            margin: 4px 0 0;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .login-card-body {
+            padding: 1.8rem;
+        }
+
+        .btn-bedrock-login {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.75rem;
+            border: none;
+            transition: all 0.25s;
+            box-shadow: 0 6px 18px rgba(13, 79, 140, 0.28);
+        }
+
+        .btn-bedrock-login:hover {
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(13, 79, 140, 0.38);
+        }
 
         /* ========== LIBRARY HEADER ========== */
         .lib-header {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            color: #fff;
-            padding: 1rem 1rem 0.8rem;
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 60%, var(--primary) 100%);
+            color: #ffffff;
+            padding: 0.9rem 1.4rem;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 15px rgba(15, 81, 14, 0.25);
+            box-shadow: 0 4px 20px rgba(9, 45, 82, 0.35);
         }
-        .lib-header .lib-greeting { font-size: 1.3rem; font-weight: 700; margin: 0; color: #fff; }
-        .lib-header .lib-greeting-date { font-size: 0.8rem; opacity: 0.85; margin: 2px 0 0; }
-        .lib-header .header-icons { display: flex; gap: 0.6rem; align-items: center; }
-        .lib-header .header-icon-btn {
-            background: rgba(255,255,255,0.15);
-            border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.05rem; cursor: pointer; transition: background 0.2s; position: relative;
+
+        .lib-brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: #fff;
         }
-        .lib-header .header-icon-btn:hover { background: rgba(255,255,255,0.25); }
-        .lib-header .header-icon-btn .badge-dot {
-            position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
-            background: #ff4444; border-radius: 50%; border: 2px solid var(--primary);
+
+        .lib-brand-pill img {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #ffffff;
+            padding: 2px;
+            object-fit: contain;
+        }
+
+        .lib-header .lib-greeting {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .lib-header .lib-greeting-date {
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 2px 0 0;
+        }
+
+        .header-action-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            height: 38px;
+            padding: 0 0.85rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .header-action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .header-icon-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .header-icon-circle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
         }
 
         /* ========== SEARCH BAR ========== */
         .lib-search-wrap {
-            background: #fff; border-bottom: 1px solid #e0e0e0; padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.85rem 1.4rem;
+            animation: slideDown 0.2s ease-out;
         }
-        body[data-theme="dark"] .lib-search-wrap { background: #252825; border-color: #3a3d3a; }
-        .lib-search-wrap .form-control { border-radius: 30px; padding-left: 1rem; }
+
+        .lib-search-wrap .form-control {
+            border-radius: 30px;
+            padding-left: 1rem;
+            border-color: var(--border-color);
+            background: var(--bg-body);
+            color: var(--text-title);
+        }
+
+        .lib-search-wrap .form-control:focus {
+            background: var(--card-bg);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 127, 212, 0.18);
+        }
 
         /* ========== HERO BANNER ========== */
         .lib-hero {
-            margin: 1rem;
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            border-radius: 20px;
-            padding: 1.4rem 1.5rem;
-            color: #fff;
+            margin: 1.2rem 1.2rem 1rem;
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 55%, var(--primary) 100%);
+            border-radius: 22px;
+            padding: 1.6rem 1.8rem;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
-            box-shadow: 0 8px 25px rgba(15, 81, 14, 0.3);
+            gap: 1.2rem;
+            box-shadow: 0 10px 28px rgba(9, 45, 82, 0.28);
             overflow: hidden;
             position: relative;
         }
-        .lib-hero::after {
-            content: '\f518'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
-            position: absolute; right: -10px; bottom: -25px; font-size: 7rem; opacity: 0.12;
+
+        .lib-hero::before {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(245, 166, 35, 0.22) 0%, transparent 70%);
+            top: -70px;
+            right: 60px;
+            pointer-events: none;
         }
-        .lib-hero .lib-hero-text h1 { color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0; }
-        .lib-hero .lib-hero-text p { opacity: 0.9; font-size: 0.82rem; margin: 4px 0 0; }
-        .lib-hero .lib-hero-icon {
-            width: 60px; height: 60px; background: rgba(255,255,255,0.18);
-            border-radius: 16px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.7rem; flex-shrink: 0;
+
+        .lib-hero-badge {
+            display: inline-block;
+            background: rgba(245, 166, 35, 0.22);
+            color: var(--accent);
+            border: 1px solid rgba(245, 166, 35, 0.4);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            margin-bottom: 0.6rem;
+        }
+
+        .lib-hero h1 {
+            color: #ffffff;
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .lib-hero p {
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 0.88rem;
+            margin: 6px 0 0;
+            max-width: 540px;
+        }
+
+        .lib-hero-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.1rem;
+            color: #ffffff;
+            flex-shrink: 0;
         }
 
         /* ========== STATS ROW ========== */
         .lib-stats {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; padding: 0 1rem; margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            padding: 0 1.2rem;
+            margin-bottom: 1.2rem;
         }
-        .lib-stat-card {
-            background: #fff; border-radius: 14px; padding: 0.85rem 0.5rem; text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s;
-        }
-        body[data-theme="dark"] .lib-stat-card { background: #252825; }
-        .lib-stat-card:hover { transform: translateY(-2px); }
-        .lib-stat-card .stat-icon {
-            width: 38px; height: 38px; border-radius: 10px; margin: 0 auto 0.5rem;
-            display: flex; align-items: center; justify-content: center; font-size: 0.95rem; color: #fff;
-        }
-        .lib-stat-card .stat-val { font-size: 1.35rem; font-weight: 700; color: #333; }
-        body[data-theme="dark"] .lib-stat-card .stat-val { color: #e8f8e8; }
-        .lib-stat-card .stat-lbl { font-size: 0.62rem; color: #888; font-weight: 600; }
 
-        .st-primary { background: linear-gradient(135deg, #1e8449, #27ae60); }
-        .st-blue { background: linear-gradient(135deg, #2471a3, #3498db); }
-        .st-orange { background: linear-gradient(135deg, #d35400, #e67e22); }
-        .st-purple { background: linear-gradient(135deg, #7d3c98, #a569bd); }
+        .lib-stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1rem 0.8rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            transition: all 0.25s;
+        }
+
+        .lib-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--primary-light);
+        }
+
+        .lib-stat-card .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            margin: 0 auto 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #ffffff;
+        }
+
+        .st-blue { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+        .st-cyan { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+        .st-emerald { background: linear-gradient(135deg, #059669, #34d399); }
+        .st-amber { background: linear-gradient(135deg, #d97706, #fbbf24); }
+
+        .lib-stat-card .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-title);
+            font-family: 'Outfit', sans-serif;
+            line-height: 1;
+        }
+
+        .lib-stat-card .stat-lbl {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
 
         /* ========== FILTER CHIPS ========== */
-        .lib-filters { padding: 0 1rem; margin-bottom: 1rem; }
-        .lib-filters .chip-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.3rem; -webkit-overflow-scrolling: touch; }
-        .lib-chip {
-            border: 1.5px solid #dde5dd; background: #fff; color: #555; font-size: 0.75rem; font-weight: 600;
-            padding: 0.4rem 1rem; border-radius: 30px; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+        .lib-filters {
+            padding: 0 1.2rem;
+            margin-bottom: 1.2rem;
         }
-        body[data-theme="dark"] .lib-chip { background: #252825; border-color: #3a3d3a; color: #bbb; }
-        .lib-chip:hover { border-color: var(--primary); color: var(--primary-dark); }
-        .lib-chip.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); }
+
+        .lib-filters .chip-row {
+            display: flex;
+            gap: 0.55rem;
+            overflow-x: auto;
+            padding-bottom: 0.4rem;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .lib-chip {
+            border: 1.5px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.45rem 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .lib-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
+        .lib-chip.active {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.25);
+        }
 
         /* ========== BOOK GRID ========== */
-        .books-section { padding: 0 1rem 2rem; }
-        .books-section .books-heading { font-size: 0.95rem; font-weight: 700; color: #333; margin: 0 0 0.8rem; display: flex; align-items: center; justify-content: space-between; }
-        body[data-theme="dark"] .books-section .books-heading { color: #e8f8e8; }
-        .books-section .books-count { font-size: 0.7rem; color: #888; font-weight: 600; }
+        .books-section {
+            padding: 0 1.2rem 2.5rem;
+        }
+
+        .books-heading {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin: 0 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .books-count {
+            font-size: 0.74rem;
+            color: var(--primary);
+            background: var(--primary-lightest);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 700;
+        }
 
         .book-card {
-            background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #eee;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; height: 100%;
-            display: flex; flex-direction: column;
+            background: var(--card-bg);
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        body[data-theme="dark"] .book-card { background: #252825; border-color: #3a3d3a; }
-        .book-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--primary-light);
+        }
 
         .book-cover-wrap {
-            position: relative; height: 200px; background: linear-gradient(135deg, #e8f5e8, #d5ecd5);
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            position: relative;
+            height: 210px;
+            background: linear-gradient(135deg, #0d4f8c15 0%, #1a7fd425 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
-        body[data-theme="dark"] .book-cover-wrap { background: linear-gradient(135deg, #1a2e1a, #223022); }
-        .book-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .book-cover-wrap .book-cover-placeholder { font-size: 3.2rem; color: var(--primary-medium); opacity: 0.55; }
-        .book-card .book-cat-badge {
-            position: absolute; top: 10px; left: 10px; background: rgba(15,81,14,0.9); color: #fff;
-            font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
-            padding: 0.25rem 0.7rem; border-radius: 20px;
+
+        .book-cover-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
         }
-        .book-card .book-status {
-            position: absolute; top: 10px; right: 10px; font-size: 0.6rem; font-weight: 700;
-            padding: 0.25rem 0.7rem; border-radius: 20px; color: #fff;
+
+        .book-card:hover .book-cover-wrap img {
+            transform: scale(1.04);
         }
-        .book-status.available { background: #27ae60; }
-        .book-status.checked { background: #e74c3c; }
-        .book-card .book-card-body { padding: 0.9rem 1rem; display: flex; flex-direction: column; flex: 1; }
-        .book-card .book-title { font-size: 0.92rem; font-weight: 700; color: #333; margin: 0 0 2px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        body[data-theme="dark"] .book-card .book-title { color: #e8f8e8; }
-        .book-card .book-author { font-size: 0.75rem; color: #888; margin: 0 0 0.7rem; }
-        .book-card .book-actions { margin-top: auto; display: flex; gap: 0.4rem; }
+
+        .book-cover-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 50%, var(--primary) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .book-cover-placeholder i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .book-cover-placeholder span {
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.8;
+            max-width: 140px;
+            line-height: 1.2;
+        }
+
+        .book-cat-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(9, 45, 82, 0.92);
+            backdrop-filter: blur(6px);
+            color: #ffffff;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 0.28rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 2;
+        }
+
+        .book-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 0.28rem 0.75rem;
+            border-radius: 20px;
+            color: #ffffff;
+            z-index: 2;
+        }
+
+        .book-status.available {
+            background: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .book-status.checked {
+            background: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .book-card-body {
+            padding: 1rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .book-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin: 0 0 4px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .book-author {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            margin: 0 0 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .book-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
 
         .btn-read {
-            flex: 1; background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            border: none; color: #fff; font-size: 0.75rem; font-weight: 600;
-            padding: 0.45rem 0.5rem; border-radius: 10px; transition: all 0.2s;
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            border: none;
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.52rem 0.8rem;
+            border-radius: 12px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.2);
         }
-        .btn-read:hover { filter: brightness(1.1); color: #fff; }
+
+        .btn-read:hover {
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(13, 79, 140, 0.3);
+        }
+
+        .btn-details {
+            width: 38px;
+            height: 38px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-details:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
         .btn-fav {
-            width: 38px; background: #f0f2f5; border: none; color: #888; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;
+            width: 38px;
+            height: 38px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
         }
-        body[data-theme="dark"] .btn-fav { background: #1a1d1a; color: #888; }
-        .btn-fav.active { color: #e74c3c; }
-        .btn-fav.active i { font-weight: 900; }
+
+        .btn-fav:hover {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        .btn-fav.active {
+            color: #ef4444;
+            background: #fee2e2;
+            border-color: #f87171;
+        }
+
+        .btn-fav.active i {
+            font-weight: 900;
+        }
 
         /* ========== EMPTY STATE ========== */
         .empty-modern {
-            text-align: center; padding: 3rem 1rem; background: #fff; border-radius: 16px;
-            border: 1px dashed #ddd; color: #888;
+            text-align: center;
+            padding: 3.5rem 1.5rem;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
         }
-        body[data-theme="dark"] .empty-modern { background: #252825; border-color: #3a3d3a; }
-        .empty-modern .empty-icon { font-size: 2.8rem; margin-bottom: 0.8rem; opacity: 0.35; }
-        .empty-modern h5 { font-weight: 700; color: #555; }
-        body[data-theme="dark"] .empty-modern h5 { color: #bbb; }
-        .empty-modern p { font-size: 0.82rem; margin: 0; }
 
-        /* ========== READER MODAL ========== */
-        .reader-modal .modal-dialog { max-width: 900px; }
-        .reader-modal .modal-content { border-radius: 16px; overflow: hidden; }
+        .empty-modern .empty-icon {
+            font-size: 3.2rem;
+            margin-bottom: 0.9rem;
+            color: var(--primary);
+            opacity: 0.6;
+        }
+
+        .empty-modern h5 {
+            font-weight: 700;
+            color: var(--text-title);
+        }
+
+        /* ========== MODALS ========== */
+        .reader-modal .modal-dialog { max-width: 960px; }
+        .reader-modal .modal-content {
+            border-radius: 20px;
+            overflow: hidden;
+            border: none;
+            background: var(--card-bg);
+        }
+
         .reader-modal .modal-header {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            color: #fff; border: none; padding: 0.8rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            border: none;
+            padding: 1rem 1.4rem;
         }
-        .reader-modal .modal-title { font-size: 1rem; font-weight: 700; color: #fff; }
-        .reader-modal .modal-header .btn-close { filter: invert(1); }
-        .reader-frame { width: 100%; height: 75vh; border: none; background: #fff; }
-        .reader-unavailable {
-            height: 60vh; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; color: #888; text-align: center; padding: 2rem;
-        }
-        .reader-unavailable i { font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; }
 
-        /* ========== DETAIL MODAL ========== */
-        .detail-modal .modal-dialog { max-width: 560px; }
-        .detail-modal .modal-content { border-radius: 16px; overflow: hidden; border: none; }
+        .reader-modal .modal-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .reader-modal .btn-close { filter: invert(1); }
+        .reader-frame { width: 100%; height: 78vh; border: none; background: #ffffff; }
+
+        .detail-modal .modal-dialog { max-width: 540px; }
+        .detail-modal .modal-content {
+            border-radius: 22px;
+            overflow: hidden;
+            border: none;
+            background: var(--card-bg);
+        }
+
         .detail-hero {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            padding: 1.5rem; color: #fff; text-align: center; position: relative;
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 60%, var(--primary) 100%);
+            padding: 2rem 1.5rem 1.5rem;
+            color: #ffffff;
+            text-align: center;
+            position: relative;
         }
-        .detail-hero img { width: 110px; height: 150px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+
+        .detail-hero img {
+            width: 120px;
+            height: 165px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+
         .detail-hero .placeholder-lg {
-            width: 110px; height: 150px; background: rgba(255,255,255,0.15); border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 2.4rem; margin: 0 auto;
+            width: 120px;
+            height: 165px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            margin: 0 auto;
+            color: var(--accent);
         }
-        .detail-hero h4 { color: #fff; font-weight: 700; margin: 0.9rem 0 2px; }
-        .detail-hero p { opacity: 0.85; font-size: 0.82rem; margin: 0; }
-        .detail-body { padding: 1.3rem; }
-        .detail-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
-        .detail-meta .dm-item { background: #f6f8f6; border-radius: 10px; padding: 0.55rem 0.7rem; }
-        body[data-theme="dark"] .detail-meta .dm-item { background: #1a1d1a; }
-        .detail-meta .dm-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 600; }
-        .detail-meta .dm-value { font-size: 0.82rem; font-weight: 700; color: #333; margin: 0; }
-        body[data-theme="dark"] .detail-meta .dm-value { color: #e8f8e8; }
+
+        .detail-hero h4 {
+            color: #ffffff;
+            font-weight: 700;
+            margin: 1rem 0 3px;
+            font-size: 1.25rem;
+        }
+
+        .detail-hero p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .detail-body { padding: 1.4rem; }
+        .detail-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .detail-meta .dm-item {
+            background: var(--bg-body);
+            border-radius: 12px;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-meta .dm-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .detail-meta .dm-value {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin: 2px 0 0;
+        }
 
         /* ========== BOTTOM NAV ========== */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; background: #fff; z-index: 990;
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 0.5rem 0 0.7rem; border-top: 1px solid #eee;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            z-index: 990;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.55rem 0 0.75rem;
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
         }
-        body[data-theme="dark"] .bottom-nav { background: #252825; border-color: #3a3d3a; }
+
         .bottom-nav .bn-item {
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            background: none; border: none; color: #999; font-size: 0.6rem; font-weight: 600; cursor: pointer; flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            text-decoration: none;
+            transition: all 0.2s;
         }
-        .bottom-nav .bn-item i { font-size: 1.1rem; }
-        .bottom-nav .bn-item.active { color: var(--primary-dark); }
-        body[data-theme="dark"] .bottom-nav .bn-item.active { color: var(--primary); }
 
-        body.has-bottom-nav { padding-bottom: 70px; }
+        .bottom-nav .bn-item i { font-size: 1.15rem; }
+        .bottom-nav .bn-item.active,
+        .bottom-nav .bn-item:hover { color: var(--primary); }
 
-        /* ========== PROFESSIONAL FOOTER ========== */
+        body.has-bottom-nav { padding-bottom: 75px; }
+
+        /* ========== FOOTER ========== */
         .lib-footer {
-            background: linear-gradient(135deg, var(--primary-darker, #092d52) 0%, var(--primary-dark, #0d4f8c) 100%);
-            color: rgba(255,255,255,0.9);
+            background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 100%);
+            color: rgba(255, 255, 255, 0.88);
             padding: 3rem 0 0;
-            margin-top: 2.5rem;
-            border-top: 3px solid var(--accent, #f5a623);
+            margin-top: 3rem;
+            border-top: 3px solid var(--accent);
         }
+
         .lib-footer .footer-brand img {
-            width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid var(--accent, #f5a623);
-            margin-right: 0.8rem; background: #fff; object-fit: cover;
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            border: 2px solid var(--accent);
+            margin-right: 0.8rem;
+            background: #ffffff;
+            object-fit: contain;
+            padding: 2px;
         }
-        .lib-footer .footer-brand .fb-name { color: #fff; font-weight: 800; font-size: 1.15rem; margin: 0; }
-        .lib-footer .footer-brand .fb-tag { font-size: 0.76rem; color: var(--accent, #f5a623); margin: 0; font-weight: 600; }
+
+        .lib-footer .footer-brand .fb-name {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .lib-footer .footer-brand .fb-tag {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin: 0;
+            font-weight: 600;
+        }
+
         .lib-footer h6 {
-            color: #fff; font-weight: 700; font-size: 0.88rem; text-transform: uppercase;
-            letter-spacing: 1px; margin-bottom: 1rem; position: relative; padding-bottom: 0.5rem;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.1rem;
+            position: relative;
+            padding-bottom: 0.5rem;
         }
+
         .lib-footer h6::after {
-            content: ''; position: absolute; left: 0; bottom: 0; width: 36px; height: 3px;
-            background: var(--accent, #f5a623); border-radius: 3px;
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 36px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
         }
+
         .lib-footer .footer-links { list-style: none; padding: 0; margin: 0; }
         .lib-footer .footer-links li { margin-bottom: 0.55rem; }
-        .lib-footer .footer-links a { color: rgba(255,255,255,0.82); font-size: 0.84rem; transition: all 0.2s; text-decoration: none; }
-        .lib-footer .footer-links a:hover { color: var(--accent, #f5a623); padding-left: 5px; }
-        .lib-footer .footer-contact p { font-size: 0.84rem; margin-bottom: 0.55rem; color: rgba(255,255,255,0.82); }
-        .lib-footer .footer-contact i { width: 22px; color: var(--accent, #f5a623); }
-        .lib-footer .footer-social { display: flex; gap: 0.7rem; margin-top: 1rem; }
-        .lib-footer .footer-social a {
-            width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: center; color: #fff;
-            font-size: 0.95rem; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.15);
+        .lib-footer .footer-links a {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.82rem;
+            text-decoration: none;
+            transition: all 0.2s;
         }
-        .lib-footer .footer-social a:hover {
-            background: var(--accent, #f5a623); color: var(--primary-darker, #092d52);
-            transform: translateY(-2px); border-color: var(--accent, #f5a623);
+        .lib-footer .footer-links a:hover {
+            color: var(--accent);
+            padding-left: 4px;
         }
-        .lib-footer .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.15); margin-top: 2rem; padding: 1.2rem 0;
-            font-size: 0.78rem; color: rgba(255,255,255,0.7); text-align: center;
-        }
-        .lib-footer .footer-bottom .heart { color: var(--accent, #f5a623); }
 
-        /* ========== RESPONSIVE ========== */
+        .lib-footer .footer-contact p {
+            font-size: 0.82rem;
+            margin-bottom: 0.55rem;
+            color: rgba(255, 255, 255, 0.82);
+        }
+        .lib-footer .footer-contact i { width: 22px; color: var(--accent); }
+
+        .lib-footer .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            margin-top: 2rem;
+            padding: 1.2rem 0;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+        }
+
+        .lib-footer .heart { color: var(--accent); }
+        .lib-footer .dev { color: #ffffff; font-weight: 700; }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 768px) {
             .lib-stats { grid-template-columns: repeat(2, 1fr); }
-            .lib-hero { padding: 1.2rem; }
-            .lib-hero .lib-hero-text h1 { font-size: 1.2rem; }
-            .detail-meta { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 480px) {
-            .lib-stats { gap: 0.4rem; padding: 0 0.75rem; }
-            .books-section, .lib-filters { padding-left: 0.75rem; padding-right: 0.75rem; }
-            .reader-frame { height: 68vh; }
+            .lib-hero { padding: 1.3rem; margin: 0.8rem 0.8rem 1rem; }
+            .lib-hero h1 { font-size: 1.3rem; }
+            .lib-hero-icon { display: none; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- ============ LOGIN VIEW ============ -->
-    <div id="login-view" class="login-container">
-        <div class="card login-card shadow-lg">
-            <div class="login-header">
-                <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus Logo" class="login-logo">
-                <h3>Digital Library</h3>
+    <!-- ============ LOGIN VIEW (Shown ONLY if student has NO active session) ============ -->
+    <div id="login-view" class="login-view-wrap d-none">
+        <div class="card login-card-bedrock">
+            <div class="login-card-head">
+                <img src="/images/BEDRCOK LOGO.JPG" alt="Baidoa Bedrock ICT Campus" class="login-logo-img">
+                <h3>Bedrock Digital Library</h3>
                 <p>Baidoa Bedrock ICT Campus</p>
             </div>
-            <div class="login-body">
+            <div class="login-card-body">
                 <div id="login-alert"></div>
                 <form id="login-form" autocomplete="off">
                     <div class="mb-3">
-                        <label for="inputStudentId" class="form-label">
-                            <i class="fas fa-id-card me-1"></i>Student ID
+                        <label for="inputStudentId" class="form-label fw-bold small text-muted">
+                            <i class="fas fa-id-card me-1 text-primary"></i>Student ID
                         </label>
-                        <input type="text" class="form-control" id="inputStudentId"
-                            placeholder="e.g. ELP250001" required>
-                        <div class="form-text">Format: ELP followed by 6 digits</div>
+                        <input type="text" class="form-control form-control-lg fs-6" id="inputStudentId"
+                            placeholder="e.g. BB260001 or BB26-0001" required>
+                        <div class="form-text small">Format: BB followed by 6 digits</div>
                     </div>
                     <div class="mb-3">
-                        <label for="inputPassword" class="form-label">
-                            <i class="fas fa-lock me-1"></i>Password (Birth Date)
+                        <label for="inputPassword" class="form-label fw-bold small text-muted">
+                            <i class="fas fa-lock me-1 text-primary"></i>Password
                         </label>
-                        <input type="date" class="form-control" id="inputPassword" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-lg fs-6" id="inputPassword"
+                                placeholder="Enter student password" required autocomplete="current-password">
+                            <button class="btn btn-outline-secondary" type="button" id="btnToggleLoginPwd" onclick="toggleStudentLoginPwd()">
+                                <i class="fas fa-eye" id="loginEyeIcon"></i>
+                            </button>
+                        </div>
+                        <div class="form-text small">Enter your Bedrock student portal password.</div>
                     </div>
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-login" id="btn-login">
-                            <i class="fas fa-book-open me-2"></i>Enter Library
+                        <button type="submit" class="btn btn-bedrock-login" id="btn-login">
+                            <i class="fas fa-book-reader me-2"></i>Access Library
                         </button>
                     </div>
                 </form>
-                <div class="login-footer">
-                    <a href="/HTML/index.html">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Website
-                    </a>
+                <div class="mt-4 pt-3 border-top text-center">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/HTML/Student Results.html" class="small text-decoration-none text-muted">
+                            <i class="fas fa-award me-1 text-primary"></i>Student Portal
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="/HTML/index.html" class="small text-decoration-none text-muted">
+                            <i class="fas fa-arrow-left me-1 text-primary"></i>Back to Website
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ============ LIBRARY VIEW ============ -->
+    <!-- ============ LIBRARY VIEW (Direct access when already logged in) ============ -->
     <div id="library-view" class="d-none">
 
         <!-- Header -->
         <header class="lib-header no-print">
             <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <h1 class="lib-greeting" id="lib-greeting">Welcome, Student!</h1>
-                    <p class="lib-greeting-date" id="lib-date"></p>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/HTML/student-library.html" class="lib-brand-pill">
+                        <img src="/images/BEDRCOK LOGO.JPG" alt="Bedrock Logo">
+                    </a>
+                    <div>
+                        <h1 class="lib-greeting" id="lib-greeting">Welcome, Student!</h1>
+                        <p class="lib-greeting-date" id="lib-date"></p>
+                    </div>
                 </div>
-                <div class="header-icons">
-                    <button class="header-icon-btn" title="Search" onclick="toggleSearch()">
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Search button -->
+                    <button class="header-icon-circle" title="Search Books" onclick="toggleSearch()">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+                    <!-- Dark Mode toggle -->
+                    <button class="header-icon-circle" onclick="toggleTheme()" title="Toggle Theme">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
-                    <button class="header-icon-btn" title="Logout" onclick="logout()">
+                    <!-- Back to Student Results / Portal -->
+                    <a href="/HTML/Student Results.html" class="header-action-btn d-none d-md-inline-flex" title="Return to Student Dashboard">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Student Portal</span>
+                    </a>
+                    <!-- Exit / Logout button -->
+                    <button class="header-icon-circle" title="Sign Out from Library" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- Search bar -->
+        <!-- Collapsible Search Bar -->
         <div class="lib-search-wrap d-none" id="search-wrap">
             <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search text-muted"></i></span>
                 <input type="text" class="form-control border-start-0" id="search-input"
-                    placeholder="Search by title, author, or category..." oninput="renderBooks()">
+                    placeholder="Search by title, author, category, or subject..." oninput="renderBooks()">
                 <button class="btn btn-outline-secondary" onclick="toggleSearch()"><i class="fas fa-times"></i></button>
             </div>
         </div>
@@ -384,58 +1064,64 @@
         <!-- Hero Banner -->
         <div class="lib-hero no-print">
             <div class="lib-hero-text">
-                <h1><i class="fas fa-book-reader me-2"></i>Elif Digital Library</h1>
-                <p>Explore thousands of books and read them right here.</p>
+                <span class="lib-hero-badge"><i class="fas fa-university me-1"></i>Digital Academic Hub</span>
+                <h1>Bedrock Digital Library</h1>
+                <p>Explore official course textbooks, past examination papers, lecture study notes, and campus documents curated for Bedrock students.</p>
             </div>
-            <div class="lib-hero-icon"><i class="fas fa-layer-group"></i></div>
+            <div class="lib-hero-icon"><i class="fas fa-book-open"></i></div>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats Overview -->
         <div class="lib-stats no-print">
             <div class="lib-stat-card">
-                <div class="stat-icon st-primary"><i class="fas fa-book"></i></div>
+                <div class="stat-icon st-blue"><i class="fas fa-book"></i></div>
                 <div class="stat-val" id="stat-total">0</div>
                 <div class="stat-lbl">Total Books</div>
             </div>
             <div class="lib-stat-card">
-                <div class="stat-icon st-blue"><i class="fas fa-tags"></i></div>
+                <div class="stat-icon st-cyan"><i class="fas fa-tags"></i></div>
                 <div class="stat-val" id="stat-categories">0</div>
                 <div class="stat-lbl">Categories</div>
             </div>
             <div class="lib-stat-card">
-                <div class="stat-icon st-orange"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-icon st-emerald"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-val" id="stat-available">0</div>
-                <div class="stat-lbl">Available</div>
+                <div class="stat-lbl">Available Now</div>
             </div>
             <div class="lib-stat-card">
-                <div class="stat-icon st-purple"><i class="fas fa-heart"></i></div>
+                <div class="stat-icon st-amber"><i class="fas fa-heart"></i></div>
                 <div class="stat-val" id="stat-favorites">0</div>
-                <div class="stat-lbl">Favorites</div>
+                <div class="stat-lbl">My Favorites</div>
             </div>
         </div>
 
-        <!-- Category chips -->
+        <!-- Category Chips -->
         <div class="lib-filters no-print">
-            <div class="chip-row" id="category-chips"></div>
+            <div class="chip-row" id="category-chips">
+                <button class="lib-chip active" data-cat="all" onclick="filterCategory('all')">
+                    <i class="fas fa-layer-group"></i>All Resources
+                </button>
+            </div>
         </div>
 
-        <!-- Books grid -->
+        <!-- Books Grid Section -->
         <div class="books-section">
             <div class="books-heading">
-                <span><i class="fas fa-books me-2" style="color:var(--primary-dark);"></i>Browse Books</span>
-                <span class="books-count" id="books-count"></span>
+                <span><i class="fas fa-book-reader me-2 text-primary"></i>Browse Library Resources</span>
+                <span class="books-count" id="books-count">Loading...</span>
             </div>
             <div id="books-grid" class="row g-3">
                 <div class="col-12 text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted small mt-2">Loading campus library catalog...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Recently read -->
+        <!-- Recently Read Section -->
         <div class="books-section d-none" id="recent-section">
             <div class="books-heading">
-                <span><i class="fas fa-history me-2" style="color:var(--primary-dark);"></i>Recently Read</span>
+                <span><i class="fas fa-history me-2 text-primary"></i>Recently Opened</span>
             </div>
             <div id="recent-grid" class="row g-3"></div>
         </div>
@@ -452,16 +1138,9 @@
                                 <p class="fb-tag">Nurturing Minds, Shaping Futures</p>
                             </div>
                         </div>
-                        <p style="font-size:0.82rem; color:rgba(255,255,255,0.75);">
-                            A digital library built for our students — explore, read, and grow with Elif.
-                            Access textbooks, literature, and reference materials anywhere, anytime.
+                        <p style="font-size:0.84rem; color:rgba(255,255,255,0.78); line-height: 1.6;">
+                            A modern digital library built for our students — explore, read, and grow with Bedrock ICT Campus. Access textbooks, literature, and reference materials anywhere, anytime.
                         </p>
-                        <div class="footer-social">
-                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <h6>Quick Links</h6>
@@ -475,21 +1154,21 @@
                         </ul>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <h6>Portals</h6>
+                        <h6>Student Portals</h6>
                         <ul class="footer-links">
-                            <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Portal Login</a></li>
-                            <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Check Results</a></li>
-                            <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance</a></li>
-                            <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Digital Library</a></li>
+                            <li><a href="/HTML/Student Results.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Student Results &amp; Dashboard</a></li>
+                            <li><a href="/HTML/student-attendance.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Attendance Records</a></li>
+                            <li><a href="/HTML/student-library.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Bedrock Digital Library</a></li>
+                            <li><a href="/HTML/portal_login.html"><i class="fas fa-chevron-right me-1" style="font-size:0.6rem;"></i>Staff Portal Login</a></li>
                         </ul>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <h6>Contact Us</h6>
                         <div class="footer-contact">
-                            <p><i class="fas fa-map-marker-alt"></i>123 Education Lane, Mogadishu</p>
+                            <p><i class="fas fa-map-marker-alt"></i>Baidoa Bedrock ICT Campus, Baidoa</p>
                             <p><i class="fas fa-phone"></i>+252 618972046</p>
                             <p><i class="fas fa-envelope"></i>info@bbict.edu.so</p>
-                            <p><i class="fas fa-clock"></i>Mon - Fri: 8:00 AM - 4:00 PM</p>
+                            <p><i class="fas fa-clock"></i>Sat - Thu: 7:30 AM - 5:00 PM</p>
                         </div>
                     </div>
                 </div>
@@ -503,10 +1182,18 @@
 
     <!-- ============ READER MODAL ============ -->
     <div class="modal fade reader-modal" id="readerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-book-open me-2"></i><span id="reader-title">Reading...</span></h5>
+                    <h5 class="modal-title d-flex align-items-center gap-2">
+                        <i class="fas fa-book-open text-warning"></i>
+                        <span id="reader-title">Reading Resource...</span>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2 ms-auto me-2">
+                        <a id="reader-external-link" href="#" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3" style="font-size:0.75rem;">
+                            <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
+                        </a>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0" id="reader-body"></div>
@@ -534,12 +1221,24 @@
                             <div class="dm-label">Status</div>
                             <p class="dm-value" id="detail-status"></p>
                         </div>
+                        <div class="dm-item">
+                            <div class="dm-label">Subject</div>
+                            <p class="dm-value" id="detail-subject">-</p>
+                        </div>
+                        <div class="dm-item">
+                            <div class="dm-label">Academic Year</div>
+                            <p class="dm-value" id="detail-year">All</p>
+                        </div>
+                    </div>
+                    <div id="detail-description-wrap" class="mb-3 d-none">
+                        <div class="small fw-bold text-muted mb-1">Description</div>
+                        <p class="small text-muted" id="detail-description"></p>
                     </div>
                     <div class="d-grid gap-2">
-                        <button class="btn btn-read" id="detail-read-btn">
+                        <button class="btn btn-read py-2" id="detail-read-btn">
                             <i class="fas fa-book-open me-2"></i>Read Now
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm" id="detail-fav-btn">
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill" id="detail-fav-btn">
                             <i class="far fa-heart me-1"></i>Add to Favorites
                         </button>
                     </div>
@@ -548,73 +1247,155 @@
         </div>
     </div>
 
-    <!-- ============ BOTTOM NAV ============ -->
+    <!-- ============ BOTTOM NAV FOR MOBILE ============ -->
     <nav class="bottom-nav no-print d-md-none" id="bottom-nav">
-        <button class="bn-item" onclick="scrollTo('top')"><i class="fas fa-home"></i>Home</button>
-        <button class="bn-item" onclick="scrollTo('books')"><i class="fas fa-books"></i>Books</button>
-        <button class="bn-item" onclick="scrollTo('recent')"><i class="fas fa-history"></i>Recent</button>
+        <button class="bn-item active" onclick="scrollToSection('top')"><i class="fas fa-home"></i>Home</button>
+        <button class="bn-item" onclick="scrollToSection('books')"><i class="fas fa-book"></i>Books</button>
+        <button class="bn-item" onclick="showFavoritesOnly()"><i class="fas fa-heart"></i>Favorites</button>
+        <a class="bn-item" href="/HTML/Student Results.html"><i class="fas fa-user-graduate"></i>Portal</a>
         <button class="bn-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i>Exit</button>
     </nav>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allBooks = [];
         let currentCategory = 'all';
-        let favorites = JSON.parse(localStorage.getItem('elif-library-favorites') || '[]');
-        let recentlyRead = JSON.parse(localStorage.getItem('elif-library-recent') || '[]');
+        let favorites = JSON.parse(localStorage.getItem('bedrock-library-favorites') || '[]');
+        let recentlyRead = JSON.parse(localStorage.getItem('bedrock-library-recent') || '[]');
         let readerModal, detailModal;
+
+        // Toggle password visibility
+        function toggleStudentLoginPwd() {
+            const pwd = document.getElementById('inputPassword');
+            const icon = document.getElementById('loginEyeIcon');
+            if (!pwd || !icon) return;
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                pwd.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Detect any active student session across all Bedrock student storage locations
+        function detectActiveStudentSession() {
+            // 1. Check viewingStudent (set by Student Results.html / Attendance)
+            try {
+                const raw = sessionStorage.getItem('viewingStudent');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed) {
+                        const s = (parsed.data && parsed.data.student) || parsed.student || parsed;
+                        const name = s.name || parsed.name || s.student_id_code || parsed.bbId;
+                        const id = s.id || parsed.dbId || parsed.id;
+                        const bbId = s.student_id_code || parsed.bbId || parsed.elpId || '';
+                        if (name) {
+                            return { name, id, bbId };
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Error reading viewingStudent:', e);
+            }
+
+            // 2. Check dedicated bedrock-library-session
+            try {
+                const libRaw = sessionStorage.getItem('bedrock-library-session');
+                if (libRaw) {
+                    const parsed = JSON.parse(libRaw);
+                    if (parsed && (parsed.name || parsed.id || parsed.bbId)) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {}
+
+            // 3. Check persistent localStorage student session
+            try {
+                const localRaw = localStorage.getItem('bedrock_student_user') || localStorage.getItem('viewingStudent');
+                if (localRaw) {
+                    const parsed = JSON.parse(localRaw);
+                    const s = (parsed.data && parsed.data.student) || parsed.student || parsed;
+                    if (s && (s.name || s.id)) {
+                        return {
+                            name: s.name || 'Student',
+                            id: s.id || parsed.dbId,
+                            bbId: s.student_id_code || parsed.bbId || ''
+                        };
+                    }
+                }
+            } catch (e) {}
+
+            return null;
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             readerModal = new bootstrap.Modal(document.getElementById('readerModal'));
             detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
             document.getElementById('year').textContent = new Date().getFullYear();
-            setGreeting();
             initTheme();
 
-            // Restore session
-            const session = sessionStorage.getItem('elif-library-session');
-            if (session) {
-                showLibrary(JSON.parse(session));
+            // Check if student already has an active session
+            const activeSession = detectActiveStudentSession();
+            if (activeSession) {
+                // Ensure session is saved and directly enter the library
+                sessionStorage.setItem('bedrock-library-session', JSON.stringify(activeSession));
+                showLibrary(activeSession);
+            } else {
+                // Not logged in anywhere -> show the Bedrock login form
+                document.getElementById('login-view').classList.remove('d-none');
             }
 
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
         });
 
+        // Handle manual login if student accessed page directly without being logged in
         async function handleLogin(e) {
             e.preventDefault();
             const alertBox = document.getElementById('login-alert');
-            const raw = document.getElementById('inputStudentId').value.toUpperCase().replace(/^(BB|ELP)/i, '').trim();
-            const rawNum = parseInt(raw);
-            const realDbId = rawNum >= 260000 ? rawNum - 260000 : (rawNum >= 250000 ? rawNum - 250000 : rawNum);
-            const passwordInput = document.getElementById('inputPassword').value;
+            const bbId = document.getElementById('inputStudentId').value.trim();
+            const password = document.getElementById('inputPassword').value;
 
-            if (isNaN(realDbId) || realDbId < 1) {
-                alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID format. Use BB260001.</div>';
+            if (!bbId || !password) {
+                alertBox.innerHTML = '<div class="alert alert-danger py-2 small"><i class="fas fa-exclamation-circle me-1"></i>Please enter your Student ID and password.</div>';
                 return;
             }
 
-            try {
-                const response = await fetch(`/api/results/${realDbId}`);
-                if (!response.ok) throw new Error('ID_NOT_FOUND');
-                const studentData = await response.json();
-                const dbBirthdate = studentData.birthdate ? (() => {
-                    const d = new Date(studentData.birthdate);
-                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                })() : '';
+            alertBox.innerHTML = '<div class="text-center text-muted py-2 small"><div class="spinner-border spinner-border-sm me-1"></div> Authenticating student credentials...</div>';
 
-                if (dbBirthdate === passwordInput) {
-                    const session = { name: studentData.name, id: studentData.id };
-                    sessionStorage.setItem('elif-library-session', JSON.stringify(session));
-                    showLibrary(session);
-                } else {
-                    throw new Error('WRONG_PASSWORD');
-                }
+            try {
+                const response = await fetch('/api/student-auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bbId, password })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Invalid credentials');
+
+                const studentObj = data.student || data;
+                const session = {
+                    name: studentObj.name,
+                    id: studentObj.id,
+                    bbId: studentObj.student_id_code || studentObj.bbId || bbId
+                };
+
+                // Store session for both library and results portal
+                sessionStorage.setItem('bedrock-library-session', JSON.stringify(session));
+                sessionStorage.setItem('viewingStudent', JSON.stringify({
+                    dbId: session.id,
+                    bbId: session.bbId,
+                    student_id_code: session.bbId,
+                    name: session.name,
+                    student: studentObj
+                }));
+
+                showLibrary(session);
             } catch (error) {
-                if (error.message === 'ID_NOT_FOUND') {
-                    alertBox.innerHTML = '<div class="alert alert-danger">Student ID not found. Please check your ID.</div>';
-                } else {
-                    alertBox.innerHTML = '<div class="alert alert-danger">Invalid Student ID or Password.</div>';
-                }
+                alertBox.innerHTML = `<div class="alert alert-danger py-2 small"><i class="fas fa-exclamation-circle me-1"></i>${error.message}</div>`;
             }
         }
 
@@ -622,24 +1403,25 @@
             document.getElementById('login-view').classList.add('d-none');
             document.getElementById('library-view').classList.remove('d-none');
             document.body.classList.add('has-bottom-nav');
-            const now = new Date();
-            document.getElementById('lib-greeting').textContent = `Welcome, ${session.name.split(' ')[0]}!`;
-            document.getElementById('lib-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-            fetchBooks();
-        }
 
-        function setGreeting() {
-            const h = new Date().getHours();
-            const text = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-            document.getElementById('lib-greeting').textContent = text + ', Student!';
+            const now = new Date();
+            const hour = now.getHours();
+            const greetingTime = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+            const firstName = (session.name || 'Student').split(' ')[0];
+
+            document.getElementById('lib-greeting').textContent = `${greetingTime}, ${firstName}!`;
+            document.getElementById('lib-date').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            fetchBooks();
         }
 
         async function fetchBooks() {
             try {
-                const response = await fetch('/api/books');
+                const response = await fetch('/api/books/student-library');
                 if (!response.ok) throw new Error('Could not fetch books.');
                 allBooks = await response.json();
-                allBooks = allBooks.filter(b => !b.deleted_at);
                 buildChips();
                 updateStats();
                 renderBooks();
@@ -647,24 +1429,56 @@
             } catch (error) {
                 console.error('Fetch Books Error:', error);
                 document.getElementById('books-grid').innerHTML =
-                    `<div class="col-12"><div class="empty-modern"><div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div><h5>Could not load library</h5><p>Please try again later.</p></div></div>`;
+                    `<div class="col-12"><div class="empty-modern">
+                        <div class="empty-icon"><i class="fas fa-exclamation-triangle text-danger"></i></div>
+                        <h5>Could not load library catalog</h5>
+                        <p class="small text-muted mb-3">There was an issue connecting to the library server.</p>
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-4" onclick="fetchBooks()">
+                            <i class="fas fa-redo me-1"></i>Retry Loading
+                        </button>
+                    </div></div>`;
             }
         }
 
         function buildChips() {
-            const categories = ['All', ...new Set(allBooks.map(b => b.category).filter(Boolean))];
+            const rawCats = allBooks.map(b => b.category).filter(Boolean);
+            const categories = ['all', ...Array.from(new Set(rawCats))];
             const chipsEl = document.getElementById('category-chips');
-            chipsEl.innerHTML = categories.map(c =>
-                `<button class="lib-chip ${c === 'All' ? 'active' : ''}" data-cat="${c}" onclick="filterCategory('${c.replace(/'/g, "\\'")}')">${c}</button>`
-            ).join('');
+
+            chipsEl.innerHTML = categories.map(c => {
+                const label = c === 'all' ? 'All Resources' : c;
+                const icon = getCategoryIcon(c);
+                const isActive = currentCategory.toLowerCase() === c.toLowerCase();
+                return `<button class="lib-chip ${isActive ? 'active' : ''}" data-cat="${c}" onclick="filterCategory('${c.replace(/'/g, "\\'")}')">
+                    <i class="${icon}"></i>${label}
+                </button>`;
+            }).join('');
+        }
+
+        function getCategoryIcon(cat) {
+            const c = (cat || '').toLowerCase();
+            if (c === 'all') return 'fas fa-layer-group';
+            if (c.includes('textbook')) return 'fas fa-book';
+            if (c.includes('past paper') || c.includes('exam')) return 'fas fa-file-signature';
+            if (c.includes('notes') || c.includes('lecture')) return 'fas fa-book-reader';
+            if (c.includes('document') || c.includes('regulation')) return 'fas fa-file-alt';
+            if (c.includes('ict') || c.includes('programming') || c.includes('web')) return 'fas fa-laptop-code';
+            return 'fas fa-bookmark';
         }
 
         function filterCategory(cat) {
             currentCategory = cat;
             document.querySelectorAll('.lib-chip').forEach(ch => {
-                ch.classList.toggle('active', ch.dataset.cat === cat);
+                ch.classList.toggle('active', ch.dataset.cat.toLowerCase() === cat.toLowerCase());
             });
             renderBooks();
+        }
+
+        function showFavoritesOnly() {
+            currentCategory = 'favorites';
+            document.querySelectorAll('.lib-chip').forEach(ch => ch.classList.remove('active'));
+            renderBooks();
+            scrollToSection('books');
         }
 
         function updateStats() {
@@ -678,11 +1492,20 @@
         function getFilteredBooks() {
             const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
             return allBooks.filter(b => {
-                const matchCat = currentCategory === 'All' || b.category === currentCategory;
+                let matchCat = true;
+                if (currentCategory === 'favorites') {
+                    matchCat = favorites.includes(b.id);
+                } else if (currentCategory !== 'all') {
+                    matchCat = (b.category || '').toLowerCase() === currentCategory.toLowerCase();
+                }
+
                 const matchQ = !q ||
                     (b.title || '').toLowerCase().includes(q) ||
                     (b.author || '').toLowerCase().includes(q) ||
-                    (b.category || '').toLowerCase().includes(q);
+                    (b.category || '').toLowerCase().includes(q) ||
+                    (b.subject || '').toLowerCase().includes(q) ||
+                    (b.description || '').toLowerCase().includes(q);
+
                 return matchCat && matchQ;
             });
         }
@@ -691,13 +1514,13 @@
             const grid = document.getElementById('books-grid');
             const countEl = document.getElementById('books-count');
             const books = getFilteredBooks();
-            countEl.textContent = books.length + (books.length === 1 ? ' book' : ' books');
+            countEl.textContent = books.length + (books.length === 1 ? ' resource' : ' resources');
 
             if (books.length === 0) {
                 grid.innerHTML = `<div class="col-12"><div class="empty-modern">
-                    <div class="empty-icon"><i class="fas fa-books"></i></div>
-                    <h5>No books found</h5>
-                    <p>Try a different search or category.</p>
+                    <div class="empty-icon"><i class="fas fa-search"></i></div>
+                    <h5>No resources found</h5>
+                    <p class="small text-muted mb-0">Try clearing your search terms or picking another category.</p>
                 </div></div>`;
                 return;
             }
@@ -705,23 +1528,29 @@
             grid.innerHTML = books.map(b => {
                 const isFav = favorites.includes(b.id);
                 const isAvailable = (b.status || 'Available').toLowerCase() === 'available';
-                const hasLink = !!(b.digitallink && b.digitallink.trim());
+                const docUrl = b.file_path || b.digitallink || '';
+                const hasLink = !!(docUrl && docUrl.trim());
+
                 return `
                 <div class="col-md-6 col-lg-4 col-xl-3">
                     <div class="book-card">
                         <div class="book-cover-wrap">
                             <span class="book-cat-badge">${escapeHtml(b.category || 'General')}</span>
                             <span class="book-status ${isAvailable ? 'available' : 'checked'}">${isAvailable ? 'Available' : 'Checked Out'}</span>
-                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder())">` : bookPlaceholder()}
+                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder('${escapeHtml(b.title)}'))">` : bookPlaceholder(b.title)}
                         </div>
                         <div class="book-card-body">
-                            <h6 class="book-title">${escapeHtml(b.title)}</h6>
-                            <p class="book-author"><i class="fas fa-user-pen me-1"></i>${escapeHtml(b.author || 'Unknown')}</p>
+                            <h6 class="book-title" title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</h6>
+                            <p class="book-author"><i class="fas fa-user-edit text-primary me-1"></i>${escapeHtml(b.author || 'Bedrock Faculty')}</p>
+                            ${b.subject ? `<p class="small text-muted mb-2"><i class="fas fa-tag me-1 text-warning"></i>${escapeHtml(b.subject)}</p>` : ''}
                             <div class="book-actions">
                                 ${hasLink
-                                    ? `<button class="btn-read" onclick="openBook(${b.id})"><i class="fas fa-book-open me-1"></i>Read</button>`
-                                    : `<button class="btn-read" style="opacity:.6;cursor:not-allowed;" disabled><i class="fas fa-lock me-1"></i>Unavailable</button>`}
-                                <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFavorite(${b.id})" title="Add to favorites">
+                                    ? `<button class="btn-read" onclick="openBook(${b.id})"><i class="fas fa-book-open"></i>Read</button>`
+                                    : `<button class="btn-read" style="opacity:0.6;cursor:not-allowed;" disabled><i class="fas fa-lock"></i>Offline</button>`}
+                                <button class="btn-details" onclick="showDetail(${b.id})" title="View Details">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFavorite(${b.id})" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
                                     <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
                                 </button>
                             </div>
@@ -731,39 +1560,44 @@
             }).join('');
         }
 
-        function bookPlaceholder() {
-            return '<div class="book-cover-placeholder"><i class="fas fa-book-open"></i></div>';
+        function bookPlaceholder(title) {
+            const shortTitle = title ? title.substring(0, 28) + (title.length > 28 ? '...' : '') : 'Bedrock Library';
+            return `<div class="book-cover-placeholder">
+                <i class="fas fa-book-reader"></i>
+                <span>${escapeHtml(shortTitle)}</span>
+            </div>`;
         }
 
         function toggleFavorite(id) {
             if (favorites.includes(id)) {
                 favorites = favorites.filter(f => f !== id);
+                showToast('Removed from favorites');
             } else {
                 favorites.push(id);
+                showToast('Added to favorites!');
             }
-            localStorage.setItem('elif-library-favorites', JSON.stringify(favorites));
+            localStorage.setItem('bedrock-library-favorites', JSON.stringify(favorites));
             updateStats();
             renderBooks();
             renderRecent();
-            showToast(favorites.includes(id) ? 'Added to favorites' : 'Removed from favorites');
-        }
-
-        function isFavorite(id) {
-            return favorites.includes(id);
         }
 
         function openBook(id) {
             const book = allBooks.find(b => b.id === id);
             if (!book) return;
             markRecent(book);
-            if (!book.digitallink || !book.digitallink.trim()) {
+            const docUrl = book.file_path || book.digitallink || '';
+            if (!docUrl || !docUrl.trim()) {
                 showDetail(id);
                 return;
             }
+
             document.getElementById('reader-title').textContent = book.title;
+            const extLink = document.getElementById('reader-external-link');
+            extLink.href = docUrl;
+
             const body = document.getElementById('reader-body');
-            body.innerHTML = `
-                <iframe class="reader-frame" src="${book.digitallink}" title="${escapeHtml(book.title)}" loading="lazy"></iframe>`;
+            body.innerHTML = `<iframe class="reader-frame" src="${docUrl}" title="${escapeHtml(book.title)}" loading="lazy"></iframe>`;
             readerModal.show();
         }
 
@@ -772,32 +1606,55 @@
             if (!book) return;
             const isFav = favorites.includes(id);
             const isAvailable = (book.status || 'Available').toLowerCase() === 'available';
+
             document.getElementById('detail-cover').innerHTML = book.cover
-                ? `<img src="${book.cover}" alt="${escapeHtml(book.title)}" onerror="this.replaceWith(bookPlaceholder())">`
-                : `<div class="placeholder-lg"><i class="fas fa-book-open"></i></div>`;
+                ? `<img src="${book.cover}" alt="${escapeHtml(book.title)}" onerror="this.replaceWith(bookPlaceholder('${escapeHtml(book.title)}'))">`
+                : `<div class="placeholder-lg"><i class="fas fa-book-reader"></i></div>`;
+
             document.getElementById('detail-title').textContent = book.title;
-            document.getElementById('detail-author').textContent = `by ${book.author || 'Unknown'}`;
+            document.getElementById('detail-author').textContent = `by ${book.author || 'Bedrock Academic Faculty'}`;
             document.getElementById('detail-category').textContent = book.category || 'General';
             document.getElementById('detail-status').innerHTML = `<span class="badge ${isAvailable ? 'bg-success' : 'bg-danger'}">${isAvailable ? 'Available' : 'Checked Out'}</span>`;
+            document.getElementById('detail-subject').textContent = book.subject || 'Not specified';
+            document.getElementById('detail-year').textContent = book.academic_year || 'All Academic Years';
+
+            const descWrap = document.getElementById('detail-description-wrap');
+            const descEl = document.getElementById('detail-description');
+            if (book.description && book.description.trim()) {
+                descEl.textContent = book.description;
+                descWrap.classList.remove('d-none');
+            } else {
+                descWrap.classList.add('d-none');
+            }
+
             const readBtn = document.getElementById('detail-read-btn');
-            if (book.digitallink && book.digitallink.trim()) {
+            const docUrl = book.file_path || book.digitallink || '';
+            if (docUrl && docUrl.trim()) {
                 readBtn.disabled = false;
                 readBtn.onclick = () => { detailModal.hide(); openBook(id); };
             } else {
                 readBtn.disabled = true;
                 readBtn.onclick = null;
             }
+
             const favBtn = document.getElementById('detail-fav-btn');
-            favBtn.innerHTML = isFav ? '<i class="fas fa-heart me-1"></i>Remove from Favorites' : '<i class="far fa-heart me-1"></i>Add to Favorites';
+            favBtn.innerHTML = isFav ? '<i class="fas fa-heart me-1 text-danger"></i>Remove from Favorites' : '<i class="far fa-heart me-1"></i>Add to Favorites';
             favBtn.onclick = () => { toggleFavorite(id); detailModal.hide(); };
+
             detailModal.show();
         }
 
         function markRecent(book) {
             recentlyRead = recentlyRead.filter(r => r.id !== book.id);
-            recentlyRead.unshift({ id: book.id, title: book.title, author: book.author, cover: book.cover, digitallink: book.digitallink });
+            recentlyRead.unshift({
+                id: book.id,
+                title: book.title,
+                author: book.author,
+                cover: book.cover,
+                digitallink: book.file_path || book.digitallink
+            });
             recentlyRead = recentlyRead.slice(0, 4);
-            localStorage.setItem('elif-library-recent', JSON.stringify(recentlyRead));
+            localStorage.setItem('bedrock-library-recent', JSON.stringify(recentlyRead));
             renderRecent();
         }
 
@@ -813,11 +1670,13 @@
                 <div class="col-6 col-md-3">
                     <div class="book-card">
                         <div class="book-cover-wrap" style="height:140px;">
-                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder())">` : bookPlaceholder()}
+                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder('${escapeHtml(b.title)}'))">` : bookPlaceholder(b.title)}
                         </div>
                         <div class="book-card-body p-2">
-                            <h6 class="book-title" style="font-size:.8rem;">${escapeHtml(b.title)}</h6>
-                            <button class="btn-read w-100" onclick="openBook(${b.id})"><i class="fas fa-book-open me-1"></i>Read Again</button>
+                            <h6 class="book-title" style="font-size:0.8rem;">${escapeHtml(b.title)}</h6>
+                            <button class="btn-read w-100 py-1" onclick="openBook(${b.id})">
+                                <i class="fas fa-book-open me-1"></i>Read
+                            </button>
                         </div>
                     </div>
                 </div>`).join('');
@@ -831,18 +1690,16 @@
             }
         }
 
-        function scrollTo(where) {
+        function scrollToSection(where) {
             if (where === 'top') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (where === 'books') {
                 document.querySelector('.books-section').scrollIntoView({ behavior: 'smooth' });
-            } else if (where === 'recent') {
-                document.getElementById('recent-section').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
         function logout() {
-            sessionStorage.removeItem('elif-library-session');
+            sessionStorage.removeItem('bedrock-library-session');
             window.location.reload();
         }
 
@@ -858,28 +1715,29 @@
             if (existing) existing.remove();
             const toast = document.createElement('div');
             toast.id = 'lib-toast';
-            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--primary-dark);color:#fff;padding:.6rem 1.2rem;border-radius:30px;font-size:.8rem;font-weight:600;z-index:2000;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .3s;';
-            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--primary-darker);color:#fff;padding:0.6rem 1.4rem;border-radius:30px;font-size:0.82rem;font-weight:600;z-index:2000;box-shadow:0 8px 24px rgba(9,45,82,0.4);border:1px solid rgba(255,255,255,0.2);opacity:0;transition:opacity .3s;';
+            toast.innerHTML = `<i class="fas fa-info-circle text-warning me-2"></i>${msg}`;
             document.body.appendChild(toast);
             requestAnimationFrame(() => { toast.style.opacity = '1'; });
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 1800);
+            }, 2000);
         }
 
         function toggleTheme() {
             const body = document.body;
             const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             body.setAttribute('data-theme', next);
-            localStorage.setItem('elif-theme', next);
+            localStorage.setItem('bedrock-theme', next);
             document.getElementById('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         }
 
         function initTheme() {
-            const saved = localStorage.getItem('elif-theme') || 'light';
+            const saved = localStorage.getItem('bedrock-theme') || 'light';
             document.body.setAttribute('data-theme', saved);
-            document.getElementById('themeIcon').className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         }
     </script>
 

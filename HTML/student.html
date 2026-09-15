@@ -73,14 +73,44 @@
                             <a href="recycle-bin.html" class="btn btn-outline-secondary btn-sm" title="View Recycle Bin"><i class="fas fa-trash-restore me-1"></i>Recycle Bin</a>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <!-- Filter Bar -->
+                    <div class="card-body pb-0">
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" id="filter-search" class="form-control" placeholder="Search by name or ID...">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select id="filter-year" class="form-select form-select-sm">
+                                    <option value="all">All Years</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select id="filter-status" class="form-select form-select-sm">
+                                    <option value="all">All Statuses</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Graduated">Graduated</option>
+                                    <option value="Alumni">Alumni</option>
+                                    <option value="Archived">Archived</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <button id="btn-apply-filters" class="btn btn-sm btn-primary w-100"><i class="fas fa-filter me-1"></i>Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
                         <div id="csv-toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead>
                                     <tr>
-                                        <th>Student ID</th>
+                                        <th>Student ID Code</th>
                                         <th>Name</th>
+                                        <th>Status</th>
                                         <th>Grade</th>
                                         <th>Parent</th>
                                         <th>Enrollment</th>
@@ -131,6 +161,22 @@
                                 <input type="date" name="birthDate" class="form-control" required>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Graduated">Graduated</option>
+                                    <option value="Alumni">Alumni</option>
+                                    <option value="Archived">Archived</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Academic Year</label>
+                                <input type="text" name="academic_year" class="form-control" placeholder="e.g. 2026">
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Parent Account</label>
                             <select name="parentid" class="form-select">
@@ -150,6 +196,32 @@
                             data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Save
                             Changes</button></div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic History Modal -->
+    <div class="modal fade" id="academicHistoryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title d-flex align-items-center gap-2">
+                        <i class="fas fa-graduation-cap text-primary"></i>
+                        <span>Academic History — <span id="ah-student-name" class="fw-bold"></span></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex flex-wrap align-items-center gap-3 p-3 bg-light rounded-3 mb-3">
+                        <div><small class="text-muted d-block">Student ID</small><span id="ah-student-id" class="fw-bold text-primary font-monospace"></span></div>
+                        <div><small class="text-muted d-block">Current Grade</small><span id="ah-student-grade" class="fw-bold"></span></div>
+                        <div><small class="text-muted d-block">Status</small><span id="ah-student-status"></span></div>
+                    </div>
+                    <div id="ah-body"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -177,7 +249,7 @@
 
             async function fetchStudents() {
                 const tbody = document.getElementById('student-table-body');
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading students...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Loading students...</td></tr>`;
                 try {
                     const response = await fetch(API_URL);
                     if (!response.ok) throw new Error(`Server error ${response.status}`);
@@ -185,7 +257,7 @@
                     renderStudents();
                 } catch (error) {
                     console.error('Fetch Error:', error);
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load students. <button class="btn btn-sm btn-outline-success ms-2" onclick="fetchStudents()"><i class="fas fa-redo me-1"></i>Retry</button></td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load students. <button class="btn btn-sm btn-outline-primary ms-2" onclick="fetchStudents()"><i class="fas fa-redo me-1"></i>Retry</button></td></tr>`;
                 }
             }
 
@@ -214,20 +286,32 @@
                 }
             }
 
+            const STATUS_BADGES = {
+                'Active':    'bg-success text-white',
+                'Inactive':  'bg-secondary text-white',
+                'Graduated': 'bg-primary text-white',
+                'Alumni':    'bg-warning text-dark',
+                'Archived':  'bg-danger text-white'
+            };
+
+
             function renderStudents() {
                 const tbody = document.getElementById('student-table-body');
                 if (students.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No students found. Click 'Add New Student' to begin.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No students found. Use filters or click 'Add New Student' to begin.</td></tr>`;
                     return;
                 }
                 tbody.innerHTML = students.map(s => {
-                    const bbId = s.bbId || s.bb_id || ('BB' + (260000 + s.id));
+                    const bbId = s.student_id_code || s.bbId || s.bb_id || ('BB' + (260000 + s.id));
                     const pwd = s.plain_password || ('bb' + (260000 + s.id));
+                    const status = s.status || 'Active';
+                    const statusBadge = STATUS_BADGES[status] || 'bg-light text-dark';
                     return `
                 <tr>
                     <td><span class="badge" style="background:#e6f2fb; color:#1a7fd4; font-size:0.9rem; font-weight:700; padding:6px 10px; border-radius:8px;">${bbId}</span></td>
-                    <td><strong>${s.name}</strong></td>
-                    <td>${s.grade}</td>
+                    <td><strong>${s.name}</strong><br><small class="text-muted">${s.batch_year ? 'Batch ' + s.batch_year : ''}</small></td>
+                    <td><span class="badge ${statusBadge} px-2 py-1">${status}</span></td>
+                    <td>${s.grade || '—'}</td>
                     <td>${s.parent_name || '<span class="text-muted">—</span>'}</td>
                     <td>${formatDate(s.enrollmentdate)}</td>
                     <td>
@@ -236,13 +320,15 @@
                             <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="toggleStudentPwd(${s.id}, '${pwd}')" title="View Password">
                                 <i class="fas fa-eye" id="eye-${s.id}"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-link text-primary p-0 ms-1" onclick="copyCredentials('${bbId}', '${pwd}', '${s.name.replace(/'/g, "\\'")}')" title="Copy Login Details">
+                            <button type="button" class="btn btn-sm btn-link text-primary p-0 ms-1" onclick="copyCredentials('${bbId}', '${pwd}', '${s.name.replace(/'/g, "\\'")}')"
+                                title="Copy Login Details">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
                     </td>
                     <td class="action-buttons">
-                        <button class="btn btn-sm btn-view" data-id="${s.id}" title="View Result"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-view" data-id="${s.id}" data-code="${bbId}" title="View Dashboard"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm" style="background:#17a2b8;color:#fff;" data-id="${s.id}" data-action="history" title="Academic History"><i class="fas fa-history"></i></button>
                         <button class="btn btn-sm btn-edit" data-id="${s.id}" title="Edit Student & Password"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-delete" data-id="${s.id}" title="Move to Recycle Bin"><i class="fas fa-trash"></i></button>
                     </td>
@@ -292,6 +378,8 @@
                 delete studentForm.dataset.id;
                 const nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
                 studentForm.elements.password.value = 'bb' + (260000 + nextId);
+                if (studentForm.elements.status) studentForm.elements.status.value = 'Active';
+                if (studentForm.elements.academic_year) studentForm.elements.academic_year.value = '2026';
                 if (studentForm.elements.parentid.options.length <= 1) await loadParents();
                 studentModal.show();
             });
@@ -313,6 +401,8 @@
                     studentForm.elements.enrollmentDate.value = toDateInputValue(student.enrollmentdate);
                     studentForm.elements.birthDate.value = toDateInputValue(student.birthdate);
                     studentForm.elements.password.value = student.plain_password || ('bb' + (260000 + student.id));
+                    if (studentForm.elements.status) studentForm.elements.status.value = student.status || 'Active';
+                    if (studentForm.elements.academic_year) studentForm.elements.academic_year.value = student.academic_year || '2026';
                     if (studentForm.elements.parentid.options.length <= 1) await loadParents();
                     studentForm.elements.parentid.value = student.parentid || '';
                     studentModal.show();
@@ -331,9 +421,12 @@
                         }
                     }
                 } else if (button.classList.contains('btn-view')) {
-                    sessionStorage.setItem('viewingStudentId', 'BB' + (260000 + student.id));
+                    const code = button.dataset.code || ('BB' + (260000 + student.id));
+                    sessionStorage.setItem('viewingStudentId', code);
                     sessionStorage.setItem('viewingStudentBirthDate', student.birthdate);
                     window.open('/HTML/Student Results.html', '_blank');
+                } else if (button.dataset.action === 'history') {
+                    openAcademicHistory(student);
                 }
             });
 
@@ -349,7 +442,9 @@
                     birthDate: studentForm.elements.birthDate.value,
                     attendance: parseInt(studentForm.elements.attendance.value) || null,
                     parentid: pid ? parseInt(pid) : null,
-                    password: studentForm.elements.password.value
+                    password: studentForm.elements.password.value,
+                    status: studentForm.elements.status ? studentForm.elements.status.value : 'Active',
+                    academic_year: studentForm.elements.academic_year ? studentForm.elements.academic_year.value : '2026'
                 };
 
                 let url = API_URL;
@@ -377,8 +472,127 @@
                 }
             });
 
+            // Load admission batch years for filter
+            async function loadYearFilter() {
+                try {
+                    const res = await fetch('/api/admission-batches');
+                    const batches = await res.json();
+                    const sel = document.getElementById('filter-year');
+                    sel.innerHTML = '<option value="all">All Years</option>';
+                    batches.forEach(b => {
+                        sel.innerHTML += `<option value="${b.year_label}">${b.year_label}${b.is_active ? ' ✓' : ''}</option>`;
+                    });
+                } catch(e) { /* silent */ }
+            }
+
+            // Filter logic
+            document.getElementById('btn-apply-filters').addEventListener('click', () => {
+                const search = document.getElementById('filter-search').value.trim();
+                const year = document.getElementById('filter-year').value;
+                const status = document.getElementById('filter-status').value;
+                const params = new URLSearchParams();
+                if (search) params.set('search', search);
+                if (year !== 'all') params.set('academic_year', year);
+                if (status !== 'all') params.set('status', status);
+                fetchStudentsWithParams(params);
+            });
+
+            // Allow pressing Enter in search box to trigger filter
+            document.getElementById('filter-search').addEventListener('keydown', e => {
+                if (e.key === 'Enter') document.getElementById('btn-apply-filters').click();
+            });
+
+            async function fetchStudentsWithParams(params) {
+                const tbody = document.getElementById('student-table-body');
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading...</td></tr>`;
+                try {
+                    const url = '/api/students' + (params.toString() ? '?' + params.toString() : '');
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Server error ${response.status}`);
+                    students = await response.json();
+                    renderStudents();
+                } catch (error) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Could not load students. <button class="btn btn-sm btn-outline-success ms-2" onclick="fetchStudents()">Retry</button></td></tr>`;
+                }
+            }
+
+            // Academic History Modal
+            window.openAcademicHistory = async function(student) {
+                const modal = new bootstrap.Modal(document.getElementById('academicHistoryModal'));
+                document.getElementById('ah-student-name').textContent = student.name;
+                const bbId = student.student_id_code || student.bbId || ('BB' + (260000 + student.id));
+                document.getElementById('ah-student-id').textContent = bbId;
+                document.getElementById('ah-student-grade').textContent = student.grade || '—';
+                const status = student.status || 'Active';
+                const statusBadge = STATUS_BADGES[status] || 'bg-light text-dark';
+                document.getElementById('ah-student-status').innerHTML = `<span class="badge ${statusBadge}">${status}</span>`;
+                const body = document.getElementById('ah-body');
+                body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Loading academic history...</p></div>';
+                modal.show();
+                try {
+                    const res = await fetch('/api/students/' + student.id + '/academic-history');
+                    const hist = await res.json();
+                    if (!res.ok) throw new Error(hist.error || 'Failed to load');
+                    renderAcademicHistory(hist, body);
+                } catch(err) {
+                    body.innerHTML = `<div class="alert alert-danger">Could not load academic history: ${err.message}</div>`;
+                }
+            };
+
+            function renderAcademicHistory(hist, body) {
+                const years = hist.annualHistory || hist.years || [];
+                const results = hist.examResults || hist.results || [];
+                const certs = hist.certificates || [];
+
+                if (years.length === 0 && results.length === 0 && certs.length === 0) {
+                    body.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-folder-open fs-1"></i><p class="mt-2">No academic history recorded for this student yet.</p></div>';
+                    return;
+                }
+                let html = '';
+                // Years / classes
+                if (years.length > 0) {
+                    html += '<h6 class="fw-bold mb-2"><i class="fas fa-calendar-alt text-primary me-2"></i>Academic Progression</h6><div class="row g-2 mb-3">';
+                    years.forEach(y => {
+                        html += `<div class="col-md-6"><div class="border rounded-3 p-2 bg-light">
+                            <div class="fw-bold">${y.academic_year || y.year_label || 'Year'}</div>
+                            <small class="text-muted">Class: ${y.class_name || '—'} | Status: <strong>${y.status_in_year || y.status || 'Active'}</strong></small>
+                            ${y.gpa ? '<br><small class="text-success fw-bold">GPA: ' + y.gpa + '</small>' : ''}
+                        </div></div>`;
+                    });
+                    html += '</div>';
+                }
+                // Exam results
+                if (results.length > 0) {
+                    html += '<h6 class="fw-bold mb-2"><i class="fas fa-poll text-success me-2"></i>Examination History</h6><div class="table-responsive mb-3"><table class="table table-sm table-bordered"><thead class="table-light"><tr><th>Year</th><th>Period / Exam</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead><tbody>';
+                    results.forEach(r => {
+                        const pct = r.max_score > 0 ? Math.round((r.score / r.max_score) * 100) : (r.score || 0);
+                        const grade = pct >= 90 ? 'A+' : pct >= 80 ? 'A' : pct >= 70 ? 'B+' : pct >= 60 ? 'B' : pct >= 50 ? 'C' : pct >= 40 ? 'D' : 'F';
+                        const gradeColor = pct >= 60 ? 'text-success' : pct >= 40 ? 'text-warning' : 'text-danger';
+                        html += `<tr><td>${r.academic_year || '—'}</td><td>${r.period_name || r.exam_period_name || r.exam_type || '—'}</td><td>${r.subject_name || r.subject || '—'}</td><td>${r.score}/${r.max_score || 100}</td><td class="fw-bold ${gradeColor}">${grade} (${pct}%)</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                // Certificates
+                if (certs.length > 0) {
+                    html += '<h6 class="fw-bold mb-2"><i class="fas fa-award text-warning me-2"></i>Certificates & Awards</h6><div class="row g-2">';
+                    certs.forEach(c => {
+                        html += `<div class="col-md-6"><div class="border rounded-3 p-2 d-flex align-items-center gap-2 bg-light">
+                            <i class="fas fa-certificate text-warning fs-3"></i>
+                            <div>
+                                <div class="fw-semibold">${c.title || 'Certificate'}</div>
+                                <small class="text-muted">${c.academic_year || ''} · ${c.cert_type || 'Award'}</small>
+                                ${c.file_path ? `<br><a href="${c.file_path}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 mt-1"><i class="fas fa-download me-1"></i>Download</a>` : ''}
+                            </div>
+                        </div></div>`;
+                    });
+                    html += '</div>';
+                }
+                body.innerHTML = html;
+            }
+
             fetchStudents();
             loadParents();
+            loadYearFilter();
 
             // CSV Upload trigger
             document.getElementById('upload-students-csv-trigger').addEventListener('click', (e) => {
@@ -482,12 +696,12 @@ function toggleTheme() {
     const current = body.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     body.setAttribute('data-theme', next);
-    localStorage.setItem('elif-theme', next);
+    localStorage.setItem('bedrock-theme', next);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
 (function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
+    const saved = localStorage.getItem('bedrock-theme') || localStorage.getItem('elif-theme') || 'light';
     document.body.setAttribute('data-theme', saved);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
