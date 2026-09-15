@@ -228,7 +228,7 @@ router.get('/', async (req, res) => {
                    c.name AS class_name
             FROM results r
             JOIN students s ON r.student_id = s.id
-            LEFT JOIN classes c ON c.id = r.classid
+            LEFT JOIN classes c ON c.id = s.classid
             LEFT JOIN exam_periods ep ON r.period_id = ep.id
             WHERE r.deleted_at IS NULL
         `;
@@ -245,9 +245,8 @@ router.get('/', async (req, res) => {
             idx++;
         }
         if (classId && classId !== 'all') {
-            sql += ` AND (r.classid = $${idx} OR s.classid = $${idx})`;
+            sql += ` AND s.classid = $${idx++}`;
             params.push(classId);
-            idx++;
         }
         if (approvalStatus && approvalStatus !== 'all') {
             sql += ` AND r.approval_status = $${idx++}`;
