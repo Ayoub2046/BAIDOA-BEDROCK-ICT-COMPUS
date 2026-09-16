@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
     <style>
         .status-pending { background-color: #fff3cd; border-left: 4px solid #ffc107; }
         .status-approved { background-color: #d4edda; border-left: 4px solid #28a745; }
@@ -459,7 +460,12 @@
                     const checked = document.querySelectorAll('.result-checkbox:checked');
                     const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
                     if (ids.length === 0) return;
-                    if (!confirm(`Unlock ${ids.length} result(s) for teachers to re-edit and resubmit?`)) return;
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Unlock Results for Re-edit',
+                        message: `Unlock <strong>${ids.length} result(s)</strong> for teachers to re-edit and resubmit?`,
+                        confirmText: 'Unlock', type: 'warning', icon: 'fas fa-lock-open'
+                    });
+                    if (!ok) return;
                     try {
                         const response = await fetch(`${RESULTS_API}/unlock`, {
                             method: 'PUT',
@@ -467,10 +473,10 @@
                             body: JSON.stringify({ ids, unlock: true })
                         });
                         if (!response.ok) throw new Error('Unlock failed');
-                        alert(`${ids.length} result(s) unlocked for teacher re-edit.`);
+                        await BedrockDialog.alert({ title: 'Unlocked', message: `${ids.length} result(s) unlocked for teacher re-edit.`, type: 'success' });
                         loadResults();
                     } catch (err) {
-                        alert(`Error: ${err.message}`);
+                        await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                     }
                 });
             }
@@ -482,7 +488,14 @@
                 const ids = btn.dataset.ids.split(',').map(Number);
                 const isCurrentlyUnlocked = btn.dataset.unlocked === 'true';
                 const action = isCurrentlyUnlocked ? 'lock' : 'unlock';
-                if (!confirm(`${isCurrentlyUnlocked ? 'Lock' : 'Unlock'} this subject result for teacher re-edit?`)) return;
+                const ok = await BedrockDialog.confirm({
+                    title: isCurrentlyUnlocked ? 'Lock Result' : 'Unlock Result',
+                    message: `${isCurrentlyUnlocked ? '<strong>Lock</strong>' : '<strong>Unlock</strong>'} this subject result for teacher re-edit?`,
+                    confirmText: isCurrentlyUnlocked ? 'Lock' : 'Unlock',
+                    type: isCurrentlyUnlocked ? 'danger' : 'warning',
+                    icon: isCurrentlyUnlocked ? 'fas fa-lock' : 'fas fa-lock-open'
+                });
+                if (!ok) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/unlock`, {
                         method: 'PUT',
@@ -492,7 +505,7 @@
                     if (!response.ok) throw new Error('Update failed');
                     loadResults();
                 } catch (err) {
-                    alert(`Error: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
@@ -577,8 +590,12 @@
 
                 if (pendingIds.length === 0) return;
 
-                if (!confirm(`Approve ${pendingIds.length} result(s)? Students will be able to see these results.`)) return;
-
+                const ok = await BedrockDialog.confirm({
+                    title: 'Approve Results',
+                    message: `Approve <strong>${pendingIds.length} result(s)</strong>? Students will be able to see these results.`,
+                    confirmText: 'Approve', type: 'success', icon: 'fas fa-check-circle'
+                });
+                if (!ok) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/approve`, {
                         method: 'PUT',
@@ -586,10 +603,10 @@
                         body: JSON.stringify({ ids: pendingIds, status: 'approved' })
                     });
                     if (!response.ok) throw new Error('Approval failed');
-                    alert(`${pendingIds.length} result(s) approved successfully!`);
+                    await BedrockDialog.alert({ title: 'Approved!', message: `${pendingIds.length} result(s) approved successfully!`, type: 'success' });
                     loadResults();
                 } catch (err) {
-                    alert(`Error: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
@@ -607,7 +624,12 @@
                 if (ids.length === 0) return;
                 const dtInput = document.getElementById('hold-release-datetime');
                 const releaseAt = dtInput.value ? new Date(dtInput.value).toISOString() : null;
-                if (!confirm(`Put ${ids.length} result(s) on hold${releaseAt ? ' until ' + new Date(releaseAt).toLocaleString() : ''}?`)) return;
+                const ok = await BedrockDialog.confirm({
+                    title: 'Hold Results',
+                    message: `Put <strong>${ids.length} result(s)</strong> on hold${releaseAt ? ' until <strong>' + new Date(releaseAt).toLocaleString() + '</strong>' : ''}?`,
+                    confirmText: 'Hold Results', type: 'warning', icon: 'fas fa-pause-circle'
+                });
+                if (!ok) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/hold`, {
                         method: 'PUT',
@@ -615,12 +637,12 @@
                         body: JSON.stringify({ ids, releaseAt })
                     });
                     if (!response.ok) throw new Error('Hold failed');
-                    alert(`${ids.length} result(s) put on hold.`);
+                    await BedrockDialog.alert({ title: 'On Hold', message: `${ids.length} result(s) put on hold.`, type: 'info' });
                     dtInput.value = '';
                     holdModal.hide();
                     loadResults();
                 } catch (err) {
-                    alert(`Error: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
@@ -629,7 +651,12 @@
                 const checked = document.querySelectorAll('.result-checkbox:checked');
                 const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
                 if (ids.length === 0) return;
-                if (!confirm(`Release ${ids.length} result(s) immediately? Students will be able to see them.`)) return;
+                const ok = await BedrockDialog.confirm({
+                    title: 'Release Results',
+                    message: `Release <strong>${ids.length} result(s)</strong> immediately? Students will be able to see them.`,
+                    confirmText: 'Release Now', type: 'success', icon: 'fas fa-check-circle'
+                });
+                if (!ok) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/release`, {
                         method: 'PUT',
@@ -637,10 +664,10 @@
                         body: JSON.stringify({ ids })
                     });
                     if (!response.ok) throw new Error('Release failed');
-                    alert(`${ids.length} result(s) released.`);
+                    await BedrockDialog.alert({ title: 'Released!', message: `${ids.length} result(s) released successfully.`, type: 'success' });
                     loadResults();
                 } catch (err) {
-                    alert(`Error: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
@@ -651,8 +678,12 @@
 
                 if (ids.length === 0) return;
 
-                if (!confirm(`Reject ${ids.length} result(s)? These results will not be visible to students.`)) return;
-
+                const ok = await BedrockDialog.confirm({
+                    title: 'Reject Results',
+                    message: `Reject <strong>${ids.length} result(s)</strong>? These results will <strong>not</strong> be visible to students.`,
+                    confirmText: 'Reject', type: 'danger', icon: 'fas fa-times-circle'
+                });
+                if (!ok) return;
                 try {
                     const response = await fetch(`${RESULTS_API}/approve`, {
                         method: 'PUT',
@@ -660,10 +691,10 @@
                         body: JSON.stringify({ ids, status: 'rejected' })
                     });
                     if (!response.ok) throw new Error('Rejection failed');
-                    alert(`${ids.length} result(s) rejected.`);
+                    await BedrockDialog.alert({ title: 'Rejected', message: `${ids.length} result(s) rejected.`, type: 'info' });
                     loadResults();
                 } catch (err) {
-                    alert(`Error: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 

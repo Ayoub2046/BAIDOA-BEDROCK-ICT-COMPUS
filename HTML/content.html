@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
 </head>
 <body>
 <div class="dashboard-wrapper">
@@ -605,7 +606,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const delBtn = e.target.closest('.btn-delete-news');
         if (!delBtn) return;
         const id = delBtn.dataset.id;
-        if (!confirm('Delete this article?')) return;
+        const ok = await BedrockDialog.confirm({
+            title: 'Delete Article',
+            message: 'Are you sure you want to delete this news article?',
+            confirmText: 'Delete Article',
+            cancelText: 'Cancel',
+            type: 'danger',
+            icon: 'fa-trash-alt'
+        });
+        if (!ok) return;
         try {
             const res = await fetch(NEWS_API + '/' + id, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
@@ -690,7 +699,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const delBtn = e.target.closest('.btn-delete-testimonial');
         if (!delBtn) return;
         const id = delBtn.dataset.id;
-        if (!confirm('Delete this testimonial?')) return;
+        const ok = await BedrockDialog.confirm({
+            title: 'Delete Testimonial',
+            message: 'Are you sure you want to delete this testimonial?',
+            confirmText: 'Delete Testimonial',
+            cancelText: 'Cancel',
+            type: 'danger',
+            icon: 'fa-trash-alt'
+        });
+        if (!ok) return;
         try {
             const res = await fetch(TESTIMONIALS_API + '/' + id, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
@@ -858,7 +875,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const delBtn = e.target.closest('.btn-delete-ann');
         if (delBtn) {
             const id = delBtn.dataset.id;
-            if (!confirm('Are you sure you want to delete this announcement?')) return;
+            const ok = await BedrockDialog.confirm({
+                title: 'Delete Announcement',
+                message: 'Are you sure you want to delete this announcement?',
+                confirmText: 'Delete Announcement',
+                cancelText: 'Cancel',
+                type: 'danger',
+                icon: 'fa-trash-alt'
+            });
+            if (!ok) return;
             try {
                 const res = await fetch(ANNOUNCEMENTS_API + '/' + id, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Delete failed');

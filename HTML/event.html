@@ -17,6 +17,7 @@
     <!-- FullCalendar CSS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
 </head>
 
 <body>
@@ -216,15 +217,26 @@
             // Handle delete button click
             deleteBtn.addEventListener('click', async function () {
                 const id = eventForm.elements.id.value;
-                if (id && confirm('Are you sure you want to delete this event?')) {
-                    try {
-                        const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                        if (!response.ok) throw new Error('Deletion failed');
+                const title = eventForm.elements.title ? eventForm.elements.title.value : 'this event';
+                if (id) {
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Delete Event',
+                        message: `Are you sure you want to delete event <strong>"${title}"</strong>?`,
+                        confirmText: 'Delete Event',
+                        cancelText: 'Cancel',
+                        type: 'danger',
+                        icon: 'fa-trash-alt'
+                    });
+                    if (ok) {
+                        try {
+                            const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                            if (!response.ok) throw new Error('Deletion failed');
 
-                        calendar.refetchEvents();
-                        eventModal.hide();
-                    } catch (error) {
-                        alert(`Error: ${error.message}`);
+                            calendar.refetchEvents();
+                            eventModal.hide();
+                        } catch (error) {
+                            BedrockDialog.alert({ title: 'Error', message: error.message, type: 'danger' });
+                        }
                     }
                 }
             });

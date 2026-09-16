@@ -5,6 +5,14 @@
   var INSTALLED_KEY = 'bedrock-pwa-installed';
   var DISMISSED_KEY = 'bedrock-pwa-dismissed';
 
+  // Ensure BedrockDialog is globally loaded for all pages
+  if (!window.BedrockDialog && !document.querySelector('script[src*="bedrock-dialog"]')) {
+    var bdScript = document.createElement('script');
+    bdScript.src = '/JS/bedrock-dialog.js';
+    bdScript.async = false;
+    document.head.appendChild(bdScript);
+  }
+
   // Check if running in standalone mode (already installed as PWA)
   var isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true ||

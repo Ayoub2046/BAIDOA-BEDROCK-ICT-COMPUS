@@ -1,3 +1,11 @@
+// Global Bedrock Dialog Auto-loader
+if (!window.BedrockDialog && !document.querySelector('script[src*="bedrock-dialog"]')) {
+    var bdScript = document.createElement('script');
+    bdScript.src = '/JS/bedrock-dialog.js';
+    bdScript.async = false;
+    document.head.appendChild(bdScript);
+}
+
 // Global Sidebar Toggle & Navigation Logic for all Admin Pages
 function initAdminSidebar() {
     const sidebar = document.querySelector('.sidebar');

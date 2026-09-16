@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
     <style>
         .clearance-cleared { background-color: #d4edda; border-left: 4px solid #28a745; }
         .clearance-revoked { background-color: #f8d7da; border-left: 4px solid #dc3545; }
@@ -343,7 +344,14 @@
                 const id = parseInt(button.dataset.id);
 
                 if (button.classList.contains('btn-revoke')) {
-                    if (confirm('Are you sure you want to revoke this clearance?')) {
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Revoke Clearance',
+                        message: 'Are you sure you want to <strong>revoke</strong> this clearance card?',
+                        confirmText: 'Revoke Clearance',
+                        type: 'warning',
+                        icon: 'fas fa-ban'
+                    });
+                    if (ok) {
                         try {
                             const res = await fetch(`${CLEARANCE_API}/${id}`, {
                                 method: 'PUT',
@@ -355,7 +363,14 @@
                         } catch (err) { showToast(`Error: ${err.message}`, 'error'); }
                     }
                 } else if (button.classList.contains('btn-reinstate')) {
-                    if (confirm('Reinstate this clearance card?')) {
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Reinstate Clearance',
+                        message: 'Are you sure you want to <strong>reinstate</strong> this clearance card?',
+                        confirmText: 'Reinstate',
+                        type: 'success',
+                        icon: 'fas fa-check-circle'
+                    });
+                    if (ok) {
                         try {
                             const res = await fetch(`${CLEARANCE_API}/${id}`, {
                                 method: 'PUT',
@@ -367,7 +382,14 @@
                         } catch (err) { showToast(`Error: ${err.message}`, 'error'); }
                     }
                 } else if (button.classList.contains('btn-delete')) {
-                    if (confirm('Delete this clearance card permanently?')) {
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Delete Clearance Card',
+                        message: 'Are you sure you want to <strong>permanently delete</strong> this clearance card?',
+                        confirmText: 'Delete Permanently',
+                        type: 'danger',
+                        icon: 'fas fa-trash-alt'
+                    });
+                    if (ok) {
                         try {
                             const res = await fetch(`${CLEARANCE_API}/${id}`, { method: 'DELETE' });
                             if (!res.ok) throw new Error('Delete failed');

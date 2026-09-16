@@ -14,6 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
     <style>
         .radio-group .btn-outline-success { border-color: #198754; color: #198754; }
         .radio-group .btn-outline-success:hover, .radio-group .btn-check:checked+.btn-outline-success { background-color: #198754; border-color: #198754; color: #fff; }
@@ -220,7 +221,15 @@
                 unlockBtn.addEventListener('click', async () => {
                     const date = datePicker.value;
                     if (!date) return;
-                    if (!confirm(`Unlock attendance for teachers on ${date}? Teachers will be able to re-edit and save attendance for this date.`)) return;
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Unlock Attendance',
+                        message: `Unlock attendance for teachers on <strong>${date}</strong>?<br><br><span style="font-size:0.88em;opacity:0.85;">Teachers will be permitted to re-edit and submit attendance records for this date.</span>`,
+                        confirmText: 'Unlock Attendance',
+                        cancelText: 'Cancel',
+                        type: 'warning',
+                        icon: 'fa-lock-open'
+                    });
+                    if (!ok) return;
                     try {
                         const res = await fetch(`${API_URL}/lock-status`, {
                             method: 'PUT',
@@ -229,9 +238,13 @@
                         });
                         const data = await res.json();
                         if (!res.ok) throw new Error(data.error || 'Unlock failed');
-                        alert(`Attendance for ${date} has been unlocked for teachers!`);
+                        BedrockDialog.alert({
+                            title: 'Attendance Unlocked',
+                            message: `Attendance for <strong>${date}</strong> has been unlocked for teachers.`,
+                            type: 'success'
+                        });
                     } catch (err) {
-                        alert(`Error: ${err.message}`);
+                        BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                     }
                 });
             }

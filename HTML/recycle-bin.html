@@ -14,6 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
 </head>
 <body>
 <div class="dashboard-wrapper">
@@ -246,7 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.deleteItem = async (table, id) => {
-        if (!confirm(`Permanently delete this item from ${TABLE_DISPLAY[table] || table}? This cannot be undone.`)) return;
+        const ok = await BedrockDialog.confirm({
+            title: 'Permanent Deletion',
+            message: `Permanently delete this item from <strong>${TABLE_DISPLAY[table] || table}</strong>?<br><small style="color:#ef4444;">This action cannot be undone.</small>`,
+            confirmText: 'Delete Forever',
+            type: 'danger',
+            icon: 'fas fa-trash-alt'
+        });
+        if (!ok) return;
         try {
             const res = await fetch(`/api/trash/item/${table}/${id}`, { method: 'DELETE' });
             const data = await res.json();
@@ -283,7 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.emptyTable = async (table) => {
-        if (!confirm(`Permanently delete ALL items in ${TABLE_DISPLAY[table] || table}? This cannot be undone.`)) return;
+        const ok = await BedrockDialog.confirm({
+            title: 'Empty Table Recycle Bin',
+            message: `Permanently delete <strong>ALL</strong> items in <strong>${TABLE_DISPLAY[table] || table}</strong>?<br><small style="color:#ef4444;">This action cannot be undone.</small>`,
+            confirmText: 'Delete All',
+            type: 'danger',
+            icon: 'fas fa-trash-alt'
+        });
+        if (!ok) return;
         try {
             const res = await fetch(`/api/trash/empty/${table}`, { method: 'DELETE' });
             const data = await res.json();
@@ -296,7 +311,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.emptyAll = async () => {
-        if (!confirm('Permanently delete ALL items in the recycle bin? This cannot be undone.')) return;
+        const ok = await BedrockDialog.confirm({
+            title: 'Empty ENTIRE Recycle Bin',
+            message: `Permanently delete <strong>ALL</strong> items in the entire recycle bin?<br><small style="color:#ef4444;">All deleted records will be destroyed permanently.</small>`,
+            confirmText: 'Empty Entire Bin',
+            type: 'danger',
+            icon: 'fas fa-exclamation-triangle'
+        });
+        if (!ok) return;
         try {
             const res = await fetch('/api/trash/empty', { method: 'DELETE' });
             const data = await res.json();

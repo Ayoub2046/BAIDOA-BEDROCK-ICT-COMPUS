@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const teacherTableBody = document.getElementById('teacher-table-body');
         if (teacherTableBody) {
-            teacherTableBody.addEventListener('click', e => {
+            teacherTableBody.addEventListener('click', async e => {
                 const button = e.target.closest('button');
                 if (!button) return;
                 const id = parseInt(button.dataset.id);
@@ -166,7 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     form.elements.phone.value = teacher.phone;
                     teacherModal.show();
                 } else if (button.classList.contains('btn-delete')) {
-                    if (confirm('Are you sure you want to delete this teacher?')) {
+                    const teacher = teachers.find(t => t.id === id);
+                    const name = teacher ? teacher.name : 'this teacher';
+                    const ok = window.BedrockDialog ? await BedrockDialog.confirm({
+                        title: 'Delete Teacher',
+                        message: `Are you sure you want to delete teacher <strong>"${name}"</strong>?`,
+                        confirmText: 'Delete Teacher',
+                        cancelText: 'Cancel',
+                        type: 'danger',
+                        icon: 'fa-user-times'
+                    }) : confirm(`Are you sure you want to delete ${name}?`);
+                    if (ok) {
                         teachers = teachers.filter(t => t.id !== id);
                         renderTeacherTable();
                     }

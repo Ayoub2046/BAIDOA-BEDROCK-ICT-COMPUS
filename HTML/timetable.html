@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
     <style>
         .timetable-grid {
             display: grid;
@@ -466,7 +467,7 @@
                 timetableModal.show();
             });
 
-            timetableContainer.addEventListener('click', e => {
+            timetableContainer.addEventListener('click', async e => {
                 const editBtn = e.target.closest('.btn-edit-cell');
                 const deleteBtn = e.target.closest('.btn-delete-cell');
 
@@ -491,14 +492,20 @@
                     const id = parseInt(deleteBtn.dataset.id);
                     const entry = currentTimetable.find(t => t.id === id);
                     if (!entry) return;
-
-                    if (confirm(`Are you sure you want to delete "${entry.subject}" on ${entry.day_of_week}?`)) {
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Delete Timetable Entry',
+                        message: `Delete <strong>"${entry.subject}"</strong> on <strong>${entry.day_of_week}</strong>?`,
+                        confirmText: 'Delete Entry',
+                        type: 'danger',
+                        icon: 'fas fa-calendar-times'
+                    });
+                    if (ok) {
                         fetch(`${TIMETABLE_API_URL}/${id}`, { method: 'DELETE' })
                             .then(res => {
                                 if (!res.ok) throw new Error('Deletion failed');
                                 loadTimetable(selectedClassId);
                             })
-                            .catch(err => alert(`Error: ${err.message}`));
+                            .catch(err => BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' }));
                     }
                 }
             });

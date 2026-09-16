@@ -16,6 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/bedrock-dialog.js"></script>
     <style>
         :root {
             --primary: #0d4f8c;
@@ -960,9 +961,17 @@
 
                 // Attach restore handlers
                 tbody.querySelectorAll('.btn-restore-snapshot').forEach(btn => {
-                    btn.addEventListener('click', () => {
+                    btn.addEventListener('click', async () => {
                         const filename = btn.dataset.filename;
-                        if (confirm(`Restore system state from snapshot "${filename}"?\n\nThis will repopulate tables with records from this backup.`)) {
+                        const ok = await BedrockDialog.confirm({
+                            title: 'Restore System Snapshot',
+                            message: `Restore system state from snapshot <strong>"${filename}"</strong>?<br><br><span style="font-size:0.88em;opacity:0.85;">This will repopulate database tables with records from this backup snapshot.</span>`,
+                            confirmText: 'Restore Snapshot',
+                            cancelText: 'Cancel',
+                            type: 'warning',
+                            icon: 'fa-history'
+                        });
+                        if (ok) {
                             executeRestore({ filename });
                         }
                     });
@@ -1259,13 +1268,29 @@
             }
         }
         async function activateBatch(id) {
-            if (!confirm('Activate this batch? New students will use its prefix.')) return;
+            const ok = await BedrockDialog.confirm({
+                title: 'Activate Admission Batch',
+                message: 'Activate this batch? Newly enrolled students will automatically receive student IDs using this prefix.',
+                confirmText: 'Activate Batch',
+                cancelText: 'Cancel',
+                type: 'success',
+                icon: 'fa-check-circle'
+            });
+            if (!ok) return;
             await fetch(`/api/admission-batches/${id}/activate`, { method: 'PUT' });
             loadBatches();
             showMsg('batch-msg', 'Batch activated!', 'success');
         }
         async function deleteBatch(id) {
-            if (!confirm('Delete this batch?')) return;
+            const ok = await BedrockDialog.confirm({
+                title: 'Delete Admission Batch',
+                message: 'Are you sure you want to delete this admission batch? This action cannot be undone.',
+                confirmText: 'Delete Batch',
+                cancelText: 'Cancel',
+                type: 'danger',
+                icon: 'fa-trash-alt'
+            });
+            if (!ok) return;
             await fetch(`/api/admission-batches/${id}`, { method: 'DELETE' });
             loadBatches();
         }
@@ -1335,7 +1360,15 @@
             } catch(e) {}
         }
         async function deletePeriod(id) {
-            if (!confirm('Delete this exam period? This will NOT delete results.')) return;
+            const ok = await BedrockDialog.confirm({
+                title: 'Delete Exam Period',
+                message: 'Are you sure you want to delete this exam period? <em>(Note: Existing recorded exam results will NOT be deleted).</em>',
+                confirmText: 'Delete Period',
+                cancelText: 'Cancel',
+                type: 'danger',
+                icon: 'fa-trash-alt'
+            });
+            if (!ok) return;
             await fetch(`/api/exam-periods/${id}`, { method: 'DELETE' });
             loadPeriods();
         }
@@ -1397,7 +1430,15 @@
             }
         }
         async function deleteCert(id) {
-            if (!confirm('Delete this certificate?')) return;
+            const ok = await BedrockDialog.confirm({
+                title: 'Delete Certificate',
+                message: 'Are you sure you want to delete this student certificate record?',
+                confirmText: 'Delete Certificate',
+                cancelText: 'Cancel',
+                type: 'danger',
+                icon: 'fa-trash-alt'
+            });
+            if (!ok) return;
             await fetch(`/api/certificates/${id}`, { method: 'DELETE' });
             loadCertificates();
         }
