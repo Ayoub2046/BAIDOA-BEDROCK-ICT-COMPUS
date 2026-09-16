@@ -152,6 +152,7 @@ app.use('/api/backup', require('./routes/backup.js'));
 app.use('/api/admission-batches', require('./routes/admission-batches.js'));
 app.use('/api/exam-periods', require('./routes/exam-periods.js'));
 app.use('/api/certificates', require('./routes/certificates.js'));
+app.use('/api/exam-attendance', require('./routes/exam-attendance.js'));
 
 // --- Auto-create class_students junction table if it doesn't exist ---
 // --- Auto-create activation columns if they don't exist ---
@@ -274,6 +275,39 @@ const { query } = require('./database');
         } catch (alterErr) {
             if (!alterErr.message.includes('already exists')) {
                 console.error('Error updating results table:', alterErr.message);
+            }
+        }
+
+        // Ensure exam_attendance table and index exist
+        try {
+            await query(`
+                CREATE TABLE IF NOT EXISTS exam_attendance (
+                    id SERIAL PRIMARY KEY,
+                    student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                    academic_year VARCHAR(50) NOT NULL DEFAULT '2026',
+                    class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+                    period_id INTEGER REFERENCES exam_periods(id) ON DELETE SET NULL,
+                    subject VARCHAR(150) NOT NULL,
+                    status VARCHAR(50) NOT NULL DEFAULT 'attended',
+                    notes TEXT,
+                    recorded_by VARCHAR(100),
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW()
+                )
+            `);
+            await query(`
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_exam_attendance_record
+                ON exam_attendance (student_id, COALESCE(period_id, 0), LOWER(subject), COALESCE(class_id, 0))
+            `);
+            await query(`
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_results_student_subject_part_period
+                ON results (student_id, LOWER(subject), exam_type, COALESCE(period_id, 0))
+                WHERE deleted_at IS NULL
+            `);
+            console.log('exam_attendance table ready.');
+        } catch (attErr) {
+            if (!attErr.message.includes('already exists')) {
+                console.error('Error creating exam_attendance table:', attErr.message);
             }
         }
 

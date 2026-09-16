@@ -219,17 +219,23 @@ router.get('/', async (req, res) => {
         const classId = req.query.classId || req.query.class_id ? parseInt(req.query.classId || req.query.class_id) : null;
         const approvalStatus = req.query.status || req.query.approval_status || null;
         const studentId = req.query.studentId || req.query.student_id ? parseInt(req.query.studentId || req.query.student_id) : null;
+        const subject = req.query.subject ? req.query.subject.trim() : null;
+        const search = req.query.search ? req.query.search.trim().toLowerCase() : null;
+        const attendanceStatus = req.query.attendance_status || req.query.attendanceStatus || null;
+        const teacherId = req.query.teacherId ? parseInt(req.query.teacherId) : null;
 
         let sql = `
             SELECT r.id, r.student_id, r.subject, r.score, r.max_score, r.exam_type, r.approval_status, 
                    r.submitted_by, r.submitted_at, r.edit_allowed, r.academic_year, r.is_locked,
                    r.period_id, ep.name AS period_name, ep.year AS period_year, ep.month AS period_month,
                    s.name AS "studentName", s.student_id_code, s.grade,
-                   c.name AS class_name
+                   c.name AS class_name, c.id AS class_id,
+                   COALESCE(ea.status, 'attended') AS attendance_status
             FROM results r
             JOIN students s ON r.student_id = s.id
             LEFT JOIN classes c ON c.id = s.classid
             LEFT JOIN exam_periods ep ON r.period_id = ep.id
+            LEFT JOIN exam_attendance ea ON (ea.student_id = r.student_id AND ea.period_id = r.period_id AND LOWER(ea.subject) = LOWER(r.subject))
             WHERE r.deleted_at IS NULL
         `;
         const params = [];
@@ -256,10 +262,138 @@ router.get('/', async (req, res) => {
             sql += ` AND r.student_id = $${idx++}`;
             params.push(studentId);
         }
+        if (subject && subject !== 'all') {
+            sql += ` AND LOWER(r.subject) = LOWER($${idx++})`;
+            params.push(subject);
+        }
+        if (attendanceStatus && attendanceStatus !== 'all') {
+            sql += ` AND ea.status = $${idx++}`;
+            params.push(attendanceStatus);
+        }
+        if (search) {
+            sql += ` AND (LOWER(s.name) LIKE $${idx} OR LOWER(COALESCE(s.student_id_code, '')) LIKE $${idx} OR LOWER(COALESCE(c.name, '')) LIKE $${idx})`;
+            params.push(`%${search}%`);
+            idx++;
+        }
+        if (teacherId && !isNaN(teacherId)) {
+            sql += ` AND (c.teacherid = $${idx} OR s.classid IN (SELECT id FROM classes WHERE teacherid = $${idx}))`;
+            params.push(teacherId);
+            idx++;
+        }
 
         sql += ` ORDER BY r.submitted_at DESC, r.student_id`;
         const { rows } = await query(sql, params);
         res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/results/stats - Return accurate, unique-student statistics
+router.get('/stats', async (req, res) => {
+    try {
+        const classId = req.query.classId || req.query.class_id ? parseInt(req.query.classId || req.query.class_id) : null;
+        const periodId = req.query.periodId || req.query.period_id ? parseInt(req.query.periodId || req.query.period_id) : null;
+        const academicYear = req.query.academic_year || req.query.academicYear || null;
+        const subject = req.query.subject ? req.query.subject.trim() : null;
+        const teacherId = req.query.teacherId ? parseInt(req.query.teacherId) : null;
+
+        // 1. Total unique active students in selected class/school
+        let stdSql = `
+            SELECT COUNT(DISTINCT s.id)::int AS total 
+            FROM students s 
+            LEFT JOIN classes c ON c.id = s.classid 
+            WHERE s.deleted_at IS NULL
+        `;
+        const stdParams = [];
+        let sIdx = 1;
+        if (classId && !isNaN(classId)) {
+            stdSql += ` AND s.classid = $${sIdx++}`;
+            stdParams.push(classId);
+        }
+        if (teacherId && !isNaN(teacherId)) {
+            stdSql += ` AND (c.teacherid = $${sIdx} OR s.classid IN (SELECT id FROM classes WHERE teacherid = $${sIdx}))`;
+            stdParams.push(teacherId);
+            sIdx++;
+        }
+        const { rows: stdRows } = await query(stdSql, stdParams);
+        const totalStudents = stdRows[0] ? stdRows[0].total : 0;
+
+        // 2. Query results rows matching filters
+        let resSql = `
+            SELECT r.student_id, r.approval_status
+            FROM results r
+            JOIN students s ON s.id = r.student_id
+            LEFT JOIN classes c ON c.id = s.classid
+            LEFT JOIN exam_periods ep ON ep.id = r.period_id
+            LEFT JOIN exam_attendance ea ON (ea.student_id = r.student_id AND ea.period_id = r.period_id AND LOWER(ea.subject) = LOWER(r.subject))
+            WHERE r.deleted_at IS NULL
+              AND (ea.status IS NULL OR ea.status = 'attended')
+        `;
+        const resParams = [];
+        let rIdx = 1;
+        if (classId && !isNaN(classId)) {
+            resSql += ` AND s.classid = $${rIdx++}`;
+            resParams.push(classId);
+        }
+        if (periodId && !isNaN(periodId)) {
+            resSql += ` AND r.period_id = $${rIdx++}`;
+            resParams.push(periodId);
+        }
+        if (academicYear && academicYear !== 'all') {
+            resSql += ` AND (r.academic_year = $${rIdx} OR ep.academic_year = $${rIdx} OR ep.year = CAST($${rIdx} AS INT))`;
+            resParams.push(academicYear);
+            rIdx++;
+        }
+        if (subject && subject !== 'all') {
+            resSql += ` AND LOWER(r.subject) = LOWER($${rIdx++})`;
+            resParams.push(subject);
+        }
+        if (teacherId && !isNaN(teacherId)) {
+            resSql += ` AND (c.teacherid = $${rIdx} OR s.classid IN (SELECT id FROM classes WHERE teacherid = $${rIdx}))`;
+            resParams.push(teacherId);
+            rIdx++;
+        }
+
+        const { rows: resRows } = await query(resSql, resParams);
+
+        // Group unique students
+        const studentStatusMap = {};
+        resRows.forEach(row => {
+            const cur = studentStatusMap[row.student_id];
+            if (!cur) {
+                studentStatusMap[row.student_id] = row.approval_status;
+            } else if (row.approval_status === 'pending') {
+                studentStatusMap[row.student_id] = 'pending';
+            } else if (row.approval_status === 'on_hold' && cur !== 'pending') {
+                studentStatusMap[row.student_id] = 'on_hold';
+            }
+        });
+
+        const attendedStudents = Object.keys(studentStatusMap).length;
+        let pending = 0;
+        let onHold = 0;
+        let approved = 0;
+        let rejected = 0;
+
+        Object.values(studentStatusMap).forEach(st => {
+            if (st === 'pending') pending++;
+            else if (st === 'on_hold') onHold++;
+            else if (st === 'approved') approved++;
+            else if (st === 'rejected') rejected++;
+        });
+
+        const didNotAttend = Math.max(0, totalStudents - attendedStudents);
+
+        res.json({
+            totalStudents,
+            attended: attendedStudents,
+            pending,
+            onHold,
+            approved,
+            rejected,
+            didNotAttend
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -381,9 +515,11 @@ router.post('/', async (req, res) => {
 // POST submit multiple results in one transaction (fast, single connection)
 // RULE: Blocks any exam+subject already submitted and locked (not edit_allowed)
 router.post('/batch', async (req, res) => {
-    const { records, teacherId, teacherName, periodId } = req.body;
-    if (!records || !Array.isArray(records) || records.length === 0) {
-        return res.status(400).json({ error: 'records array is required.' });
+    const { records, attendanceRecords, teacherId, teacherName, periodId } = req.body;
+    const hasRecords = Array.isArray(records) && records.length > 0;
+    const hasAtt = Array.isArray(attendanceRecords) && attendanceRecords.length > 0;
+    if (!hasRecords && !hasAtt) {
+        return res.status(400).json({ error: 'records or attendanceRecords array is required.' });
     }
     const tName = teacherName || `Teacher-${teacherId}`;
     let client = null;
@@ -397,7 +533,7 @@ router.post('/batch', async (req, res) => {
         }
 
         // Pre-check for locked exams or already submitted locked results before opening transaction
-        for (const rec of records) {
+        for (const rec of (records || [])) {
             const { studentId, subject, examType } = rec;
             if (!studentId || !subject || !examType) continue;
             const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
@@ -436,7 +572,7 @@ router.post('/batch', async (req, res) => {
 
         client = await pool.connect();
         await client.query('BEGIN');
-        for (const rec of records) {
+        for (const rec of (records || [])) {
             const { studentId, subject, examType, score, remarks } = rec;
             if (!studentId || !subject || !examType) {
                 throw new Error('studentId, subject and examType are required for every record.');
@@ -460,9 +596,46 @@ router.post('/batch', async (req, res) => {
                  VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8)`,
                 [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId]
             );
+
+            // Synchronize exam_attendance as 'attended'
+            await client.query(`
+                INSERT INTO exam_attendance (student_id, academic_year, class_id, period_id, subject, status, notes, recorded_by, updated_at)
+                SELECT $1, '2026', s.classid, $2, $3, 'attended', 'Result submitted', $4, NOW()
+                FROM students s WHERE s.id = $1
+                ON CONFLICT (student_id, COALESCE(period_id, 0), LOWER(subject), COALESCE(class_id, 0))
+                DO UPDATE SET status = 'attended', updated_at = NOW()
+            `, [studentId, recPeriodId, subject, tName]);
         }
+
+        // Process non-attending student records if provided
+        const attendanceRecords = req.body.attendanceRecords;
+        if (Array.isArray(attendanceRecords) && attendanceRecords.length > 0) {
+            for (const att of attendanceRecords) {
+                const { studentId, subject, status, notes, periodId: attPid } = att;
+                if (!studentId || !subject) continue;
+                const pid = attPid ? parseInt(attPid) : defaultPeriodId;
+                const attStatus = status || 'did_not_attend';
+                await client.query(`
+                    INSERT INTO exam_attendance (student_id, academic_year, class_id, period_id, subject, status, notes, recorded_by, updated_at)
+                    SELECT $1, '2026', s.classid, $2, $3, $4, $5, $6, NOW()
+                    FROM students s WHERE s.id = $1
+                    ON CONFLICT (student_id, COALESCE(period_id, 0), LOWER(subject), COALESCE(class_id, 0))
+                    DO UPDATE SET status = EXCLUDED.status, notes = EXCLUDED.notes, updated_at = NOW()
+                `, [studentId, pid, subject, attStatus, notes || 'Recorded during roster submission', tName]);
+
+                if (attStatus !== 'attended') {
+                    await client.query(`
+                        UPDATE results SET deleted_at = NOW()
+                        WHERE student_id = $1 AND LOWER(subject) = LOWER($2) AND ($3::INTEGER IS NULL OR period_id = $3) AND deleted_at IS NULL
+                    `, [studentId, subject, pid]);
+                }
+            }
+        }
+
         await client.query('COMMIT');
-        res.status(201).json({ message: `${records.length} result(s) submitted for approval.` });
+        const countResults = (records || []).length;
+        const countAtt = (attendanceRecords || []).length;
+        res.status(201).json({ message: `${countResults} result(s) and ${countAtt} attendance record(s) submitted for approval.` });
     } catch (err) {
         if (client) { try { await client.query('ROLLBACK'); } catch (e) {} }
         res.status(400).json({ error: err.message });

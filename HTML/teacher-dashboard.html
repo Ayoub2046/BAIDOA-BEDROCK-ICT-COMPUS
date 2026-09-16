@@ -484,9 +484,13 @@
                                 <div class="d-flex justify-content-around flex-wrap gap-2 text-center">
                                     <div><div class="stat-num" id="live-total-students">0</div><div class="stat-lbl">Enrolled</div></div>
                                     <div style="width:1px;background:#c3d1e6;"></div>
+                                    <div><div class="stat-num text-success" id="live-attended-count">0</div><div class="stat-lbl">Attended</div></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
+                                    <div><div class="stat-num text-danger" id="live-absent-count">0</div><div class="stat-lbl">Did Not Attend</div></div>
+                                    <div style="width:1px;background:#c3d1e6;"></div>
                                     <div><div class="stat-num text-primary" id="live-entered-count">0</div><div class="stat-lbl">Graded</div></div>
                                     <div style="width:1px;background:#c3d1e6;"></div>
-                                    <div><div class="stat-num" id="live-class-avg" style="color:#0d2b4e;">0%</div><div class="stat-lbl">Avg</div></div>
+                                    <div><div class="stat-num" id="live-class-avg" style="color:#0d2b4e;">0%</div><div class="stat-lbl">Class Avg</div></div>
                                     <div style="width:1px;background:#c3d1e6;"></div>
                                     <div><div class="stat-num" id="live-pass-rate" style="color:#7c3aed;">0%</div><div class="stat-lbl">Pass Rate</div></div>
                                     <div style="width:1px;background:#c3d1e6;"></div>
@@ -530,6 +534,7 @@
                                         <thead id="results-table-head">
                                             <tr id="results-table-header-row">
                                                 <th style="min-width:130px;">Student</th>
+                                                <th style="min-width:130px;text-align:center;" class="th-attendance">Attendance</th>
                                                 <!-- Dynamic exam part columns will be injected here by JS -->
                                                 <th style="text-align:center;">Total<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;" id="results-total-max-label">/100</small></th>
                                                 <th style="text-align:center;">Grade</th>
@@ -1138,9 +1143,10 @@
         // === RESULTS ===
         $('load-results-students-btn').addEventListener('click', loadResultsStudents);
         $('results-class-select').addEventListener('change', () => {
-            if ($('results-class-select').value) {
-                loadExams($('results-class-select').value);
-                // Don't auto-load students — let teacher pick subject first
+            const cid = $('results-class-select').value;
+            $('load-results-students-btn').disabled = !cid;
+            if (cid && typeof loadExams === 'function') {
+                loadExams(cid);
             }
         });
         $('results-subject').addEventListener('input', renderSubmissionStatus);
@@ -1162,18 +1168,23 @@
         function updateLiveResultsStats() {
             const entries = Object.values(currentResultsStudents);
             const total = entries.length;
+            const attendedEntries = entries.filter(e => e.attendance === 'attended');
+            const attendedCount = attendedEntries.length;
+            const absentCount = total - attendedCount;
             const totalMax = examParts.reduce((s, p) => s + p.max, 0);
-            const entered = entries.filter(e => Object.values(e.parts).some(v => v > 0)).length;
-            const sums = entries.map(e => Object.values(e.parts).reduce((a, b) => a + b, 0));
-            const avg = total > 0 ? sums.reduce((a, b) => a + b, 0) / total : 0;
+            const entered = attendedEntries.filter(e => Object.values(e.parts).some(v => v > 0)).length;
+            const sums = attendedEntries.map(e => Object.values(e.parts).reduce((a, b) => a + b, 0));
+            const avg = attendedCount > 0 ? sums.reduce((a, b) => a + b, 0) / attendedCount : 0;
             const avgPct = totalMax > 0 ? Math.round((avg / totalMax) * 100) : 0;
             const passCount = sums.filter(s => totalMax > 0 && (s / totalMax) * 100 >= 50).length;
-            const passRate = total > 0 ? Math.round((passCount / total) * 100) : 0;
-            $('live-total-students').textContent = total;
-            $('live-entered-count').textContent = entered;
-            $('live-class-avg').textContent = avgPct + '%';
-            $('live-pass-rate').textContent = passRate + '%';
-            $('results-exam-th').textContent = totalMax;
+            const passRate = attendedCount > 0 ? Math.round((passCount / attendedCount) * 100) : 0;
+            if ($('live-total-students')) $('live-total-students').textContent = total;
+            if ($('live-attended-count')) $('live-attended-count').textContent = attendedCount;
+            if ($('live-absent-count')) $('live-absent-count').textContent = absentCount;
+            if ($('live-entered-count')) $('live-entered-count').textContent = entered;
+            if ($('live-class-avg')) $('live-class-avg').textContent = avgPct + '%';
+            if ($('live-pass-rate')) $('live-pass-rate').textContent = passRate + '%';
+            if ($('results-exam-th')) $('results-exam-th').textContent = totalMax;
         }
 
         async function loadResultsStudents() {
@@ -1230,9 +1241,15 @@
 
                 // 2. Load previous submissions for this class + subject to inspect lock status & existing marks
                 let existingResults = [];
+                let existingAttendance = [];
                 try {
                     const prevRes = await fetch(`/api/results/class/${classId}/subject/${encodeURIComponent(subject)}`);
                     if (prevRes.ok) existingResults = await prevRes.json();
+                } catch (e) {}
+
+                try {
+                    const attRes = await fetch(`/api/exam-attendance?classId=${classId}&subject=${encodeURIComponent(subject)}`);
+                    if (attRes.ok) existingAttendance = await attRes.json();
                 } catch (e) {}
 
                 const hasSubmissions = existingResults.length > 0;
@@ -1252,10 +1269,10 @@
                 // Dynamically build table headers from examParts
                 const headerRow = $('results-table-header-row');
                 if (headerRow) {
-                    // Remove old dynamic exam columns (keep Student, Total, Grade, Remarks)
+                    // Remove old dynamic exam columns (keep Student, Attendance, Total, Grade, Remarks)
                     headerRow.querySelectorAll('.dynamic-exam-th').forEach(el => el.remove());
-                    // Insert after the first <th> (Student column)
-                    const studentTh = headerRow.querySelector('th:first-child');
+                    // Insert after the Attendance column
+                    const attTh = headerRow.querySelector('.th-attendance') || headerRow.querySelectorAll('th')[1];
                     examParts.slice().reverse().forEach(p => {
                         const locked = p.locked || isLockedBySubmission;
                         const th = document.createElement('th');
@@ -1263,7 +1280,12 @@
                         th.style.textAlign = 'center';
                         th.id = 'th-exam-' + p.key;
                         th.innerHTML = `${p.label}${locked ? ' <i class="fas fa-lock" style="color:#f59e0b;font-size:0.7rem;"></i>' : ''}<br><small style="font-weight:400;opacity:0.8;font-size:0.65rem;">/${p.max}</small>`;
-                        studentTh.insertAdjacentElement('afterend', th);
+                        if (attTh) {
+                            attTh.insertAdjacentElement('afterend', th);
+                        } else {
+                            const studentTh = headerRow.querySelector('th:first-child');
+                            studentTh.insertAdjacentElement('afterend', th);
+                        }
                     });
                 }
                 // Update total max label
@@ -1306,7 +1328,7 @@
                     $('results-alert').innerHTML = `
                         <div class="alert alert-light border d-flex align-items-center gap-2 text-muted mb-3" style="border-radius:10px;font-size:0.82rem;">
                             <i class="fas fa-info-circle text-primary"></i>
-                            <div>Enter ${examParts.map(p => `<strong>${p.label} (/${p.max})</strong>`).join(', ')} for all students. All ${examParts.length} part${examParts.length > 1 ? 's' : ''} will be submitted together at once.</div>
+                            <div>Enter ${examParts.map(p => `<strong>${p.label} (/${p.max})</strong>`).join(', ')} for attending students. Select attendance status for each student. All data will be submitted together.</div>
                         </div>`;
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -1342,13 +1364,24 @@
                         if (r.remarks) sRemark = r.remarks;
                     });
 
+                    // Attendance lookup
+                    const sAttRecord = existingAttendance.find(a => a.student_id === s.id);
+                    let curStatus = 'attended';
+                    if (sAttRecord) {
+                        curStatus = sAttRecord.status;
+                    } else if (hasSubmissions && sRecords.length === 0) {
+                        curStatus = 'did_not_attend';
+                    }
+                    const isAttended = (curStatus === 'attended');
+
                     // Build parts object dynamically from admin-defined exam keys
                     const initialParts = {};
                     examParts.forEach(p => {
-                        initialParts[p.key] = sScores[p.key] !== undefined ? sScores[p.key] : 0;
+                        initialParts[p.key] = (isAttended && sScores[p.key] !== undefined) ? sScores[p.key] : 0;
                     });
                     currentResultsStudents[s.id] = {
                         name: s.name,
+                        attendance: curStatus,
                         parts: initialParts
                     };
 
@@ -1357,22 +1390,43 @@
                     const bbId = 'BB' + String(260000 + s.id).slice(-6);
                     const totalMax = examParts.reduce((sum, p) => sum + p.max, 0);
 
-                    // 3 empty input boxes (Quiz, Assignment, Final) or existing values if already submitted
                     const partInputs = examParts.map(p => {
-                        const existingVal = hasSubmissions && sScores[p.key] !== undefined ? sScores[p.key] : '';
-                        const isInputLocked = allLocked || p.locked;
+                        const existingVal = (isAttended && hasSubmissions && sScores[p.key] !== undefined) ? sScores[p.key] : '';
+                        const isInputLocked = allLocked || p.locked || !isAttended;
                         return `<td style="text-align:center;padding:0.5rem 0.3rem;">
-                            <input type="number" min="0" max="${p.max}" value="${existingVal}" placeholder="0" inputmode="numeric"
+                            <input type="number" min="0" max="${p.max}" value="${existingVal}" placeholder="${isAttended ? '0' : '—'}" inputmode="numeric"
                                 class="exam-part-input si-part" data-sid="${s.id}" data-part="${p.key}" data-max="${p.max}"
-                                ${isInputLocked ? 'disabled title="Submitted & Locked"' : ''}>
+                                ${isInputLocked ? 'disabled' : ''}
+                                style="${!isAttended ? 'background:#f8f9fa;border-color:#dee2e6;color:#999;' : ''}">
                         </td>`;
                     }).join('');
 
-                    const curTotal = hasSubmissions ? Object.values(currentResultsStudents[s.id].parts).reduce((a, b) => a + b, 0) : 0;
-                    const curPct = totalMax > 0 ? Math.round((curTotal / totalMax) * 100) : 0;
-                    const curGrade = getGradeBadge(curPct);
+                    const curTotal = (isAttended && hasSubmissions) ? Object.values(currentResultsStudents[s.id].parts).reduce((a, b) => a + b, 0) : (isAttended ? 0 : '—');
+                    const curPct = isAttended && totalMax > 0 ? Math.round(((typeof curTotal === 'number' ? curTotal : 0) / totalMax) * 100) : 0;
+                    
+                    let curGradeBadge = '';
+                    if (isAttended) {
+                        const g = getGradeBadge(curPct);
+                        curGradeBadge = `<span class="grade-badge ${g.cls}" id="grdbadge-${s.id}">${g.text}</span>`;
+                    } else {
+                        const statusBadges = {
+                            'did_not_attend': 'badge bg-secondary',
+                            'absent': 'badge bg-danger',
+                            'excused': 'badge bg-info text-dark',
+                            'makeup_pending': 'badge bg-warning text-dark'
+                        };
+                        const statusLabels = {
+                            'did_not_attend': 'Did Not Attend',
+                            'absent': 'Absent',
+                            'excused': 'Excused',
+                            'makeup_pending': 'Makeup Pending'
+                        };
+                        const cls = statusBadges[curStatus] || 'badge bg-secondary';
+                        const txt = statusLabels[curStatus] || curStatus;
+                        curGradeBadge = `<span class="${cls}" id="grdbadge-${s.id}">${txt}</span>`;
+                    }
 
-                    return `<tr data-student="${s.id}">
+                    return `<tr data-student="${s.id}" id="row-student-${s.id}">
                         <td style="padding:0.5rem 0.7rem;">
                             <div class="res-student-row">
                                 <div class="res-avatar" style="background:${bg};">${initials}</div>
@@ -1382,11 +1436,20 @@
                                 </div>
                             </div>
                         </td>
+                        <td style="text-align:center;padding:0.5rem 0.3rem;">
+                            <select class="form-select form-select-sm att-status-select" data-sid="${s.id}" style="font-size:0.75rem;padding:3px 6px;border-radius:6px;font-weight:600;min-width:115px;" ${allLocked ? 'disabled' : ''}>
+                                <option value="attended" ${curStatus === 'attended' ? 'selected' : ''}>✅ Attended</option>
+                                <option value="did_not_attend" ${curStatus === 'did_not_attend' ? 'selected' : ''}>❌ Did Not Attend</option>
+                                <option value="absent" ${curStatus === 'absent' ? 'selected' : ''}>⚠️ Absent</option>
+                                <option value="excused" ${curStatus === 'excused' ? 'selected' : ''}>📝 Excused</option>
+                                <option value="makeup_pending" ${curStatus === 'makeup_pending' ? 'selected' : ''}>🔄 Makeup Pending</option>
+                            </select>
+                        </td>
                         ${partInputs}
                         <td style="text-align:center;padding:0.5rem 0.3rem;" class="total-score-cell" id="total-${s.id}">${curTotal}</td>
                         <td style="text-align:center;padding:0.5rem 0.3rem;">
-                            <span class="grade-badge ${curGrade.cls}" id="grdbadge-${s.id}">${curGrade.text}</span>
-                            <div style="font-size:0.6rem;color:#aaa;margin-top:1px;" id="pctlbl-${s.id}">${curPct}%</div>
+                            ${curGradeBadge}
+                            <div style="font-size:0.6rem;color:#aaa;margin-top:1px;" id="pctlbl-${s.id}">${isAttended ? curPct + '%' : '—'}</div>
                         </td>
                         <td style="padding:0.5rem 0.3rem;">
                             <input type="text" class="form-control form-control-sm remark-input" data-sid="${s.id}"
@@ -1396,7 +1459,68 @@
                     </tr>`;
                 }).join('');
 
-                // Wire input events
+                // Wire attendance selector change
+                tbody.querySelectorAll('.att-status-select').forEach(sel => {
+                    sel.addEventListener('change', () => {
+                        const sid = sel.dataset.sid;
+                        const status = sel.value;
+                        if (!currentResultsStudents[sid]) return;
+                        currentResultsStudents[sid].attendance = status;
+                        const row = $(`row-student-${sid}`);
+                        if (!row) return;
+                        const inputs = row.querySelectorAll('.si-part');
+                        const totalEl = $('total-' + sid);
+                        const badge = $('grdbadge-' + sid);
+                        const lbl = $('pctlbl-' + sid);
+
+                        if (status === 'attended') {
+                            inputs.forEach(inp => {
+                                const part = inp.dataset.part;
+                                const pDef = examParts.find(p => p.key === part);
+                                const isPartLocked = allLocked || (pDef && pDef.locked);
+                                inp.disabled = isPartLocked;
+                                inp.placeholder = '0';
+                                inp.style.background = '';
+                                inp.style.borderColor = '#e0e0e0';
+                                inp.value = currentResultsStudents[sid].parts[part] !== undefined ? currentResultsStudents[sid].parts[part] : 0;
+                            });
+                            const totalMax = examParts.reduce((s, p) => s + p.max, 0);
+                            const total = Object.values(currentResultsStudents[sid].parts).reduce((a, b) => a + b, 0);
+                            const pct = totalMax > 0 ? Math.round((total / totalMax) * 100) : 0;
+                            if (totalEl) totalEl.textContent = total;
+                            if (lbl) lbl.textContent = pct + '%';
+                            if (badge) {
+                                const g = getGradeBadge(pct);
+                                badge.className = 'grade-badge ' + g.cls;
+                                badge.textContent = g.text;
+                            }
+                        } else {
+                            inputs.forEach(inp => {
+                                inp.disabled = true;
+                                inp.placeholder = '—';
+                                inp.value = '';
+                                inp.style.background = '#f8f9fa';
+                                inp.style.borderColor = '#dee2e6';
+                            });
+                            if (totalEl) totalEl.textContent = '—';
+                            if (lbl) lbl.textContent = '—';
+                            const statusBadges = {
+                                'did_not_attend': { cls: 'badge bg-secondary', text: 'Did Not Attend' },
+                                'absent': { cls: 'badge bg-danger', text: 'Absent' },
+                                'excused': { cls: 'badge bg-info text-dark', text: 'Excused' },
+                                'makeup_pending': { cls: 'badge bg-warning text-dark', text: 'Makeup Pending' }
+                            };
+                            const sb = statusBadges[status] || { cls: 'badge bg-secondary', text: status };
+                            if (badge) {
+                                badge.className = sb.cls;
+                                badge.textContent = sb.text;
+                            }
+                        }
+                        updateLiveResultsStats();
+                    });
+                });
+
+                // Wire input events for score changes
                 tbody.querySelectorAll('.si-part').forEach(inp => {
                     inp.addEventListener('input', () => {
                         const sid = inp.dataset.sid;
@@ -1407,7 +1531,9 @@
                         if (v > mx) { v = mx; inp.value = mx; }
                         if (v < 0) { v = 0; inp.value = 0; }
                         inp.style.borderColor = inp.value !== '' ? '#d4af37' : '#e0e0e0';
-                        currentResultsStudents[sid].parts[part] = v;
+                        if (currentResultsStudents[sid]) {
+                            currentResultsStudents[sid].parts[part] = v;
+                        }
                         const totalMax = examParts.reduce((s, p) => s + p.max, 0);
                         const total = Object.values(currentResultsStudents[sid].parts).reduce((a, b) => a + b, 0);
                         const pct = totalMax > 0 ? Math.round((total / totalMax) * 100) : 0;
@@ -1467,24 +1593,40 @@
                 $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please enter a subject name.</div>';
                 return;
             }
-            // Build records — one record per student per exam part (Quiz, Assignment, Final)
+            
             const records = [];
+            const attendanceRecords = [];
+
             $$('#results-table-body tr').forEach(row => {
                 const sid = row.dataset.student;
                 if (!sid) return;
                 const remarkInp = row.querySelector('.remark-input');
                 const remarks = remarkInp ? remarkInp.value.trim() : '';
-                examParts.forEach(p => {
-                    if (p.locked) return; // skip locked parts
-                    const inp = row.querySelector(`.si-part[data-part="${p.key}"]`);
-                    const score = inp && inp.value !== '' ? (parseFloat(inp.value) || 0) : 0;
-                    records.push({ studentId: parseInt(sid), subject, examType: p.key, score, remarks, date });
-                });
+                const attSelect = row.querySelector('.att-status-select');
+                const attStatus = attSelect ? attSelect.value : 'attended';
+
+                if (attStatus === 'attended') {
+                    examParts.forEach(p => {
+                        if (p.locked) return; // skip locked parts
+                        const inp = row.querySelector(`.si-part[data-part="${p.key}"]`);
+                        const score = inp && inp.value !== '' ? (parseFloat(inp.value) || 0) : 0;
+                        records.push({ studentId: parseInt(sid), subject, examType: p.key, score, remarks, date });
+                    });
+                } else {
+                    attendanceRecords.push({
+                        studentId: parseInt(sid),
+                        subject,
+                        status: attStatus,
+                        notes: remarks || `Marked ${attStatus}`
+                    });
+                }
             });
-            if (records.length === 0) {
-                $('results-alert').innerHTML = '<div class="alert alert-warning">No unlocked parts to submit.</div>';
+
+            if (records.length === 0 && attendanceRecords.length === 0) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning">No records to submit.</div>';
                 return;
             }
+
             const btn = $('submit-results-btn');
             const original = btn.innerHTML;
             btn.disabled = true;
@@ -1493,7 +1635,12 @@
                 const r = await fetch('/api/results/batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ records, teacherId: activeUser.id, teacherName: activeUser.name })
+                    body: JSON.stringify({
+                        records,
+                        attendanceRecords,
+                        teacherId: activeUser.id,
+                        teacherName: activeUser.name
+                    })
                 });
                 let data = null;
                 try { data = await r.json(); } catch (e) { throw new Error('Server error (HTTP ' + r.status + '). Please try again.'); }
@@ -1507,6 +1654,7 @@
                 // Lock all inputs immediately upon successful submission
                 $$('#results-table-body .si-part').forEach(inp => inp.disabled = true);
                 $$('#results-table-body .remark-input').forEach(inp => inp.disabled = true);
+                $$('#results-table-body .att-status-select').forEach(sel => sel.disabled = true);
                 $('btn-quick-fill').style.display = 'none';
                 $('btn-clear-scores').style.display = 'none';
 
@@ -1514,10 +1662,11 @@
                 btn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked (Waiting for Admin Unlock)';
                 btn.className = 'btn btn-secondary btn-sm';
 
+                const attendedCount = records.length > 0 ? Math.round(records.length / (examParts.length || 1)) : 0;
                 $('results-alert').innerHTML = `
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-3" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
                         <i class="fas fa-check-circle fa-lg text-success"></i>
-                        <div><strong>All ${examParts.length} Part${examParts.length > 1 ? 's' : ''} Submitted & Locked!</strong> ${examParts.map(p => p.label).join(', ')} results have been submitted. Editing is now locked until an Administrator unlocks them in Results Approval.</div>
+                        <div><strong>Submission Successful!</strong> ${attendedCount ? `${attendedCount} attending student(s) submitted.` : ''} ${attendanceRecords.length ? `${attendanceRecords.length} absent/non-attending student(s) recorded.` : ''} Results are pending administrator approval.</div>
                     </div>`;
 
                 await loadSubmittedResults();

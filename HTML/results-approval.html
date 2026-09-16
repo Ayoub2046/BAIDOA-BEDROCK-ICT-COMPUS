@@ -10,17 +10,103 @@
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results Approval | Admin Panel</title>
+    <title>Results Approval & Exam Attendance | Admin Panel</title>
     <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
     <script src="/JS/bedrock-dialog.js"></script>
     <style>
-        .status-pending { background-color: #fff3cd; border-left: 4px solid #ffc107; }
-        .status-approved { background-color: #d4edda; border-left: 4px solid #28a745; }
-        .status-rejected { background-color: #f8d7da; border-left: 4px solid #dc3545; }
-        .status-on_hold { background-color: #d1ecf1; border-left: 4px solid #17a2b8; }
+        .status-pending { background-color: rgba(255, 193, 7, 0.12); border-left: 4px solid #ffc107; }
+        .status-approved { background-color: rgba(40, 167, 69, 0.1); border-left: 4px solid #28a745; }
+        .status-rejected { background-color: rgba(220, 53, 69, 0.1); border-left: 4px solid #dc3545; }
+        .status-on_hold { background-color: rgba(23, 162, 184, 0.12); border-left: 4px solid #17a2b8; }
+
+        .filter-container-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(13, 79, 140, 0.12);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        [data-theme="dark"] .filter-container-card {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .approval-nav-pills .nav-link {
+            border-radius: 12px;
+            padding: 0.6rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #475569;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .approval-nav-pills .nav-link:hover {
+            background: rgba(13, 79, 140, 0.06);
+            color: #0d4f8c;
+        }
+        .approval-nav-pills .nav-link.active {
+            background: #0d4f8c;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(13, 79, 140, 0.3);
+        }
+        [data-theme="dark"] .approval-nav-pills .nav-link {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .approval-nav-pills .nav-link.active {
+            background: #1976d2;
+            color: #ffffff;
+        }
+
+        .stat-card-clean {
+            border-radius: 16px;
+            padding: 1.15rem;
+            background: #fff;
+            border: 1.5px solid transparent;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+        .stat-card-clean:hover {
+            transform: translateY(-2px);
+        }
+        [data-theme="dark"] .stat-card-clean {
+            background: #1e293b;
+        }
+        .stat-card-clean.border-total { border-color: #3b82f6; }
+        .stat-card-clean.border-attended { border-color: #10b981; }
+        .stat-card-clean.border-approved { border-color: #059669; }
+        .stat-card-clean.border-pending { border-color: #f59e0b; }
+        .stat-card-clean.border-absence { border-color: #ef4444; }
+
+        .search-wrap {
+            position: relative;
+        }
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        .search-wrap input {
+            padding-left: 38px;
+            border-radius: 10px;
+        }
+
+        .badge-absence {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .badge-status-did_not_attend { background: #fee2e2; color: #dc2626; }
+        .badge-status-absent { background: #fee2e2; color: #b91c1c; }
+        .badge-status-excused { background: #e0e7ff; color: #4338ca; }
+        .badge-status-makeup_pending { background: #fef3c7; color: #b45309; }
+        .badge-status-attended { background: #dcfce7; color: #15803d; }
     </style>
 </head>
 
@@ -33,31 +119,32 @@
                     <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
                 </h3>
             </div>
-                    <ul class="sidebar-nav">
-            <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
-            <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
-            <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
-            <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
-            <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
-            <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
-            <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
-            <li><a href="results-approval.html" class="active"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
-            <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
-            <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
-            <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
-            <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
-            <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
-            <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
-            <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
-            <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
-            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
-            <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
-            <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
-            <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
-            <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
-        </ul>
+            <ul class="sidebar-nav">
+                <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
+                <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+                <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+                <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+                <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+                <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
+                <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+                <li><a href="results-approval.html" class="active"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+                <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
+                <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
+                <li><a href="timetable.html"><i class="fas fa-clock"></i> <span>Timetable</span></a></li>
+                <li><a href="admissions-admin.html"><i class="fas fa-file-signature"></i> <span>Manage Admissions</span></a></li>
+                <li><a href="event.html"><i class="fas fa-calendar-alt"></i> <span>Event Calendar</span></a></li>
+                <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
+                <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
+                <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+                <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+                <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
+                <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+                <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
+                <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
         </nav>
+
         <!-- Main Content -->
         <div class="main-content">
             <nav class="top-navbar">
@@ -65,107 +152,222 @@
                 <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
                     <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
                 </div>
-                <h4 class="mb-0 ms-3">Results Approval</h4>
+                <h4 class="mb-0 ms-3 fw-bold">Results Approval & Exam Attendance</h4>
             </nav>
+
             <div class="content-area">
-                <!-- Summary Cards -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card border-warning">
+                <!-- 1. MULTI-LEVEL FILTER & SEARCH BAR -->
+                <div class="filter-container-card">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-md-3">
+                            <div class="search-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="form-control form-control-sm" id="filter-search" placeholder="Search student name or ID...">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select class="form-select form-select-sm" id="filter-academic-year">
+                                <option value="all">All Academic Years</option>
+                                <option value="2026" selected>Academic Year: 2026</option>
+                                <option value="2025">Academic Year: 2025</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select class="form-select form-select-sm" id="filter-class">
+                                <option value="all">All Classes</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select class="form-select form-select-sm" id="filter-period">
+                                <option value="all">All Exam Periods</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select class="form-select form-select-sm" id="filter-subject">
+                                <option value="all">All Subjects</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-1 text-end">
+                            <button class="btn btn-outline-secondary btn-sm w-100" id="btn-reset-filters" title="Reset all filters">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. SUMMARY METRICS CARDS (ACCURATE UNIQUE STUDENTS) -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md">
+                        <div class="stat-card-clean border-total">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Pending Review</h6>
-                                    <div class="fs-2 fw-bold text-warning" id="total-pending">0</div>
+                                    <span class="text-muted small fw-semibold">Total Students</span>
+                                    <div class="fs-3 fw-bold text-primary" id="total-students">0</div>
                                 </div>
-                                <div class="icon text-warning"><i class="fas fa-clock fa-2x"></i></div>
+                                <div class="text-primary opacity-75"><i class="fas fa-users fa-2x"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card border-info">
+                    <div class="col-6 col-md">
+                        <div class="stat-card-clean border-attended">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>On Hold</h6>
-                                    <div class="fs-2 fw-bold text-info" id="total-hold">0</div>
+                                    <span class="text-muted small fw-semibold">Attended Exam</span>
+                                    <div class="fs-3 fw-bold text-success" id="total-attended">0</div>
                                 </div>
-                                <div class="icon text-info"><i class="fas fa-pause-circle fa-2x"></i></div>
+                                <div class="text-success opacity-75"><i class="fas fa-user-check fa-2x"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card border-success">
+                    <div class="col-6 col-md">
+                        <div class="stat-card-clean border-approved">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Approved</h6>
-                                    <div class="fs-2 fw-bold text-success" id="total-approved">0</div>
+                                    <span class="text-muted small fw-semibold">Approved Results</span>
+                                    <div class="fs-3 fw-bold text-success" id="total-approved">0</div>
                                 </div>
-                                <div class="icon text-success"><i class="fas fa-check-circle fa-2x"></i></div>
+                                <div class="text-success opacity-75"><i class="fas fa-check-circle fa-2x"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card border-primary">
+                    <div class="col-6 col-md">
+                        <div class="stat-card-clean border-pending">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Total Results</h6>
-                                    <div class="fs-2 fw-bold text-primary" id="total-results">0</div>
+                                    <span class="text-muted small fw-semibold">Pending Review</span>
+                                    <div class="fs-3 fw-bold text-warning" id="total-pending">0</div>
                                 </div>
-                                <div class="icon text-primary"><i class="fas fa-file-alt fa-2x"></i></div>
+                                <div class="text-warning opacity-75"><i class="fas fa-clock fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md">
+                        <div class="stat-card-clean border-absence">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted small fw-semibold">Did Not Attend</span>
+                                    <div class="fs-3 fw-bold text-danger" id="total-absence">0</div>
+                                </div>
+                                <div class="text-danger opacity-75"><i class="fas fa-user-times fa-2x"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Results Table -->
-                <div class="card main-table-card">
-                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
-                        <h6>Exam Results Submission</h6>
-                        <div class="d-flex align-items-center gap-2">
-                            <select class="form-select form-select-sm" id="status-filter" style="width: auto;">
-                                <option value="all" selected>All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="on_hold">On Hold</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                            <button class="btn btn-warning btn-sm text-dark fw-semibold" id="btn-unlock-selected" disabled>
-                                <i class="fas fa-lock-open me-1"></i>Unlock Selected
-                            </button>
-                            <button class="btn btn-info btn-sm text-white" id="btn-hold-selected" disabled>
-                                <i class="fas fa-pause me-1"></i>Hold
-                            </button>
-                            <button class="btn btn-success btn-sm" id="btn-approve-selected" disabled>
-                                <i class="fas fa-check me-1"></i>Approve Selected
-                            </button>
-                            <button class="btn btn-danger btn-sm" id="btn-reject-selected" disabled>
-                                <i class="fas fa-times me-1"></i>Reject Selected
-                            </button>
-                            <button class="btn btn-primary btn-sm" id="btn-release-selected" disabled>
-                                <i class="fas fa-play me-1"></i>Release
-                            </button>
+                <!-- 3. TABBED SECTIONS -->
+                <ul class="nav nav-pills approval-nav-pills mb-3" id="approvalTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-btn-results" data-bs-toggle="pill" data-bs-target="#pane-results" type="button" role="tab">
+                            <i class="fas fa-file-invoice me-1"></i> Exam Results (<span id="tab-results-count">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-btn-absence" data-bs-toggle="pill" data-bs-target="#pane-absence" type="button" role="tab">
+                            <i class="fas fa-user-slash me-1"></i> Students Who Did Not Attend (<span id="tab-absence-count">0</span>)
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="approvalTabsContent">
+                    <!-- TAB 1: EXAM RESULTS SUBMISSION & APPROVAL -->
+                    <div class="tab-pane fade show active" id="pane-results" role="tabpanel">
+                        <div class="card main-table-card">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <h6 class="mb-0 fw-bold"><i class="fas fa-award me-2 text-primary"></i>Exam Results Roster (Attended Students)</h6>
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <select class="form-select form-select-sm" id="status-filter" style="width: auto;">
+                                        <option value="all" selected>All Status</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="on_hold">On Hold</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                    <button class="btn btn-warning btn-sm text-dark fw-semibold" id="btn-unlock-selected" disabled>
+                                        <i class="fas fa-lock-open me-1"></i>Unlock Selected
+                                    </button>
+                                    <button class="btn btn-info btn-sm text-white" id="btn-hold-selected" disabled>
+                                        <i class="fas fa-pause me-1"></i>Hold
+                                    </button>
+                                    <button class="btn btn-success btn-sm" id="btn-approve-selected" disabled>
+                                        <i class="fas fa-check me-1"></i>Approve Selected
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" id="btn-reject-selected" disabled>
+                                        <i class="fas fa-times me-1"></i>Reject Selected
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" id="btn-release-selected" disabled>
+                                        <i class="fas fa-play me-1"></i>Release
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr id="results-table-header-row">
+                                                <th style="width:40px;"><input type="checkbox" id="select-all"></th>
+                                                <th>Student</th>
+                                                <th>Subject</th>
+                                                <!-- Dynamic exam headers injected here -->
+                                                <th>Submitted By</th>
+                                                <th>Status</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="results-table-body">
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr id="results-table-header-row">
-                                        <th style="width:40px;"><input type="checkbox" id="select-all"></th>
-                                        <th>Student</th>
-                                        <th>Subject</th>
-                                        <!-- Dynamic exam headers injected here -->
-                                        <th>Submitted By</th>
-                                        <th>Status</th>
-                                        <th class="text-end">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="results-table-body">
-                                    <!-- JS will populate this -->
-                                </tbody>
-                            </table>
+
+                    <!-- TAB 2: STUDENTS WHO DID NOT ATTEND (EXAM ABSENCE) -->
+                    <div class="tab-pane fade" id="pane-absence" role="tabpanel">
+                        <div class="card main-table-card border-danger-subtle">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2" style="background:rgba(239, 68, 68, 0.05);">
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-danger"><i class="fas fa-user-times me-2"></i>Students Who Did Not Attend Exam</h6>
+                                    <span class="text-muted small">Students marked absent, excused, or pending makeup for the selected exam.</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select class="form-select form-select-sm" id="absence-status-filter" style="width: auto;">
+                                        <option value="all" selected>All Absences</option>
+                                        <option value="did_not_attend">Did Not Attend</option>
+                                        <option value="absent">Unexcused Absent</option>
+                                        <option value="excused">Excused</option>
+                                        <option value="makeup_pending">Makeup Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Student ID</th>
+                                                <th>Class</th>
+                                                <th>Exam Period</th>
+                                                <th>Subject</th>
+                                                <th>Attendance Status</th>
+                                                <th>Notes / Reason</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="absence-table-body">
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -221,6 +423,7 @@
                             <option value="approved">Approved</option>
                             <option value="pending">Pending</option>
                             <option value="on_hold">On Hold</option>
+                            <option value="rejected">Rejected</option>
                         </select>
                     </div>
                 </div>
@@ -232,26 +435,95 @@
         </div>
     </div>
 
+    <!-- Schedule Makeup Modal -->
+    <div class="modal fade" id="makeupModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>Schedule Makeup Exam</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="makeup-student-id">
+                    <input type="hidden" id="makeup-class-id">
+                    <input type="hidden" id="makeup-period-id">
+                    <input type="hidden" id="makeup-subject">
+
+                    <div class="mb-2">
+                        <span class="text-muted small">Student:</span> <strong id="makeup-student-name"></strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted small">Subject & Period:</span> <strong id="makeup-exam-info" class="text-warning"></strong>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Makeup Date (Optional)</label>
+                        <input type="date" class="form-control form-control-sm" id="makeup-date">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold small">Notes / Reason</label>
+                        <textarea class="form-control form-control-sm" id="makeup-notes" rows="3" placeholder="Reason for absence or makeup arrangement details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-warning btn-sm text-dark fw-bold" id="btn-save-makeup"><i class="fas fa-check me-1"></i>Schedule Makeup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let loadResults;
-        document.addEventListener('DOMContentLoaded', () => {
-            const RESULTS_API = '/api/results';
-            let allResults = [];
-            let holdModal = null;
-            let approvalExams = [];
+        let loadApprovalData;
 
-            async function loadExamsConfig() {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const RESULTS_API = '/api/results';
+            const ATTENDANCE_API = '/api/exam-attendance';
+
+            let rawResults = [];
+            let absenceList = [];
+            let approvalExams = [];
+            let classesList = [];
+            let periodsList = [];
+            let holdModal = null;
+            let directEditModal = null;
+            let makeupModal = null;
+
+            try {
+                holdModal = new bootstrap.Modal(document.getElementById('holdModal'));
+                directEditModal = new bootstrap.Modal(document.getElementById('directEditModal'));
+                makeupModal = new bootstrap.Modal(document.getElementById('makeupModal'));
+            } catch(e) {}
+
+            // 1. Load Filter Options (Classes, Periods, Exams)
+            async function loadFilterOptions() {
                 try {
-                    const res = await fetch('/api/exams');
-                    if (res.ok) {
-                        const data = await res.json();
+                    const [cRes, pRes, eRes] = await Promise.all([
+                        fetch('/api/classes'),
+                        fetch('/api/exam-periods'),
+                        fetch('/api/exams')
+                    ]);
+                    if (cRes.ok) {
+                        classesList = await cRes.json();
+                        const cSelect = document.getElementById('filter-class');
+                        cSelect.innerHTML = '<option value="all">All Classes</option>' +
+                            classesList.map(c => `<option value="${c.id}">${c.name || 'Class ' + c.id}</option>`).join('');
+                    }
+                    if (pRes.ok) {
+                        periodsList = await pRes.json();
+                        const pSelect = document.getElementById('filter-period');
+                        pSelect.innerHTML = '<option value="all">All Exam Periods</option>' +
+                            periodsList.map(p => `<option value="${p.id}">${p.name || p.label}</option>`).join('');
+                    }
+                    if (eRes.ok) {
+                        const data = await eRes.json();
                         approvalExams = (data || []).filter(e => e.active !== false && !e.deleted_at);
                         approvalExams.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id);
                     }
-                } catch (e) {
-                    console.warn('Could not load exams:', e);
+                } catch(e) {
+                    console.warn('Error loading filter options:', e);
                 }
+
                 if (!approvalExams || approvalExams.length === 0) {
                     approvalExams = [
                         { exam_key: 'oral_exam', name: 'Oral Exam', max_score: 20 },
@@ -287,57 +559,120 @@
                 }
             }
 
-            loadResults = async function() {
-                const tbody = document.getElementById('results-table-body');
+            // Populate unique subjects into subject filter based on returned results/attendance
+            function updateSubjectFilter(subjects) {
+                const sSelect = document.getElementById('filter-subject');
+                const curVal = sSelect.value;
+                const uniqueSubjs = Array.from(new Set(subjects.map(s => String(s || '').trim()).filter(Boolean)));
+                sSelect.innerHTML = '<option value="all">All Subjects</option>' +
+                    uniqueSubjs.map(s => `<option value="${s}" ${s.toLowerCase() === curVal.toLowerCase() ? 'selected' : ''}>${s}</option>`).join('');
+            }
+
+            // Main Data Loader
+            loadApprovalData = async function() {
+                const tbodyResults = document.getElementById('results-table-body');
+                const tbodyAbsence = document.getElementById('absence-table-body');
                 const colCount = 5 + (approvalExams.length || 2) + 1;
-                if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading results...</td></tr>`;
-                }
+
+                if (tbodyResults) tbodyResults.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading results...</td></tr>`;
+                if (tbodyAbsence) tbodyAbsence.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger me-2"></div> Loading absence records...</td></tr>`;
+
+                const year = document.getElementById('filter-academic-year').value;
+                const classId = document.getElementById('filter-class').value;
+                const periodId = document.getElementById('filter-period').value;
+                const subject = document.getElementById('filter-subject').value;
+                const search = document.getElementById('filter-search').value.trim();
+
+                const qParams = new URLSearchParams();
+                if (year && year !== 'all') qParams.set('academic_year', year);
+                if (classId && classId !== 'all') qParams.set('classId', classId);
+                if (periodId && periodId !== 'all') qParams.set('periodId', periodId);
+                if (subject && subject !== 'all') qParams.set('subject', subject);
+                if (search) qParams.set('search', search);
+
                 try {
-                    if (approvalExams.length === 0) {
-                        await loadExamsConfig();
+                    // Fetch results and attendance concurrently
+                    const [resResponse, attResponse, statsResponse] = await Promise.all([
+                        fetch(`${RESULTS_API}?${qParams.toString()}`),
+                        fetch(`${ATTENDANCE_API}?${qParams.toString()}`),
+                        fetch(`${RESULTS_API}/stats?${qParams.toString()}`)
+                    ]);
+
+                    rawResults = resResponse.ok ? await resResponse.json() : [];
+                    absenceList = attResponse.ok ? await attResponse.json() : [];
+
+                    // Filter absenceList to non-attended students
+                    absenceList = absenceList.filter(a => a.status !== 'attended');
+
+                    // Collect subjects for filter
+                    const allSubjects = [
+                        ...rawResults.map(r => r.subject),
+                        ...absenceList.map(a => a.subject)
+                    ];
+                    updateSubjectFilter(allSubjects);
+
+                    // Update summary stats
+                    if (statsResponse.ok) {
+                        const stats = await statsResponse.json();
+                        updateSummaryCards(stats);
                     } else {
-                        renderHeader();
+                        calculateFallbackStats();
                     }
-                    const response = await fetch(RESULTS_API);
-                    if (!response.ok) throw new Error(`Results API error (${response.status})`);
-                    allResults = await response.json();
-                    updateSummaryCards();
-                    renderTable();
+
+                    renderResultsTable();
+                    renderAbsenceTable();
                 } catch (error) {
-                    console.error('Error loading results:', error);
-                    if (tbody) {
-                        tbody.innerHTML = `
-                            <tr><td colspan="${colCount}" class="text-center py-4">
-                                <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2 d-block"></i>
-                                <span class="text-danger d-block mb-2">Error loading results: ${error.message}</span>
-                                <button class="btn btn-sm btn-outline-primary" onclick="loadResults()"><i class="fas fa-redo me-1"></i> Try Again</button>
-                            </td></tr>`;
+                    console.error('Error loading approval data:', error);
+                    if (tbodyResults) {
+                        tbodyResults.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error loading data: ${error.message}</td></tr>`;
                     }
                 }
             };
-            window.loadResults = loadResults;
+            window.loadResults = loadApprovalData;
 
-            function updateSummaryCards() {
-                const pending = allResults.filter(r => r.approval_status === 'pending').length;
-                const approved = allResults.filter(r => r.approval_status === 'approved').length;
-                const onHold = allResults.filter(r => r.approval_status === 'on_hold').length;
-                document.getElementById('total-pending').textContent = pending;
-                document.getElementById('total-approved').textContent = approved;
-                document.getElementById('total-hold').textContent = onHold;
-                document.getElementById('total-results').textContent = allResults.length;
+            function updateSummaryCards(stats) {
+                document.getElementById('total-students').textContent = stats.totalStudents || 0;
+                document.getElementById('total-attended').textContent = stats.attended || 0;
+                document.getElementById('total-approved').textContent = stats.approved || 0;
+                document.getElementById('total-pending').textContent = stats.pending || 0;
+                document.getElementById('total-absence').textContent = stats.didNotAttend || 0;
+
+                document.getElementById('tab-results-count').textContent = stats.attended || 0;
+                document.getElementById('tab-absence-count').textContent = stats.didNotAttend || 0;
             }
 
-            function renderTable(filter = 'all') {
+            function calculateFallbackStats() {
+                // Unique students in results
+                const attendedSet = new Set(rawResults.map(r => r.student_id));
+                const approvedSet = new Set(rawResults.filter(r => r.approval_status === 'approved').map(r => r.student_id));
+                const pendingSet = new Set(rawResults.filter(r => r.approval_status === 'pending').map(r => r.student_id));
+                const absenceSet = new Set(absenceList.map(a => a.student_id));
+
+                const total = attendedSet.size + absenceSet.size;
+                updateSummaryCards({
+                    totalStudents: total,
+                    attended: attendedSet.size,
+                    approved: approvedSet.size,
+                    pending: pendingSet.size,
+                    didNotAttend: absenceSet.size
+                });
+            }
+
+            // Render Results Table
+            function renderResultsTable() {
                 const tbody = document.getElementById('results-table-body');
-                let filtered = allResults;
-                if (filter !== 'all') filtered = allResults.filter(r => r.approval_status === filter);
+                const statusFilter = document.getElementById('status-filter').value;
+
+                let filtered = rawResults;
+                if (statusFilter !== 'all') {
+                    filtered = filtered.filter(r => r.approval_status === statusFilter);
+                }
 
                 const colCount = 5 + (approvalExams.length || 2) + 1;
                 if (filtered.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-5 text-muted">
                         <i class="fas fa-poll fa-3x mb-2 d-block text-secondary"></i>
-                        <p class="mb-0">No exam results found.</p>
+                        <p class="mb-0">No exam results found matching the selected filters.</p>
                     </td></tr>`;
                     return;
                 }
@@ -349,16 +684,19 @@
                     'on_hold': 'bg-info text-white'
                 };
 
-                // Group results by student_id + subject
+                // Group by student_id + subject + period_id
                 const grouped = {};
                 filtered.forEach(r => {
-                    const key = `${r.student_id}-${r.subject}`;
+                    const key = `${r.student_id}-${r.subject}-${r.period_id || 0}`;
                     if (!grouped[key]) {
                         grouped[key] = {
                             id: r.id,
                             studentName: r.studentName,
                             student_id: r.student_id,
+                            student_id_code: r.student_id_code,
+                            class_name: r.class_name,
                             subject: r.subject,
+                            period_name: r.period_name,
                             approval_status: r.approval_status,
                             submitted_by: r.submitted_by,
                             edit_allowed: r.edit_allowed === true,
@@ -386,29 +724,36 @@
                         }
                         const max = parseFloat(e.max_score) || 100;
                         total += score;
-                        return `<td class="text-center">${score}/${max}</td>`;
+                        return `<td class="text-center fw-semibold">${score}/${max}</td>`;
                     }).join('');
 
                     const isPass = totalMax > 0 ? (total / totalMax) >= 0.5 : total >= 50;
                     const ids = g.ids.join(',');
-                    const bbId = 'BB' + String(260000 + g.student_id).slice(-6);
+                    const bbId = g.student_id_code || ('BB' + String(260000 + g.student_id).slice(-6));
+
                     return `
                     <tr class="status-${g.approval_status}">
                         <td><input type="checkbox" class="result-checkbox" data-ids="${ids}" data-status="${g.approval_status}"></td>
-                        <td>${g.studentName}<br><small class="text-muted fw-semibold">${bbId}</small></td>
-                        <td>${g.subject}</td>
+                        <td>
+                            <div class="fw-bold text-dark">${g.studentName}</div>
+                            <small class="text-muted fw-semibold">${bbId}${g.class_name ? ' &middot; ' + g.class_name : ''}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold">${g.subject}</div>
+                            ${g.period_name ? `<small class="badge bg-light text-secondary border">${g.period_name}</small>` : ''}
+                        </td>
                         ${examTds}
                         <td class="text-center fw-bold ${isPass ? 'text-success' : 'text-danger'}">${total}/${totalMax}</td>
-                        <td>${g.submitted_by || 'N/A'}</td>
+                        <td><small>${g.submitted_by || 'Teacher'}</small></td>
                         <td>
-                            <span class="badge ${statusBadge[g.approval_status]}">${g.approval_status}</span>
+                            <span class="badge ${statusBadge[g.approval_status] || 'bg-secondary'}">${g.approval_status}</span>
                             ${g.edit_allowed ? '<br><span class="badge bg-warning text-dark mt-1" style="font-size:10px;"><i class="fas fa-lock-open me-1"></i>Unlocked</span>' : ''}
                         </td>
                         <td class="text-end text-nowrap">
-                            <button type="button" class="btn btn-sm ${g.edit_allowed ? 'btn-warning text-dark' : 'btn-outline-secondary'} btn-toggle-unlock me-1" data-ids="${ids}" data-unlocked="${g.edit_allowed}" title="${g.edit_allowed ? 'Currently unlocked for teacher. Click to lock.' : 'Unlock for teacher to resubmit.'}">
+                            <button type="button" class="btn btn-sm ${g.edit_allowed ? 'btn-warning text-dark' : 'btn-outline-secondary'} btn-toggle-unlock me-1" data-ids="${ids}" data-unlocked="${g.edit_allowed}" title="${g.edit_allowed ? 'Unlocked for teacher. Click to lock.' : 'Unlock for teacher to resubmit.'}">
                                 <i class="fas ${g.edit_allowed ? 'fa-lock-open' : 'fa-lock'}"></i> ${g.edit_allowed ? 'Unlocked' : 'Unlock'}
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-edit" data-student-id="${g.student_id}" data-student-name="${g.studentName}" data-subject="${g.subject}" data-scores='${JSON.stringify(g.scores)}' data-status="${g.approval_status}" title="Directly correct / edit scores">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-edit" data-student-id="${g.student_id}" data-student-name="${g.studentName}" data-subject="${g.subject}" data-scores='${JSON.stringify(g.scores)}' data-status="${g.approval_status}" title="Correct / Edit scores">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                         </td>
@@ -418,24 +763,91 @@
                 updateButtonStates();
             }
 
-            // Filter
-            document.getElementById('status-filter').addEventListener('change', (e) => {
-                renderTable(e.target.value);
+            // Render Absence Table
+            function renderAbsenceTable() {
+                const tbody = document.getElementById('absence-table-body');
+                const filter = document.getElementById('absence-status-filter').value;
+
+                let list = absenceList;
+                if (filter !== 'all') {
+                    list = list.filter(a => a.status === filter);
+                }
+
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fa-3x mb-2 d-block text-success"></i>
+                        <p class="mb-0">No absent students found. All students attended this exam!</p>
+                    </td></tr>`;
+                    return;
+                }
+
+                const statusLabels = {
+                    'did_not_attend': { text: 'Did Not Attend', cls: 'badge-status-did_not_attend' },
+                    'absent': { text: 'Absent', cls: 'badge-status-absent' },
+                    'excused': { text: 'Excused', cls: 'badge-status-excused' },
+                    'makeup_pending': { text: 'Makeup Pending', cls: 'badge-status-makeup_pending' }
+                };
+
+                tbody.innerHTML = list.map(a => {
+                    const bbId = a.student_id_code || ('BB' + String(260000 + a.student_id).slice(-6));
+                    const badge = statusLabels[a.status] || { text: a.status, cls: 'bg-secondary text-white' };
+                    return `
+                    <tr>
+                        <td><div class="fw-bold">${a.student_name}</div></td>
+                        <td><code class="text-primary fw-semibold">${bbId}</code></td>
+                        <td>${a.class_name || 'Class ' + a.class_id}</td>
+                        <td><span class="badge bg-light text-dark border">${a.period_name || 'Standard Period'}</span></td>
+                        <td><span class="fw-semibold">${a.subject}</span></td>
+                        <td><span class="badge badge-absence ${badge.cls}">${badge.text}</span></td>
+                        <td><small class="text-muted">${a.notes || '—'}</small></td>
+                        <td class="text-end text-nowrap">
+                            <button class="btn btn-sm btn-outline-success btn-mark-attended me-1" data-id="${a.student_id}" data-name="${a.student_name}" data-class="${a.class_id}" data-period="${a.period_id}" data-subject="${a.subject}" title="Mark as Attended (enables entering marks)">
+                                <i class="fas fa-check"></i> Attended
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning btn-mark-excused me-1" data-id="${a.student_id}" data-name="${a.student_name}" data-class="${a.class_id}" data-period="${a.period_id}" data-subject="${a.subject}" title="Mark as Excused">
+                                <i class="fas fa-file-signature"></i> Excused
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-open-makeup" data-id="${a.student_id}" data-name="${a.student_name}" data-class="${a.class_id}" data-period="${a.period_id}" data-subject="${a.subject}" data-period-name="${a.period_name || 'Standard Period'}" title="Schedule Makeup Exam">
+                                <i class="fas fa-calendar-plus"></i> Makeup
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Filter Event Listeners
+            ['filter-academic-year', 'filter-class', 'filter-period', 'filter-subject'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => loadApprovalData());
             });
 
-            // Select all checkbox
+            document.getElementById('status-filter').addEventListener('change', () => renderResultsTable());
+            document.getElementById('absence-status-filter').addEventListener('change', () => renderAbsenceTable());
+
+            let searchTimer;
+            document.getElementById('filter-search').addEventListener('input', () => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => loadApprovalData(), 250);
+            });
+
+            document.getElementById('btn-reset-filters').addEventListener('click', () => {
+                document.getElementById('filter-search').value = '';
+                document.getElementById('filter-academic-year').value = 'all';
+                document.getElementById('filter-class').value = 'all';
+                document.getElementById('filter-period').value = 'all';
+                document.getElementById('filter-subject').value = 'all';
+                document.getElementById('status-filter').value = 'all';
+                document.getElementById('absence-status-filter').value = 'all';
+                loadApprovalData();
+            });
+
+            // Checkboxes & Buttons
             document.getElementById('select-all').addEventListener('change', (e) => {
-                document.querySelectorAll('.result-checkbox').forEach(cb => {
-                    cb.checked = e.target.checked;
-                });
+                document.querySelectorAll('.result-checkbox').forEach(cb => cb.checked = e.target.checked);
                 updateButtonStates();
             });
 
-            // Individual checkboxes
             document.getElementById('results-table-body').addEventListener('change', (e) => {
-                if (e.target.classList.contains('result-checkbox')) {
-                    updateButtonStates();
-                }
+                if (e.target.classList.contains('result-checkbox')) updateButtonStates();
             });
 
             function updateButtonStates() {
@@ -453,33 +865,111 @@
                 if (unlockBtn) unlockBtn.disabled = checked.length === 0;
             }
 
-            // Unlock selected for teachers
-            const unlockSelectedBtn = document.getElementById('btn-unlock-selected');
-            if (unlockSelectedBtn) {
-                unlockSelectedBtn.addEventListener('click', async () => {
-                    const checked = document.querySelectorAll('.result-checkbox:checked');
-                    const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
-                    if (ids.length === 0) return;
+            // Actions in Absence Table: Mark Attended
+            document.getElementById('absence-table-body').addEventListener('click', async (e) => {
+                const btnAtt = e.target.closest('.btn-mark-attended');
+                if (btnAtt) {
+                    const studentId = parseInt(btnAtt.dataset.id);
+                    const name = btnAtt.dataset.name;
+                    const classId = btnAtt.dataset.class;
+                    const periodId = btnAtt.dataset.period;
+                    const subject = btnAtt.dataset.subject;
+
                     const ok = await BedrockDialog.confirm({
-                        title: 'Unlock Results for Re-edit',
-                        message: `Unlock <strong>${ids.length} result(s)</strong> for teachers to re-edit and resubmit?`,
-                        confirmText: 'Unlock', type: 'warning', icon: 'fas fa-lock-open'
+                        title: 'Mark as Attended',
+                        message: `Mark <strong>"${name}"</strong> as Attended for <strong>${subject}</strong>?<br><br><small class="text-muted">This student will be eligible for exam result entry.</small>`,
+                        confirmText: 'Mark Attended',
+                        type: 'success',
+                        icon: 'fas fa-user-check'
                     });
                     if (!ok) return;
+
                     try {
-                        const response = await fetch(`${RESULTS_API}/unlock`, {
-                            method: 'PUT',
+                        const res = await fetch(`${ATTENDANCE_API}/mark`, {
+                            method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ids, unlock: true })
+                            body: JSON.stringify({ studentId, classId, periodId, subject, status: 'attended', recordedBy: 'Admin' })
                         });
-                        if (!response.ok) throw new Error('Unlock failed');
-                        await BedrockDialog.alert({ title: 'Unlocked', message: `${ids.length} result(s) unlocked for teacher re-edit.`, type: 'success' });
-                        loadResults();
-                    } catch (err) {
+                        if (!res.ok) throw new Error('Failed to update attendance');
+                        await BedrockDialog.alert({ title: 'Success', message: `"${name}" has been marked as Attended!`, type: 'success' });
+                        loadApprovalData();
+                    } catch(err) {
                         await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                     }
-                });
-            }
+                    return;
+                }
+
+                // Mark Excused
+                const btnExcused = e.target.closest('.btn-mark-excused');
+                if (btnExcused) {
+                    const studentId = parseInt(btnExcused.dataset.id);
+                    const name = btnExcused.dataset.name;
+                    const classId = btnExcused.dataset.class;
+                    const periodId = btnExcused.dataset.period;
+                    const subject = btnExcused.dataset.subject;
+
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Mark as Excused',
+                        message: `Mark absence for <strong>"${name}"</strong> as Excused?`,
+                        confirmText: 'Mark Excused',
+                        type: 'info',
+                        icon: 'fas fa-file-signature'
+                    });
+                    if (!ok) return;
+
+                    try {
+                        const res = await fetch(`${ATTENDANCE_API}/mark`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ studentId, classId, periodId, subject, status: 'excused', notes: 'Excused by Admin', recordedBy: 'Admin' })
+                        });
+                        if (!res.ok) throw new Error('Failed to update');
+                        await BedrockDialog.alert({ title: 'Updated', message: `Marked as Excused.`, type: 'success' });
+                        loadApprovalData();
+                    } catch(err) {
+                        await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
+                    }
+                    return;
+                }
+
+                // Open Makeup Modal
+                const btnMakeup = e.target.closest('.btn-open-makeup');
+                if (btnMakeup) {
+                    document.getElementById('makeup-student-id').value = btnMakeup.dataset.id;
+                    document.getElementById('makeup-class-id').value = btnMakeup.dataset.class;
+                    document.getElementById('makeup-period-id').value = btnMakeup.dataset.period;
+                    document.getElementById('makeup-subject').value = btnMakeup.dataset.subject;
+
+                    document.getElementById('makeup-student-name').textContent = btnMakeup.dataset.name;
+                    document.getElementById('makeup-exam-info').textContent = `${btnMakeup.dataset.subject} (${btnMakeup.dataset.periodName})`;
+                    document.getElementById('makeup-notes').value = '';
+                    if (makeupModal) makeupModal.show();
+                }
+            });
+
+            // Save Makeup
+            document.getElementById('btn-save-makeup').addEventListener('click', async () => {
+                const studentId = parseInt(document.getElementById('makeup-student-id').value);
+                const classId = document.getElementById('makeup-class-id').value;
+                const periodId = document.getElementById('makeup-period-id').value;
+                const subject = document.getElementById('makeup-subject').value;
+                const makeupDate = document.getElementById('makeup-date').value;
+                const notes = document.getElementById('makeup-notes').value.trim();
+
+                try {
+                    const res = await fetch(`${ATTENDANCE_API}/schedule-makeup`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, classId, periodId, subject, makeupDate, notes, recordedBy: 'Admin' })
+                    });
+                    if (!res.ok) throw new Error('Failed to schedule makeup');
+                    if (makeupModal) makeupModal.hide();
+                    await BedrockDialog.alert({ title: 'Makeup Scheduled', message: 'Makeup exam status updated to Makeup Pending.', type: 'success' });
+                    loadApprovalData();
+                } catch(err) {
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
+                }
+            });
 
             // Row-level Unlock / Lock toggle
             document.getElementById('results-table-body').addEventListener('click', async (e) => {
@@ -487,7 +977,6 @@
                 if (!btn) return;
                 const ids = btn.dataset.ids.split(',').map(Number);
                 const isCurrentlyUnlocked = btn.dataset.unlocked === 'true';
-                const action = isCurrentlyUnlocked ? 'lock' : 'unlock';
                 const ok = await BedrockDialog.confirm({
                     title: isCurrentlyUnlocked ? 'Lock Result' : 'Unlock Result',
                     message: `${isCurrentlyUnlocked ? '<strong>Lock</strong>' : '<strong>Unlock</strong>'} this subject result for teacher re-edit?`,
@@ -503,18 +992,13 @@
                         body: JSON.stringify({ ids, unlock: !isCurrentlyUnlocked })
                     });
                     if (!response.ok) throw new Error('Update failed');
-                    loadResults();
+                    loadApprovalData();
                 } catch (err) {
                     await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
-            // Row-level Direct Edit (Admin Correction)
-            let directEditModal = null;
-            try {
-                directEditModal = new bootstrap.Modal(document.getElementById('directEditModal'));
-            } catch (e) {}
-
+            // Row-level Direct Edit
             document.getElementById('results-table-body').addEventListener('click', (e) => {
                 const btn = e.target.closest('.btn-open-edit');
                 if (!btn) return;
@@ -530,7 +1014,6 @@
                 document.getElementById('edit-student-name').textContent = `${studentName} (BB${String(260000 + parseInt(studentId)).slice(-6)})`;
                 document.getElementById('edit-subject-name').textContent = subject;
 
-                // Dynamically populate inputs based on approvalExams
                 const inputsContainer = document.getElementById('direct-edit-inputs-container');
                 if (inputsContainer) {
                     inputsContainer.innerHTML = approvalExams.map(e => {
@@ -551,11 +1034,10 @@
                 }
 
                 document.getElementById('edit-approval-status').value = status;
-
                 if (directEditModal) directEditModal.show();
             });
 
-            // Save Direct Edit (Admin Correction)
+            // Save Direct Edit
             document.getElementById('btn-save-direct-edit').addEventListener('click', async () => {
                 const studentId = parseInt(document.getElementById('edit-student-id').value);
                 const subject = document.getElementById('edit-subject').value;
@@ -575,9 +1057,9 @@
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.error || 'Update failed');
                     if (directEditModal) directEditModal.hide();
-                    loadResults();
+                    loadApprovalData();
                 } catch (err) {
-                    alert(`Error updating scores: ${err.message}`);
+                    await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
@@ -604,20 +1086,19 @@
                     });
                     if (!response.ok) throw new Error('Approval failed');
                     await BedrockDialog.alert({ title: 'Approved!', message: `${pendingIds.length} result(s) approved successfully!`, type: 'success' });
-                    loadResults();
+                    loadApprovalData();
                 } catch (err) {
                     await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
-            // Hold selected — open modal
+            // Hold selected
             document.getElementById('btn-hold-selected').addEventListener('click', () => {
                 const checked = document.querySelectorAll('.result-checkbox:checked');
                 document.getElementById('hold-id-count').textContent = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',')).length;
-                holdModal.show();
+                if (holdModal) holdModal.show();
             });
 
-            // Confirm hold
             document.getElementById('btn-confirm-hold').addEventListener('click', async () => {
                 const checked = document.querySelectorAll('.result-checkbox:checked');
                 const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
@@ -639,14 +1120,14 @@
                     if (!response.ok) throw new Error('Hold failed');
                     await BedrockDialog.alert({ title: 'On Hold', message: `${ids.length} result(s) put on hold.`, type: 'info' });
                     dtInput.value = '';
-                    holdModal.hide();
-                    loadResults();
+                    if (holdModal) holdModal.hide();
+                    loadApprovalData();
                 } catch (err) {
                     await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
-            // Release selected immediately
+            // Release selected
             document.getElementById('btn-release-selected').addEventListener('click', async () => {
                 const checked = document.querySelectorAll('.result-checkbox:checked');
                 const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
@@ -665,7 +1146,7 @@
                     });
                     if (!response.ok) throw new Error('Release failed');
                     await BedrockDialog.alert({ title: 'Released!', message: `${ids.length} result(s) released successfully.`, type: 'success' });
-                    loadResults();
+                    loadApprovalData();
                 } catch (err) {
                     await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
@@ -675,7 +1156,6 @@
             document.getElementById('btn-reject-selected').addEventListener('click', async () => {
                 const checked = document.querySelectorAll('.result-checkbox:checked');
                 const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
-
                 if (ids.length === 0) return;
 
                 const ok = await BedrockDialog.confirm({
@@ -692,14 +1172,43 @@
                     });
                     if (!response.ok) throw new Error('Rejection failed');
                     await BedrockDialog.alert({ title: 'Rejected', message: `${ids.length} result(s) rejected.`, type: 'info' });
-                    loadResults();
+                    loadApprovalData();
                 } catch (err) {
                     await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
                 }
             });
 
-            holdModal = new bootstrap.Modal(document.getElementById('holdModal'));
-            loadResults();
+            // Unlock selected
+            const unlockSelectedBtn = document.getElementById('btn-unlock-selected');
+            if (unlockSelectedBtn) {
+                unlockSelectedBtn.addEventListener('click', async () => {
+                    const checked = document.querySelectorAll('.result-checkbox:checked');
+                    const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
+                    if (ids.length === 0) return;
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Unlock Results for Re-edit',
+                        message: `Unlock <strong>${ids.length} result(s)</strong> for teachers to re-edit and resubmit?`,
+                        confirmText: 'Unlock', type: 'warning', icon: 'fas fa-lock-open'
+                    });
+                    if (!ok) return;
+                    try {
+                        const response = await fetch(`${RESULTS_API}/unlock`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ids, unlock: true })
+                        });
+                        if (!response.ok) throw new Error('Unlock failed');
+                        await BedrockDialog.alert({ title: 'Unlocked', message: `${ids.length} result(s) unlocked for teacher re-edit.`, type: 'success' });
+                        loadApprovalData();
+                    } catch (err) {
+                        await BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
+                    }
+                });
+            }
+
+            // Initialize
+            await loadFilterOptions();
+            await loadApprovalData();
         });
 
         // Sidebar toggle & logout
@@ -718,26 +1227,24 @@
                 window.location.href = 'admin-login.html';
             });
         });
-    </script>
-    <script>
-// Theme Toggle
-function toggleTheme() {
-    const body = document.body;
-    const current = body.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    body.setAttribute('data-theme', next);
-    localStorage.setItem('elif-theme', next);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-}
-(function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
-    document.body.setAttribute('data-theme', saved);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-})();
-    </script>
 
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('elif-theme', next);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        (function() {
+            const saved = localStorage.getItem('elif-theme') || 'light';
+            document.body.setAttribute('data-theme', saved);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        })();
+    </script>
     <script src="/HTML/js/admin.js"></script>
     <script src="/JS/pwa.js"></script>
 </body>
