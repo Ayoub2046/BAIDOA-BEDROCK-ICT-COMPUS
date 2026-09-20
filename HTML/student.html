@@ -36,6 +36,7 @@
             <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
             <li><a href="gallery-admin.html"><i class="fas fa-images"></i> <span>Gallery</span></a></li>
             <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+            <li><a href="expenses.html"><i class="fas fa-receipt"></i> <span>Expenses & Salaries</span></a></li>
             <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
             <li><a href="clearance.html"><i class="fas fa-id-card"></i> <span>Clearance</span></a></li>
             <li><a href="exam-schedule.html"><i class="fas fa-pen-fancy"></i> <span>Exam Schedule</span></a></li>
@@ -138,9 +139,16 @@
                             class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" required>
+                        <div class="row">
+                            <div class="col-md-7 mb-3">
+                                <label class="form-label fw-semibold">Full Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-id-badge text-primary me-1"></i>Student Record ID</label>
+                                <input type="text" name="student_id_code" id="modalStudentIdCode" class="form-control font-monospace text-uppercase" placeholder="e.g. BB260001">
+                                <small class="text-muted" style="font-size:0.7rem;">Leave empty to auto-generate</small>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -378,6 +386,7 @@
                 studentForm.dataset.mode = 'add';
                 delete studentForm.dataset.id;
                 const nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
+                studentForm.elements.student_id_code.value = 'BB' + (260000 + nextId);
                 studentForm.elements.password.value = 'bb' + (260000 + nextId);
                 if (studentForm.elements.status) studentForm.elements.status.value = 'Active';
                 if (studentForm.elements.academic_year) studentForm.elements.academic_year.value = '2026';
@@ -397,6 +406,7 @@
                     studentForm.dataset.mode = 'edit';
                     studentForm.dataset.id = student.id;
                     studentForm.elements.name.value = student.name || '';
+                    studentForm.elements.student_id_code.value = student.student_id_code || ('BB' + (260000 + student.id));
                     studentForm.elements.grade.value = student.grade || '';
                     studentForm.elements.attendance.value = student.attendance != null ? student.attendance : '';
                     studentForm.elements.enrollmentDate.value = toDateInputValue(student.enrollmentdate);
@@ -429,7 +439,7 @@
                         }
                     }
                 } else if (button.classList.contains('btn-view')) {
-                    const code = button.dataset.code || ('BB' + (260000 + student.id));
+                    const code = button.dataset.code || student.student_id_code || ('BB' + (260000 + student.id));
                     sessionStorage.setItem('viewingStudentId', code);
                     sessionStorage.setItem('viewingStudentBirthDate', student.birthdate);
                     window.open('/HTML/Student Results.html', '_blank');
@@ -445,6 +455,7 @@
                 const pid = studentForm.elements.parentid.value;
                 const studentData = {
                     name: studentForm.elements.name.value,
+                    student_id_code: (studentForm.elements.student_id_code.value || '').trim().toUpperCase(),
                     grade: studentForm.elements.grade.value,
                     enrollmentDate: studentForm.elements.enrollmentDate.value,
                     birthDate: studentForm.elements.birthDate.value,

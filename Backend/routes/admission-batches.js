@@ -8,9 +8,13 @@ const router = express.Router();
 function formatStudentId(batch, sequenceNum) {
   const prefix = batch.id_prefix || 'BB';
   const yearShort = String(batch.year_label || '26').slice(-2);
-  const sep = batch.id_separator !== undefined ? batch.id_separator : '-';
+  const sep = batch.id_separator !== undefined ? batch.id_separator : '';
   const digits = parseInt(batch.id_digits) || 4;
   const offset = parseInt(batch.id_offset) || 0;
+  if (offset >= 10000) {
+    const numPart = String(offset + sequenceNum).padStart(6, '0');
+    return `${prefix}${numPart}`;
+  }
   const numPart = String(offset + sequenceNum).padStart(digits, '0');
   return `${prefix}${yearShort}${sep}${numPart}`;
 }

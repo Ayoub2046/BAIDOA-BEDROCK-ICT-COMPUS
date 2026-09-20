@@ -260,6 +260,63 @@
             .td-nav .td-nav-btn { font-size: 0.62rem; padding: 0.35rem 0.5rem; }
             .exam-part-input { width: 55px !important; font-size: 0.75rem !important; }
         }
+
+        /* Custom Navy & Gold buttons */
+        .btn-navy {
+            background: linear-gradient(135deg, #0d2b4e, #1a3f6f);
+            color: #fff;
+            border: 1px solid rgba(212,175,55,0.3);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-navy:hover {
+            background: #0d2b4e;
+            color: #d4af37;
+            border-color: #d4af37;
+            transform: translateY(-1px);
+        }
+
+        /* Modern Fee Metric Cards */
+        .fee-card {
+            background: var(--bg-card, #fff);
+            border: 1px solid var(--border-color, #e9ecef);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fee-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        body[data-theme="dark"] .fee-card {
+            background: #1a2035;
+            border-color: #27314d;
+        }
+
+        /* Printable Official Voucher Slip */
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            .td-wrap, .modal-backdrop, .btn-close, .modal-footer, .td-header, .td-nav, button {
+                display: none !important;
+            }
+            #teacherVoucherModal {
+                display: block !important;
+                position: static !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                opacity: 1 !important;
+            }
+            #teacherVoucherModal .modal-dialog {
+                max-width: 100% !important;
+                margin: 0 !important;
+            }
+            #teacherVoucherModal .modal-content {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            #teacherVoucherBody {
+                padding: 0 !important;
+            }
+        }
     </style>
     <script>
         window.toggleTheme = function() {
@@ -326,6 +383,10 @@
                         <i class="fas fa-calendar-week text-secondary fs-5" style="width:24px;"></i>
                         <span class="fw-semibold">Schedule & Timetable</span>
                     </button>
+                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" onclick="document.querySelector('.td-nav-btn[data-section=fees]').click(); bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
+                        <i class="fas fa-hand-holding-usd text-success fs-5" style="width:24px;"></i>
+                        <span class="fw-semibold">My Fees & Salary</span>
+                    </button>
                     <button type="button" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3 text-danger" onclick="document.getElementById('logout-btn').click();">
                         <i class="fas fa-sign-out-alt fs-5" style="width:24px;"></i>
                         <span class="fw-semibold">Logout</span>
@@ -341,6 +402,7 @@
             <button class="td-nav-btn" data-section="students"><i class="fas fa-users"></i> Students</button>
             <button class="td-nav-btn" data-section="results"><i class="fas fa-file-alt"></i> Results</button>
             <button class="td-nav-btn" data-section="timetable"><i class="fas fa-calendar-week"></i> Schedule</button>
+            <button class="td-nav-btn" data-section="fees"><i class="fas fa-hand-holding-usd"></i> My Fees & Salary</button>
         </div>
 
         <!-- ======================== OVERVIEW ======================== -->
@@ -601,7 +663,153 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- ======================== MY FEES & SALARY ======================== -->
+        <div class="td-section" id="section-fees">
+            <!-- Section Hero Header -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, rgba(13,43,78,0.05) 0%, rgba(26,63,111,0.09) 100%); border-left: 5px solid #0d2b4e !important;">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width:54px; height:54px; background:linear-gradient(135deg,#0d2b4e,#1a3f6f); color:#d4af37; font-size:1.5rem; flex-shrink:0;">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h4 class="fw-bold mb-0" style="color:var(--text-primary,#0d2b4e);">My Fees & Salary</h4>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2" style="font-size:0.7rem;"><i class="fas fa-shield-alt me-1"></i>Official</span>
+                            </div>
+                            <p class="text-muted mb-0 small mt-1">Review official compensation, verified disbursements, and download official payment vouchers.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-outline-primary btn-sm px-3 rounded-pill fw-semibold shadow-sm" onclick="loadTeacherFees()">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                        </button>
+                        <button class="btn btn-navy btn-sm px-3 rounded-pill fw-semibold shadow-sm" onclick="printTeacherFeeStatement()">
+                            <i class="fas fa-print me-1"></i> Print Statement
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Metric Cards Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 fee-card" style="border-left: 4px solid #10b981 !important;">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.72rem; letter-spacing:0.5px;">Total Received</span>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:rgba(16,185,129,0.12); color:#10b981;">
+                                    <i class="fas fa-check-circle fs-6"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-success" id="fee-total-paid">$0.00</h3>
+                            <div class="text-muted small d-flex align-items-center gap-1" style="font-size:0.75rem;">
+                                <i class="fas fa-arrow-down text-success"></i> Disbursed to date
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 fee-card" style="border-left: 4px solid #f59e0b !important;">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.72rem; letter-spacing:0.5px;">Pending Approval</span>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:rgba(245,158,11,0.12); color:#f59e0b;">
+                                    <i class="fas fa-hourglass-half fs-6"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-warning" id="fee-total-pending">$0.00</h3>
+                            <div class="text-muted small d-flex align-items-center gap-1" style="font-size:0.75rem;">
+                                <i class="fas fa-clock text-warning"></i> Processing / Scheduled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 fee-card" style="border-left: 4px solid #3b82f6 !important;">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.72rem; letter-spacing:0.5px;">Last Payment</span>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:rgba(59,130,246,0.12); color:#3b82f6;">
+                                    <i class="fas fa-hand-holding-usd fs-6"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-primary" id="fee-last-payment">—</h3>
+                            <div class="text-muted small d-flex align-items-center gap-1" id="fee-last-date" style="font-size:0.75rem;">
+                                <i class="fas fa-calendar-alt text-primary"></i> No payments yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 fee-card" style="border-left: 4px solid #8b5cf6 !important;">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.72rem; letter-spacing:0.5px;">Disbursements</span>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:rgba(139,92,246,0.12); color:#8b5cf6;">
+                                    <i class="fas fa-receipt fs-6"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1" id="fee-total-count" style="color:#8b5cf6;">0</h3>
+                            <div class="text-muted small d-flex align-items-center gap-1" style="font-size:0.75rem;">
+                                <i class="fas fa-list-check" style="color:#8b5cf6;"></i> Verified transactions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Records Table Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3 p-md-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                            <i class="fas fa-file-invoice-dollar text-primary"></i>
+                            Disbursement History & Receipts
+                        </h5>
+                        <small class="text-muted">Review every transaction recorded by administration, download or print verified payment vouchers.</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="input-group input-group-sm" style="width: 220px;">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="teacher-fee-search" class="form-control border-start-0" placeholder="Search payment..." oninput="filterTeacherFees()">
+                        </div>
+                        <select id="teacher-fee-status-filter" class="form-select form-select-sm" style="width: 130px;" onchange="filterTeacherFees()">
+                            <option value="all">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size:0.9rem;">
+                            <thead class="table-light text-uppercase text-muted" style="font-size:0.75rem; letter-spacing:0.5px;">
+                                <tr>
+                                    <th class="ps-4 py-3">Date</th>
+                                    <th class="py-3">Title & Category</th>
+                                    <th class="py-3">Amount</th>
+                                    <th class="py-3">Payment Method</th>
+                                    <th class="py-3">Reference No</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="text-end pe-4 py-3">Official Voucher</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-fees-table-body">
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                                        Loading your fee records...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Close td-wrap -->
 
     <!-- Student Detail Modal -->
     <div class="modal fade" id="studentModal" tabindex="-1">
@@ -612,50 +820,31 @@
             </div>
         </div>
     </div>
-    <!-- Teacher Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="teacherNavOffcanvas" aria-labelledby="teacherNavOffcanvasLabel" style="max-width:290px;">
-        <div class="offcanvas-header text-white" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f);">
-            <h5 class="offcanvas-title fw-bold" id="teacherNavOffcanvasLabel"><i class="fas fa-chalkboard-teacher me-2" style="color:#d4af37;"></i>Teacher Menu</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body p-0">
-            <div class="list-group list-group-flush">
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="overview" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-home fs-5" style="width:24px;color:#0d4f8c;"></i>
-                    <span class="fw-semibold">Overview</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="results" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-poll text-primary fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Record Results</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="attendance" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-user-check text-info fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Take Attendance</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="timetable" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-clock text-warning fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">My Timetable</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="exams" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-calendar-alt text-danger fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Exam Schedule</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="students" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-users text-secondary fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Student Directory</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="analytics" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-chart-line text-success fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Class Analytics</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3" data-section="profile" onclick="bootstrap.Offcanvas.getInstance(document.getElementById('teacherNavOffcanvas'))?.hide();">
-                    <i class="fas fa-user-tie text-primary fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">My Profile</span>
-                </a>
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 d-flex align-items-center gap-3 text-danger" onclick="document.getElementById('logout-btn').click();">
-                    <i class="fas fa-sign-out-alt fs-5" style="width:24px;"></i>
-                    <span class="fw-semibold">Sign Out</span>
-                </a>
+
+    <!-- Teacher Voucher Modal -->
+    <div class="modal fade" id="teacherVoucherModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white px-4 py-3" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f);">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="/images/BEDRCOK LOGO.JPG" style="width:36px; height:36px; border-radius:50%; border:2px solid #d4af37;" onerror="this.style.display='none'">
+                        <div>
+                            <h6 class="modal-title fw-bold mb-0">Official Disbursement Voucher</h6>
+                            <small class="text-warning" style="font-size:0.72rem; letter-spacing:0.5px;">BAIDOA BEDROCK ICT CAMPUS</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="teacherVoucherBody">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
+                    <small class="text-muted"><i class="fas fa-lock me-1"></i> Digitally validated official school voucher</small>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-navy btn-sm px-4 rounded-pill shadow-sm" onclick="printVoucherSlip()"><i class="fas fa-print me-1"></i> Print Voucher</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -724,6 +913,8 @@
         let trendChart = null;
         let examDefs = {};          // examKey -> {label, max, id}
         let submittedExamKeys = new Set();  // exam keys already submitted for the current class+subject
+        let teacherProfileData = null;
+        let allTeacherFeeRecords = [];
 
         // Populate exam selector from /api/exams (admin can change these anytime)
         async function loadExams(classId) {
@@ -755,16 +946,23 @@
             $$('[data-section]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             $$('.td-section').forEach(s => s.classList.remove('active'));
-            $('section-'+btn.dataset.section).classList.add('active');
+            const sec = btn.dataset.section;
+            const secEl = $('section-' + sec);
+            if (secEl) secEl.classList.add('active');
+            if (sec === 'fees') loadTeacherFees();
         }));
 
         $('logout-btn').addEventListener('click', () => { sessionStorage.clear(); window.location.replace('portal_login.html'); });
 
         // === LOAD TEACHER DATA ===
         try {
-            const res = await fetch(`/api/teachers/dashboard-details?email=${activeUser.email}`);
+            const res = await fetch(`/api/teachers/dashboard-details?email=${encodeURIComponent(activeUser.email)}`);
             if (!res.ok) throw new Error('Failed to load');
             const data = await res.json();
+            teacherProfileData = data;
+            if (data && data.id) {
+                activeUser.id = data.id;
+            }
             const finalName = data.name || teacherDisplayName;
             $('teacher-name').textContent = `${getGreeting()}, ${finalName}!`;
             $('teacher-subject').textContent = `Subject: ${data.subject || 'Not Set'} · ${data.classes.length} class(es) · ${data.totalStudents} students`;
@@ -1806,6 +2004,241 @@
             }).join('');
         }
         loadSubmittedResults();
+
+        // === MY FEES & SALARY ===
+        async function loadTeacherFees() {
+            const tbody = $('teacher-fees-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted"><div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>Loading your fee records...</td></tr>';
+            try {
+                const targetId = (activeUser && activeUser.id) ? activeUser.id : (teacherProfileData ? teacherProfileData.id : 0);
+                const queryEmail = encodeURIComponent(activeUser?.email || '');
+                const res = await fetch(`/api/expenses/teacher/${targetId}?email=${queryEmail}`);
+                if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+                const data = await res.json();
+                
+                // API returns { payments: [...], totalPaid, totalPending, lastPayment }
+                const records = Array.isArray(data) ? data : (data.payments || []);
+                allTeacherFeeRecords = records;
+
+                const apiTotalPaid    = data.totalPaid    !== undefined ? data.totalPaid    : null;
+                const apiTotalPending = data.totalPending !== undefined ? data.totalPending : null;
+                const apiLastPayment  = data.lastPayment  !== undefined ? data.lastPayment  : null;
+
+                // --- Metric cards ---
+                const paid    = records.filter(r => r.status === 'paid');
+                const pending = records.filter(r => r.status !== 'paid');
+                const totalPaid    = apiTotalPaid    !== null ? apiTotalPaid    : paid.reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+                const totalPending = apiTotalPending !== null ? apiTotalPending : pending.reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+                const lastPaid     = apiLastPayment  !== null ? apiLastPayment  : (paid.sort((a, b) => new Date(b.expense_date) - new Date(a.expense_date))[0] || null);
+
+                if ($('fee-total-paid'))    $('fee-total-paid').textContent    = '$' + parseFloat(totalPaid).toFixed(2);
+                if ($('fee-total-pending')) $('fee-total-pending').textContent  = '$' + parseFloat(totalPending).toFixed(2);
+                if ($('fee-last-payment'))  $('fee-last-payment').textContent   = lastPaid ? '$' + parseFloat(lastPaid.amount).toFixed(2) : '—';
+                if ($('fee-last-date'))     $('fee-last-date').innerHTML       = lastPaid ? `<i class="fas fa-calendar-alt text-primary"></i> ${fmtDate(lastPaid.expense_date || lastPaid.created_at)}` : `<i class="fas fa-calendar-alt text-primary"></i> No payments yet`;
+                if ($('fee-total-count'))   $('fee-total-count').textContent   = records.length;
+
+                renderTeacherFeeRows(allTeacherFeeRecords);
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error loading fee records: ${e.message}</td></tr>`;
+            }
+        }
+        window.loadTeacherFees = loadTeacherFees;
+
+        function renderTeacherFeeRows(records) {
+            const tbody = $('teacher-fees-table-body');
+            if (!tbody) return;
+
+            if (!records || records.length === 0) {
+                tbody.innerHTML = `<tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <div class="py-4">
+                            <i class="fas fa-receipt fa-3x d-block mb-3 text-secondary opacity-25"></i>
+                            <h6 class="fw-bold text-secondary mb-1">No Fee Records Found</h6>
+                            <p class="small text-muted mb-0">No compensation or salary disbursements have been registered for your account yet.</p>
+                        </div>
+                    </td>
+                </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = records.map(r => {
+                const status = (r.status || 'pending').toLowerCase();
+                const statusCls = status === 'paid' 
+                    ? 'bg-success-subtle text-success border border-success-subtle' 
+                    : (status === 'pending' ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-secondary-subtle text-secondary');
+                const statusIcon = status === 'paid' ? 'fa-check-circle' : (status === 'pending' ? 'fa-clock' : 'fa-times-circle');
+                const statusLbl = status.charAt(0).toUpperCase() + status.slice(1);
+
+                return `<tr>
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-calendar text-muted small"></i>
+                            <span class="fw-semibold text-dark">${fmtDate(r.expense_date)}</span>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div class="fw-bold text-dark">${r.title || 'Teacher Salary / Compensation'}</div>
+                        <span class="badge bg-light text-muted border text-uppercase" style="font-size:0.65rem; letter-spacing:0.4px;">${r.category || 'teacher_fee'}</span>
+                    </td>
+                    <td class="py-3">
+                        <span class="fw-bold text-success fs-6">$${parseFloat(r.amount || 0).toFixed(2)}</span>
+                        <small class="text-muted ms-1" style="font-size:0.75rem;">${r.currency || 'USD'}</small>
+                    </td>
+                    <td class="py-3">
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="fas fa-money-bill-wave me-1 text-primary"></i>${r.payment_method || 'Cash'}
+                        </span>
+                    </td>
+                    <td class="py-3">
+                        <span class="font-monospace text-muted small px-2 py-1 rounded bg-light border">${r.reference_no || 'N/A'}</span>
+                    </td>
+                    <td class="py-3">
+                        <span class="badge ${statusCls} rounded-pill px-3 py-1 fw-semibold">
+                            <i class="fas ${statusIcon} me-1"></i>${statusLbl}
+                        </span>
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                        <button class="btn btn-outline-primary btn-sm px-3 rounded-pill fw-semibold shadow-sm" onclick="openVoucherModal(${r.id})" title="View Official Disbursement Voucher">
+                            <i class="fas fa-file-invoice-dollar me-1"></i> Voucher
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterTeacherFees() {
+            const query = ($('teacher-fee-search')?.value || '').trim().toLowerCase();
+            const statusFilter = $('teacher-fee-status-filter')?.value || 'all';
+
+            const filtered = allTeacherFeeRecords.filter(r => {
+                const matchStatus = statusFilter === 'all' || (r.status || '').toLowerCase() === statusFilter.toLowerCase();
+                const text = `${r.title || ''} ${r.reference_no || ''} ${r.category || ''} ${r.notes || ''} ${r.payment_method || ''}`.toLowerCase();
+                const matchQuery = !query || text.includes(query);
+                return matchStatus && matchQuery;
+            });
+
+            renderTeacherFeeRows(filtered);
+        }
+        window.filterTeacherFees = filterTeacherFees;
+
+        function openVoucherModal(expenseId) {
+            const r = allTeacherFeeRecords.find(x => x.id === expenseId);
+            const body = $('teacherVoucherBody');
+            if (!r || !body) return;
+
+            const isPaid = (r.status || '').toLowerCase() === 'paid';
+            const statusBadge = isPaid
+                ? `<span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fs-6"><i class="fas fa-check-circle me-1"></i>PAID & CLEARED</span>`
+                : `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-2 rounded-pill fs-6"><i class="fas fa-clock me-1"></i>PENDING APPROVAL</span>`;
+
+            body.innerHTML = `
+                <div id="printableVoucherSlip" class="p-2 p-md-3" style="background:#fff; color:#1a1a1a;">
+                    <!-- Campus Header -->
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="/images/BEDRCOK LOGO.JPG" style="width:56px; height:56px; border-radius:50%; border:2px solid #d4af37;" onerror="this.style.display='none'">
+                            <div>
+                                <h5 class="fw-bold mb-0" style="color:#0d2b4e; letter-spacing:0.5px;">BAIDOA BEDROCK ICT CAMPUS</h5>
+                                <div class="text-muted small">Higher Institute of Science, Technology & Computing</div>
+                                <div class="text-muted small" style="font-size:0.75rem;"><i class="fas fa-map-marker-alt me-1 text-danger"></i>Baidoa, Southwest State, Somalia · finance@bedrockict.edu</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge px-3 py-2 text-uppercase mb-1" style="background:#0d2b4e; color:#d4af37; font-size:0.75rem; letter-spacing:1px;">Official Voucher</span>
+                            <div class="fw-bold small text-muted">REF: <span class="font-monospace text-dark">${r.reference_no || ('VCH-' + String(r.id).padStart(5, '0'))}</span></div>
+                            <div class="text-muted small">Date: <strong>${fmtDate(r.expense_date)}</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Beneficiary Details Box -->
+                    <div class="rounded-3 p-3 mb-3 border" style="background:rgba(13,43,78,0.03);">
+                        <div class="row g-2" style="font-size:0.88rem;">
+                            <div class="col-sm-6">
+                                <div class="text-muted small text-uppercase fw-bold">Beneficiary / Faculty</div>
+                                <div class="fw-bold text-dark fs-6">${r.recipient_name || activeUser.name || 'Teacher'}</div>
+                                <div class="text-muted small">Role: Faculty Instructor / Teacher</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="text-muted small text-uppercase fw-bold">Department / Subject</div>
+                                <div class="fw-semibold text-dark">${activeUser.subject || 'Academic Faculty'}</div>
+                                <div class="text-muted small">Faculty ID: <span class="font-monospace">TCH-${String(r.teacher_id || activeUser.id || '10').padStart(4,'0')}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Particulars Table -->
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered align-middle mb-0" style="font-size:0.88rem;">
+                            <thead class="table-light text-uppercase text-muted" style="font-size:0.75rem;">
+                                <tr>
+                                    <th>Description / Purpose</th>
+                                    <th>Category</th>
+                                    <th>Method</th>
+                                    <th>Reference #</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">${r.title || 'Teacher Salary / Compensation'}</td>
+                                    <td><span class="badge bg-secondary-subtle text-dark border text-uppercase" style="font-size:0.65rem;">${r.category || 'teacher_fee'}</span></td>
+                                    <td>${r.payment_method || 'Cash'}</td>
+                                    <td class="font-monospace small">${r.reference_no || '—'}</td>
+                                    <td class="text-end fw-bold text-success fs-6">$${parseFloat(r.amount || 0).toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <th colspan="4" class="text-end text-uppercase" style="font-size:0.8rem;">Net Disbursed Total:</th>
+                                    <th class="text-end text-success fw-bold fs-5">$${parseFloat(r.amount || 0).toFixed(2)} <small class="text-muted" style="font-size:0.75rem;">USD</small></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    ${r.notes ? `<div class="mb-3 p-2 rounded small border" style="background:#fcfcfc;"><strong>Remarks / Purpose:</strong> ${r.notes}</div>` : ''}
+
+                    <div class="d-flex justify-content-between align-items-center my-3 py-2 px-3 rounded border" style="background:rgba(16,185,129,0.04);">
+                        <div class="small fw-semibold text-muted">VOUCHER STATUS:</div>
+                        <div>${statusBadge}</div>
+                    </div>
+
+                    <!-- Sign-off Block -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top flex-wrap gap-3">
+                        <div style="width: 200px;" class="text-center">
+                            <div class="mb-2">
+                                <span class="badge bg-success-subtle text-success border border-success px-2 py-1 rounded-pill" style="font-size:0.7rem;">
+                                    <i class="fas fa-check-double me-1"></i>ADMIN CLEARED
+                                </span>
+                            </div>
+                            <div style="border-top: 1px dashed #aaa; padding-top: 4px; font-size: 0.75rem;" class="text-muted">
+                                Finance & Administration<br>Baidoa Bedrock ICT
+                            </div>
+                        </div>
+                        <div style="width: 200px;" class="text-center">
+                            <div class="mb-2 text-muted" style="height: 20px; font-size:0.75rem;">
+                                <em>Acknowledged Electronically</em>
+                            </div>
+                            <div style="border-top: 1px dashed #aaa; padding-top: 4px; font-size: 0.75rem;" class="text-muted">
+                                Beneficiary Signature<br>${r.recipient_name || activeUser.name || 'Teacher'}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            new bootstrap.Modal($('teacherVoucherModal')).show();
+        }
+        window.openVoucherModal = openVoucherModal;
+
+        function printVoucherSlip() {
+            window.print();
+        }
+        window.printVoucherSlip = printVoucherSlip;
+
+        function printTeacherFeeStatement() {
+            window.print();
+        }
+        window.printTeacherFeeStatement = printTeacherFeeStatement;
 
         // === TIMETABLE TAB ===
         $('tt-class-select').addEventListener('change', function() {

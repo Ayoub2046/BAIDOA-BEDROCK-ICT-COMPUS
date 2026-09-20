@@ -153,6 +153,7 @@ app.use('/api/admission-batches', require('./routes/admission-batches.js'));
 app.use('/api/exam-periods', require('./routes/exam-periods.js'));
 app.use('/api/certificates', require('./routes/certificates.js'));
 app.use('/api/exam-attendance', require('./routes/exam-attendance.js'));
+app.use('/api/expenses', require('./routes/expenses.js'));
 
 // --- Auto-create class_students junction table if it doesn't exist ---
 // --- Auto-create activation columns if they don't exist ---
@@ -308,6 +309,40 @@ const { query } = require('./database');
         } catch (attErr) {
             if (!attErr.message.includes('already exists')) {
                 console.error('Error creating exam_attendance table:', attErr.message);
+            }
+        }
+
+        // Create expenses table if it doesn't exist
+        try {
+            await query(`
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    category VARCHAR(50) NOT NULL,
+                    amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+                    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+                    expense_date DATE NOT NULL DEFAULT CURRENT_DATE,
+                    payment_method VARCHAR(50) NOT NULL DEFAULT 'Cash',
+                    reference_no VARCHAR(100),
+                    recipient_name VARCHAR(255),
+                    teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'paid',
+                    notes TEXT,
+                    receipt_url TEXT,
+                    recorded_by VARCHAR(100),
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    deleted_at TIMESTAMPTZ
+                );
+                CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category) WHERE deleted_at IS NULL;
+                CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date) WHERE deleted_at IS NULL;
+                CREATE INDEX IF NOT EXISTS idx_expenses_teacher_id ON expenses(teacher_id) WHERE deleted_at IS NULL;
+                CREATE INDEX IF NOT EXISTS idx_expenses_status ON expenses(status) WHERE deleted_at IS NULL;
+            `);
+            console.log('expenses table ready.');
+        } catch (expErr) {
+            if (!expErr.message.includes('already exists')) {
+                console.error('Error creating expenses table:', expErr.message);
             }
         }
 

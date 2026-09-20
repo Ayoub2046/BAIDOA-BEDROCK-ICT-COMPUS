@@ -251,8 +251,9 @@ router.put('/:id', async (req, res) => {
     const { name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid, password, status, academic_year, student_id_code } = req.body;
     const studentId = parseInt(req.params.id);
     try {
+        let cleanCode = null;
         if (student_id_code && String(student_id_code).trim()) {
-            const cleanCode = String(student_id_code).trim().toUpperCase();
+            cleanCode = String(student_id_code).trim().toUpperCase();
             const { rows: dupCheck } = await query(`SELECT id FROM students WHERE UPPER(student_id_code) = $1 AND id != $2 AND deleted_at IS NULL`, [cleanCode, studentId]);
             if (dupCheck.length > 0) return res.status(400).json({ error: `Student ID "${cleanCode}" is already used by another student.` });
         }
@@ -271,7 +272,7 @@ router.put('/:id', async (req, res) => {
                 academic_year = COALESCE($10, academic_year),
                 student_id_code = COALESCE($11, student_id_code)
              WHERE id = $12 AND deleted_at IS NULL`,
-            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, student_id_code || null, studentId]
+            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, cleanCode || null, studentId]
         );
 
         if (password && String(password).trim()) {
