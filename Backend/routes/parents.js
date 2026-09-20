@@ -93,7 +93,21 @@ router.get('/dashboard-details', async (req, res) => {
                     );
                     if (classRows[0]) {
                         const { rows: ttRows } = await query(
-                            `SELECT day_of_week, subject, start_time, end_time, room, teacher_name FROM timetables WHERE class_id = $1 ORDER BY day_of_week, start_time`,
+                            `SELECT day_of_week, subject, start_time, end_time, room, teacher_name 
+                             FROM timetables 
+                             WHERE class_id = $1 
+                             ORDER BY 
+                                 CASE day_of_week
+                                     WHEN 'Saturday'  THEN 1
+                                     WHEN 'Sunday'    THEN 2
+                                     WHEN 'Monday'    THEN 3
+                                     WHEN 'Tuesday'   THEN 4
+                                     WHEN 'Wednesday' THEN 5
+                                     WHEN 'Thursday'  THEN 6
+                                     WHEN 'Friday'    THEN 7
+                                     ELSE 8
+                                 END,
+                                 start_time`,
                             [classRows[0].class_id]
                         );
                         return ttRows;

@@ -1044,7 +1044,7 @@
             try {
                 const res = await fetch(`/api/timetables/class/${classId}`);
                 const entries = await res.json();
-                const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                const days = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
                 const slots = {};
                 entries.forEach(e => {
                     const key = e.start_time+'-'+e.end_time;
@@ -1054,7 +1054,7 @@
                 const slotKeys = Object.keys(slots).sort((a,b) => slots[a].start.localeCompare(slots[b].start));
                 if (slotKeys.length === 0) { el.innerHTML = '<div class="p-3 text-center text-muted">No timetable for this class.</div>'; return; }
                 $('tt-week-label').textContent = 'Week of ' + now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-                let html = '<div class="tt-grid" style="grid-template-columns:60px repeat(5,1fr);">';
+                let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div class="tt-grid" style="grid-template-columns:60px repeat(7,1fr); min-width:560px;">';
                 html += '<div class="tt-h"></div>';
                 days.forEach(d => html += '<div class="tt-h">'+d.substring(0,3)+'</div>');
                 slotKeys.forEach(sk => {
@@ -1066,7 +1066,7 @@
                         else html += '<div class="tt-empty">—</div>';
                     });
                 });
-                html += '</div>';
+                html += '</div></div>';
                 el.innerHTML = html;
             } catch(e) { el.innerHTML = '<div class="p-3 text-center text-muted">Could not load timetable.</div>'; }
         }

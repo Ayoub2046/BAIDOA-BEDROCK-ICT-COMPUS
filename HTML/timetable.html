@@ -17,10 +17,15 @@
     <link rel="stylesheet" href="/css/style.css">
     <script src="/JS/bedrock-dialog.js"></script>
     <style>
+        #timetable-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .timetable-grid {
             display: grid;
-            grid-template-columns: 100px repeat(5, 1fr);
+            grid-template-columns: 100px repeat(7, 1fr);
             gap: 2px;
+            min-width: 850px;
         }
         .timetable-header {
             background: #0f510e;
@@ -211,6 +216,8 @@
                             <label class="form-label">Day of Week</label>
                             <select class="form-select" name="dayOfWeek" required>
                                 <option value="" disabled selected>Select day...</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
                                 <option value="Monday">Monday</option>
                                 <option value="Tuesday">Tuesday</option>
                                 <option value="Wednesday">Wednesday</option>
@@ -269,8 +276,8 @@
             let currentTimetable = [];
             let selectedClassId = null;
 
-            const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-            const DAY_ORDER = { 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5 };
+            const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const DAY_ORDER = { 'Saturday': 1, 'Sunday': 2, 'Monday': 3, 'Tuesday': 4, 'Wednesday': 5, 'Thursday': 6, 'Friday': 7 };
 
             loadClasses = async function() {
                 classSelect.innerHTML = '<option value="" disabled selected>Loading classes...</option>';

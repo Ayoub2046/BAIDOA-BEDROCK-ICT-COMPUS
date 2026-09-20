@@ -193,8 +193,8 @@ router.get('/:studentId', async (req, res) => {
                      FROM timetables WHERE class_id = $1
                      ORDER BY 
                         CASE day_of_week
-                            WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
-                            WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7
+                            WHEN 'Saturday' THEN 1 WHEN 'Sunday' THEN 2 WHEN 'Monday' THEN 3
+                            WHEN 'Tuesday' THEN 4 WHEN 'Wednesday' THEN 5 WHEN 'Thursday' THEN 6 WHEN 'Friday' THEN 7
                         END,
                         start_time ASC`,
                     [classInfo.id]

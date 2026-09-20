@@ -14,8 +14,8 @@ router.get('/', async (req, res) => {
             LEFT JOIN classes c ON t.class_id = c.id
             ORDER BY 
                 CASE t.day_of_week
-                    WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
-                    WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7
+                    WHEN 'Saturday' THEN 1 WHEN 'Sunday' THEN 2 WHEN 'Monday' THEN 3
+                    WHEN 'Tuesday' THEN 4 WHEN 'Wednesday' THEN 5 WHEN 'Thursday' THEN 6 WHEN 'Friday' THEN 7
                 END,
                 t.start_time ASC
         `);
@@ -36,8 +36,8 @@ router.get('/class/:classId', async (req, res) => {
             WHERE t.class_id = $1
             ORDER BY 
                 CASE t.day_of_week
-                    WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
-                    WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7
+                    WHEN 'Saturday' THEN 1 WHEN 'Sunday' THEN 2 WHEN 'Monday' THEN 3
+                    WHEN 'Tuesday' THEN 4 WHEN 'Wednesday' THEN 5 WHEN 'Thursday' THEN 6 WHEN 'Friday' THEN 7
                 END,
                 t.start_time ASC
         `, [req.params.classId]);

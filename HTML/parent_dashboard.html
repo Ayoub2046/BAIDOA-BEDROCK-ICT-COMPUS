@@ -104,7 +104,7 @@
         .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3; }
         .empty-state p { font-size: 0.85rem; margin: 0; }
 
-        .tt-grid { display: grid; grid-template-columns: 100px repeat(5, 1fr); gap: 4px; font-size: 0.75rem; }
+        .tt-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 4px; font-size: 0.75rem; min-width: 600px; }
         .tt-header { background: var(--primary, #1dd91d); color: #fff; padding: 6px; text-align: center; font-weight: 700; border-radius: 4px; }
         body[data-theme="dark"] .tt-header { background: #1a6b1a; }
         .tt-cell { background: var(--bg-body, #f8f9fa); padding: 6px; border-radius: 4px; min-height: 50px; }
@@ -255,10 +255,10 @@
                         + exams.map(e => `<tr><td>${e.subject}</td><td>${fmtDate(e.exam_date)}</td><td>${fmtTime(e.start_time)}</td><td>${e.room || '\u2014'}</td></tr>`).join('')
                         + '</tbody></table></div>';
 
-                    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                    const days = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
                     let ttHtml = timetable.length === 0
                         ? `<div class="empty-state"><i class="fas fa-clock"></i><p>No timetable set.</p></div>`
-                        : `<div class="tt-grid">
+                        : `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div class="tt-grid">
                             <div class="tt-header">Time</div>
                             ${days.map(d => `<div class="tt-header">${d.slice(0,3)}</div>`).join('')}
                             ${['8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00'].map(slot => {
@@ -268,7 +268,7 @@
                                     return `<div class="tt-cell">${entry ? `<span class="subj">${entry.subject}</span><span class="meta">${entry.teacher_name || ''}${entry.room ? ' \u00b7 '+entry.room : ''}</span>` : ''}</div>`;
                                 }).join('')}`;
                             }).join('')}
-                        </div>`;
+                        </div></div>`;
 
                     let msgHtml = messages.length === 0
                         ? `<div class="empty-state"><i class="fas fa-comments"></i><p>No messages from teachers.</p></div>`
