@@ -84,6 +84,8 @@ router.get('/latest', async (req, res) => {
         if (audience) {
             params.push(audience);
             sql += ` AND (audience = 'all' OR audience = $${params.length})`;
+        } else {
+            sql += ` AND audience = 'all'`; // Hide private messages from public homepage
         }
 
         params.push(limit);
