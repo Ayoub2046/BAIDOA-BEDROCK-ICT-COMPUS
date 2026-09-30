@@ -4738,19 +4738,11 @@
                 }
                 var container = document.getElementById('qrcode-container');
                 container.innerHTML = '';
-                var qrFormattedText = [
-                    'BEDROCK ICT CAMPUS STUDENT VERIFICATION',
-                    'Name: ' + (data.student.name || '--'),
-                    'ID: ' + bbId,
-                    'Class: ' + (data.student.grade || '--'),
-                    'Dept: ICT & Computer Science',
-                    'Valid: 2026-2028',
-                    'Status: VERIFIED ACTIVE STUDENT'
-                ].join('\n');
+                var verifyUrl = window.location.origin + '/HTML/verify-id.html?id=' + data.student.id + '&code=' + bbId;
 
                 try {
                     new QRCode(container, {
-                        text: qrFormattedText,
+                        text: verifyUrl,
                         width: 90,
                         height: 90,
                         colorDark: '#000000',
@@ -4758,7 +4750,7 @@
                         correctLevel: QRCode.CorrectLevel.L
                     });
                 } catch (err) {
-                    container.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(qrFormattedText) + '" style="width:90px;height:90px;display:block;">';
+                    container.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(verifyUrl) + '" style="width:90px;height:90px;display:block;">';
                 }
                 new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
             };
