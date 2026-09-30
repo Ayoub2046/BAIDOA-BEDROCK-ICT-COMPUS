@@ -2955,67 +2955,80 @@
     <!-- Digital ID Modal -->
     <div class="modal fade" id="digitalIdModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
-                <div class="modal-header border-0 text-white p-3" style="background:linear-gradient(135deg,#0d4f8c,#1e6091);">
-                    <h5 class="modal-title fs-6 fw-bold"><i class="fas fa-id-card me-2"></i>Official Digital Student ID Card</h5>
+            <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden; background:#091a2e;">
+                <div class="modal-header border-0 text-white p-3" style="background:linear-gradient(135deg,#0d2b4e,#1a3f6f); border-bottom:1px solid rgba(212,175,55,0.3);">
+                    <h5 class="modal-title fs-6 fw-bold"><i class="fas fa-id-card me-2" style="color:#d4af37;"></i><span style="color:#d4af37;">Official</span> Digital Student ID Card</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <!-- Real Physical ID Card Mockup -->
-                    <div id="real-id-card" style="width:360px; max-width:100%; margin:0 auto; background:#ffffff; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:2px solid #0d4f8c; position:relative; font-family:'Segoe UI',sans-serif;">
-                        <!-- Header Banner -->
-                        <div style="background:linear-gradient(135deg,#0d4f8c,#002b5b); padding:12px; text-align:center; color:#ffffff; border-bottom:3px solid #f39c12; position:relative;">
-                            <img src="/images/BEDRCOK LOGO.JPG" style="width:42px; height:42px; border-radius:50%; border:2px solid #fff; position:absolute; left:12px; top:10px;">
-                            <div style="margin-left:45px;">
-                                <div style="font-size:11px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#f1c40f;">Baidoa Bedrock ICT Campus</div>
-                                <div style="font-size:9px; opacity:0.9; text-transform:uppercase; font-weight:600;">Student Identification Card</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Card Body -->
-                        <div style="padding:15px; position:relative; background:radial-gradient(circle at center, #ffffff 60%, #f4f6f9 100%);">
-                            <!-- Background Stamp Watermark -->
-                            <div style="position:absolute; right:15px; bottom:15px; opacity:0.06; pointer-events:none;">
-                                <img src="/images/BEDRCOK LOGO.JPG" style="width:120px; height:120px;">
-                            </div>
+                <div class="modal-body p-4" style="background:#091a2e;">
 
-                            <div style="display:flex; gap:12px; align-items:center;">
-                                <!-- Photo Frame -->
-                                <div style="width:85px; height:105px; border-radius:10px; border:2px solid #0d4f8c; overflow:hidden; background:#eee; flex-shrink:0; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-                                    <img id="did-photo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
-                                </div>
+                    <!-- Premium Navy/Gold ID Card — matches verify-id.html exactly -->
+                    <div id="real-id-card" style="
+                        width:380px; max-width:100%; margin:0 auto;
+                        background:linear-gradient(145deg,#0d2b4e 0%,#1a3f6f 60%,#0b1f38 100%);
+                        border:2px solid #d4af37;
+                        border-radius:16px;
+                        overflow:hidden;
+                        box-shadow:0 16px 40px rgba(0,0,0,0.55);
+                        position:relative;
+                        font-family:'Segoe UI',system-ui,sans-serif;
+                        color:#fff;
+                    ">
+                        <!-- Glowing orb decoration -->
+                        <div style="position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:rgba(212,175,55,0.07);pointer-events:none;"></div>
 
-                                <!-- Student Details -->
-                                <div style="flex-grow:1; font-size:11px; line-height:1.4; color:#2c3e50;">
-                                    <div style="font-size:13px; font-weight:800; color:#0d4f8c; margin-bottom:2px;" id="did-name">--</div>
-                                    <div><strong style="color:#7f8c8d;">ID CODE:</strong> <span id="did-id" style="font-weight:700; color:#27ae60;">--</span></div>
-                                    <div><strong style="color:#7f8c8d;">CLASS:</strong> <span id="did-class" style="font-weight:600;">--</span></div>
-                                    <div><strong style="color:#7f8c8d;">DEPT:</strong> <span style="font-weight:600;">ICT & Computer Science</span></div>
-                                    <div><strong style="color:#7f8c8d;">VALID THRU:</strong> <span style="font-weight:600;">2026 - 2028</span></div>
-                                    <div style="margin-top:4px;">
-                                        <span class="badge bg-success" style="font-size:9px; padding:3px 8px; border-radius:10px;"><i class="fas fa-check-circle me-1"></i>VERIFIED STUDENT</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Bottom QR Code & Barcode Row -->
-                            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
-                                <div style="text-align:left;">
-                                    <div style="font-size:8px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Official Campus Seal</div>
-                                    <div style="font-size:10px; font-weight:800; color:#0d4f8c; font-style:italic;">Bedrock Registrar</div>
-                                </div>
-                                <div id="qrcode-container" style="background:#fff; padding:4px; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.05);"></div>
+                        <!-- HEADER -->
+                        <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:2px solid rgba(212,175,55,0.4);">
+                            <img src="/images/BEDRCOK LOGO.JPG" alt="Logo" style="width:54px;height:54px;border-radius:50%;border:2px solid #d4af37;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.35);background:#fff;" onerror="this.style.display='none'">
+                            <div>
+                                <div style="font-size:0.68rem;color:#d4af37;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Official Campus Credential</div>
+                                <div style="font-size:1rem;font-weight:800;color:#fff;line-height:1.2;">Baidoa Bedrock ICT Campus</div>
                             </div>
                         </div>
 
-                        <!-- Footer Accent Line -->
-                        <div style="background:#0d4f8c; height:6px; width:100%;"></div>
+                        <!-- BODY -->
+                        <div style="display:flex;gap:16px;align-items:flex-start;padding:18px 18px 12px;">
+                            <!-- Photo -->
+                            <div style="width:100px;height:120px;border-radius:12px;border:2px solid #d4af37;overflow:hidden;background:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.35);">
+                                <img id="did-photo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+                            </div>
+
+                            <!-- Details -->
+                            <div style="flex-grow:1;min-width:0;">
+                                <div style="font-size:0.62rem;color:#94a3b8;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:1px;">Student Name</div>
+                                <div id="did-name" style="font-size:0.92rem;font-weight:800;color:#fff;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">--</div>
+
+                                <div style="font-size:0.62rem;color:#94a3b8;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:1px;">Student ID Number</div>
+                                <div id="did-id" style="font-size:0.98rem;font-weight:700;color:#f3e5ab;font-family:'Courier New',monospace;margin-bottom:10px;">--</div>
+
+                                <div style="font-size:0.62rem;color:#94a3b8;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:1px;">Class / Grade</div>
+                                <div id="did-class" style="font-size:0.88rem;font-weight:700;color:#fff;margin-bottom:8px;">--</div>
+
+                                <span style="background:#1a8a4a;color:#fff;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(26,138,74,0.4);">
+                                    <i class="fas fa-shield-alt"></i>ACTIVE
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div style="margin:0 18px 14px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.2);display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-size:0.65rem;color:#d4af37;font-weight:800;">Baidoa Registrar</div>
+                                <div style="font-size:0.65rem;color:#cbd5e1;">Valid: 2026 - 2028</div>
+                            </div>
+                            <!-- QR Code -->
+                            <div style="text-align:center;">
+                                <div id="qrcode-container" style="background:#fff;padding:5px;border-radius:8px;border:1.5px solid #d4af37;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:inline-block;"></div>
+                                <div style="font-size:0.56rem;color:#94a3b8;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">Scan to Verify</div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-                <div class="modal-footer justify-content-center gap-2 bg-white">
-                    <button class="btn btn-primary btn-sm px-3" onclick="downloadDigitalId()"><i class="fas fa-download me-1"></i>Download PNG</button>
-                    <button class="btn btn-success btn-sm px-3" onclick="printDigitalId()"><i class="fas fa-print me-1"></i>Print ID Card</button>
-                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer justify-content-center gap-2" style="background:#0d2b4e; border-top:1px solid rgba(212,175,55,0.2);">
+                    <button class="btn btn-sm px-3 fw-bold" style="background:linear-gradient(135deg,#d4af37,#b8962d);color:#000;border:none;box-shadow:0 3px 10px rgba(212,175,55,0.3);" onclick="downloadDigitalId()"><i class="fas fa-download me-1"></i>Download PNG</button>
+                    <button class="btn btn-sm btn-outline-light px-3 fw-bold" onclick="printDigitalId()"><i class="fas fa-print me-1"></i>Print ID Card</button>
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
