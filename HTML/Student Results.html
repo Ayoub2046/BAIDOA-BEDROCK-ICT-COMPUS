@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
@@ -3456,35 +3457,105 @@
 
             function loadAnnouncements(data) {
                 var container = document.getElementById('announcements-list');
+                if (!container) return;
+                var lang = typeof BedrockI18n !== 'undefined' ? BedrockI18n.getLang() : 'en';
                 var items = [];
+
                 // Admin announcements (sent from the Admin panel)
                 (data.announcements || []).forEach(function (a) {
-                    items.push({ icon: 'fa-bullhorn', title: a.title || 'Announcement', desc: (a.message || '') + (a.created_at ? ' <small class="text-muted">' + formatDate(a.created_at) + '</small>' : '') });
+                    var title = a.title || 'Announcement';
+                    var msg = a.message || '';
+                    if (lang === 'so' && a.title_so) title = a.title_so;
+                    if (lang === 'so' && a.message_so) msg = a.message_so;
+                    if (lang === 'ar' && a.title_ar) title = a.title_ar;
+                    if (lang === 'ar' && a.message_ar) msg = a.message_ar;
+
+                    var icon = 'fa-bullhorn';
+                    var badgeClass = 'bg-primary';
+                    var categoryLabel = 'News';
+
+                    if (a.category === 'exam_free') {
+                        icon = 'fa-graduation-cap';
+                        badgeClass = 'bg-success';
+                        categoryLabel = lang === 'so' ? 'Fasax Imtixaan' : lang === 'ar' ? 'إشعار امتحانات' : 'Exam Free';
+                    } else if (a.category === 'fee_payment') {
+                        icon = 'fa-credit-card';
+                        badgeClass = 'bg-warning text-dark';
+                        categoryLabel = lang === 'so' ? 'Bixinta Lacagta' : lang === 'ar' ? 'الرسوم الدراسية' : 'Fee Notice';
+                    } else if (a.category === 'low_attendance') {
+                        icon = 'fa-exclamation-triangle';
+                        badgeClass = 'bg-danger';
+                        categoryLabel = lang === 'so' ? 'Digniin Imaansho' : lang === 'ar' ? 'تحذير الحضور' : 'Attendance Warning';
+                    }
+
+                    items.push({
+                        icon: icon,
+                        title: title,
+                        categoryBadge: '<span class="badge ' + badgeClass + ' me-2">' + categoryLabel + '</span>',
+                        desc: msg + (a.created_at ? ' <br><small class="text-muted"><i class="far fa-clock me-1"></i>' + formatDate(a.created_at) + '</small>' : '')
+                    });
                 });
+
                 var att = data.attendance || {};
                 if (att.percentage !== undefined && att.percentage < 75) {
-                    items.push({ icon: 'fa-exclamation-triangle', title: 'Low Attendance Warning', desc: 'Your attendance is ' + att.percentage + '%. Please maintain at least 75%.' });
+                    var attTitle = lang === 'so' ? 'Digniin Imaansho Hooseeya' : lang === 'ar' ? 'تحذير انخفاض الحضور' : 'Low Attendance Warning';
+                    var attMsg = lang === 'so' ? 'Imaanshaahaaga waa ' + att.percentage + '%. Fadlan ilaali ugu yaraan 75%.' : lang === 'ar' ? 'نسبة حضورك هي ' + att.percentage + '%. يرجى الحفاظ على 75% على الأقل.' : 'Your attendance is ' + att.percentage + '%. Please maintain at least 75%.';
+                    items.push({ icon: 'fa-exclamation-triangle', categoryBadge: '<span class="badge bg-danger me-2">Alert</span>', title: attTitle, desc: attMsg });
                 }
+
                 var fees = data.fees || [];
                 var overdue = fees.filter(function (f) { return f.status === 'Pending' && new Date(f.duedate) < new Date(); });
                 if (overdue.length > 0) {
-                    items.push({ icon: 'fa-clock', title: 'Overdue Fees', desc: 'You have ' + overdue.length + ' overdue fee payment(s). Please clear them soon.' });
+                    var feeTitle = lang === 'so' ? 'Lacago Dib u Dhacay' : lang === 'ar' ? 'رسوم متأخرة' : 'Overdue Fees';
+                    var feeMsg = lang === 'so' ? 'Waxaa ku dul jooga ' + overdue.length + ' lacag oo dib u dhacday. Fadlan bixi ugu dhakhsaha badan.' : lang === 'ar' ? 'لديك ' + overdue.length + ' رسوم متأخرة. يرجى السداد قريبًا.' : 'You have ' + overdue.length + ' overdue fee payment(s). Please clear them soon.';
+                    items.push({ icon: 'fa-clock', categoryBadge: '<span class="badge bg-warning text-dark me-2">Fee Due</span>', title: feeTitle, desc: feeMsg });
                 }
-                var clearance = data.clearance;
-                if (clearance && clearance.isCleared) {
-                    items.push({ icon: 'fa-check-circle', title: 'Clearance Approved', desc: 'You are cleared for exams. You can download your clearance card.' });
-                } else {
-                    items.push({ icon: 'fa-id-card', title: 'Clearance Required', desc: 'Clear your fees to receive clearance for exams.' });
-                }
-                var exams = data.examSchedule || [];
-                if (exams.length > 0) {
-                    var nextExam = exams[0];
-                    items.push({ icon: 'fa-file-alt', title: 'Upcoming Exam', desc: (nextExam.subject || 'Exam') + ' on ' + formatDate(nextExam.exam_date) + ' at ' + formatTime(nextExam.start_time) + '.' });
-                }
+
                 var html = items.map(function (item) {
-                    return '<div class="announcement-item"><div class="ann-icon"><i class="fas ' + item.icon + '"></i></div><div class="ann-text"><h6>' + item.title + '</h6><p>' + item.desc + '</p></div></div>';
+                    return '<div class="announcement-item shadow-sm p-3 mb-2 rounded bg-white border-start border-4 border-primary"><div class="ann-icon me-3 text-primary"><i class="fas ' + item.icon + ' fa-lg"></i></div><div class="ann-text"><h6>' + (item.categoryBadge || '') + item.title + '</h6><p class="mb-0 text-secondary" style="white-space:pre-wrap;">' + item.desc + '</p></div></div>';
                 }).join('');
-                container.innerHTML = html;
+                container.innerHTML = html || '<div class="text-center text-muted py-3">No announcements at this time.</div>';
+
+                // Display live top banner alert if broadcast announcement exists
+                if (data.announcements && data.announcements.length > 0) {
+                    showTopAnnouncementBanner(data.announcements[0], lang);
+                }
+            }
+
+            function showTopAnnouncementBanner(ann, lang) {
+                var topBanner = document.getElementById('student-top-announcement-banner');
+                if (!topBanner) {
+                    topBanner = document.createElement('div');
+                    topBanner.id = 'student-top-announcement-banner';
+                    topBanner.className = 'alert alert-info alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4';
+                    topBanner.style.cssText = 'background: linear-gradient(135deg, #0d4f8c, #1a7fd4); color: #fff; border-left: 6px solid #f5a623 !important;';
+                    var mainContainer = document.querySelector('.main-container, .container-fluid, .container');
+                    if (mainContainer) mainContainer.insertBefore(topBanner, mainContainer.firstChild);
+                }
+
+                var title = ann.title || 'Announcement';
+                var msg = ann.message || '';
+                if (lang === 'so' && ann.title_so) title = ann.title_so;
+                if (lang === 'so' && ann.message_so) msg = ann.message_so;
+                if (lang === 'ar' && ann.title_ar) title = ann.title_ar;
+                if (lang === 'ar' && ann.message_ar) msg = ann.message_ar;
+
+                topBanner.innerHTML = `
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-white text-primary flex-shrink-0" style="width:46px;height:46px;font-size:1.3rem;">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-warning text-dark px-2 py-1" style="font-size:0.68rem;letter-spacing:0.5px;text-transform:uppercase;">📢 ${ann.category || 'Announcement'}</span>
+                                <small class="text-white-50">${ann.created_at ? formatDate(ann.created_at) : ''}</small>
+                            </div>
+                            <h5 class="fw-bold mb-1 mt-1 text-white">${title}</h5>
+                            <div class="text-white-80 small" style="white-space:pre-wrap;">${msg}</div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
             }
 
             // ========== TAB 1: RESULTS ==========
@@ -3830,6 +3901,9 @@
                             scoreVal = parseFloat(subjectData.scores['quiz']) || 0;
                         } else if (p.key === 'practical_exam' && subjectData.scores && (subjectData.scores['assignment'] !== undefined || subjectData.scores['final'] !== undefined)) {
                             scoreVal = (parseFloat(subjectData.scores['assignment']) || 0) + (parseFloat(subjectData.scores['final']) || 0);
+                        } else {
+                            // Don't render exams that the student didn't take/were not assigned
+                            return;
                         }
 
                         var maxVal = (subjectData.maxScores && subjectData.maxScores[p.key]) ? parseFloat(subjectData.maxScores[p.key]) : p.max;

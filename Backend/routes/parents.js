@@ -119,8 +119,11 @@ router.get('/dashboard-details', async (req, res) => {
             const messages = await (async () => {
                 try {
                     const { rows: msgRows } = await query(
-                        `SELECT m.subject, m.body, m.time, m.sender FROM messages m WHERE m.channelid = $1 ORDER BY m.time DESC LIMIT 10`,
-                        [`student-${child.id}`]
+                        `SELECT m.subject, m.body, m.category, m.language, m.time, m.sender, m.created_at 
+                         FROM messages m 
+                         WHERE (m.channelid = $1 OR m.channelid = $2 OR m.channelid = 'all-parents') AND m.deleted_at IS NULL
+                         ORDER BY m.id DESC LIMIT 10`,
+                        [`parent-${parent.id}`, `student-${child.id}`]
                     );
                     return msgRows;
                 } catch { return []; }

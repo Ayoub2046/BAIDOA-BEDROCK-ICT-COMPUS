@@ -13,6 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/JS/i18n.js"></script>
     <script src="/JS/bedrock-dialog.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
@@ -407,6 +408,7 @@
 
         <!-- ======================== OVERVIEW ======================== -->
         <div class="td-section active" id="section-overview">
+            <div id="teacher-announcements-banner" class="mb-3"></div>
             <div class="stat-grid" id="overview-stats"></div>
             <div class="row g-3">
                 <div class="col-lg-7">
@@ -2277,6 +2279,45 @@
                 });
             } catch(e) { /* ignore */ }
         }
+
+        // === ANNOUNCEMENTS FOR TEACHERS ===
+        async function fetchTeacherAnnouncements() {
+            try {
+                const res = await fetch('/api/announcements/latest?audience=teachers');
+                const announcements = await res.json();
+                const container = document.getElementById('teacher-announcements-banner');
+                if (!container || !announcements || announcements.length === 0) return;
+
+                const lang = typeof BedrockI18n !== 'undefined' ? BedrockI18n.getLang() : 'en';
+                const ann = announcements[0];
+                let title = ann.title || 'Announcement';
+                let msg = ann.message || '';
+                if (lang === 'so' && ann.title_so) title = ann.title_so;
+                if (lang === 'so' && ann.message_so) msg = ann.message_so;
+                if (lang === 'ar' && ann.title_ar) title = ann.title_ar;
+                if (lang === 'ar' && ann.message_ar) msg = ann.message_ar;
+
+                container.innerHTML = `
+                    <div class="alert alert-primary alert-dismissible fade show shadow-sm border-0 rounded-4" style="background: linear-gradient(135deg, #0d4f8c, #1a7fd4); color: #fff; border-left: 6px solid #f5a623 !important;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-white text-primary flex-shrink-0" style="width:46px;height:46px;font-size:1.3rem;">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-warning text-dark px-2 py-1" style="font-size:0.68rem;letter-spacing:0.5px;text-transform:uppercase;">📢 Broadcast</span>
+                                    <small class="text-white-50">${ann.created_at ? ann.created_at.split('T')[0] : ''}</small>
+                                </div>
+                                <h5 class="fw-bold mb-1 mt-1 text-white">${title}</h5>
+                                <div class="text-white-80 small" style="white-space:pre-wrap;">${msg}</div>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+            } catch(e) { console.error("Error fetching teacher announcements:", e); }
+        }
+        fetchTeacherAnnouncements();
     });
 
     function toggleTheme() {

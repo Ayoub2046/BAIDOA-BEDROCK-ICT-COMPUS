@@ -480,12 +480,29 @@ const { query } = require('./database');
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 message TEXT,
+                category TEXT DEFAULT 'general',
                 audience TEXT DEFAULT 'all',
                 created_by TEXT,
+                image_url TEXT,
+                title_so TEXT,
+                message_so TEXT,
+                title_ar TEXT,
+                message_ar TEXT,
+                publish_date DATE DEFAULT CURRENT_DATE,
                 created_at TIMESTAMP DEFAULT NOW(),
                 deleted_at TIMESTAMP
             )
         `);
+        try {
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general'`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS audience TEXT DEFAULT 'all'`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS image_url TEXT`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS title_so TEXT`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS message_so TEXT`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS title_ar TEXT`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS message_ar TEXT`);
+            await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS publish_date DATE DEFAULT CURRENT_DATE`);
+        } catch (e) {}
         console.log('announcements table ready.');
 
         // Create student_auth table if it doesn't exist

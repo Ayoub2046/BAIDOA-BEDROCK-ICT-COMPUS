@@ -62,22 +62,33 @@ router.get('/:studentId', async (req, res) => {
 
         try {
             const { rows: resultRows } = await query(
-                `SELECT subject, score, exam_type, max_score FROM results WHERE student_id = $1 AND approval_status = 'approved'`,
+                `SELECT r.subject, r.score, r.exam_type, r.max_score, ep.name as period_name, ep.month, ep.year
+                 FROM results r
+                 LEFT JOIN exam_periods ep ON r.period_id = ep.id
+                 WHERE r.student_id = $1 AND r.approval_status = 'approved'`,
                 [studentId]
             );
-            // Group by subject, then by exam_type
+            // Group by subject and period, then by exam_type
             resultRows.forEach(r => {
-                if (!results[r.subject]) {
-                    results[r.subject] = { scores: {}, total: 0, maxTotal: 0 };
+                let displaySubject = r.subject || 'Unknown Subject';
+                if (r.period_name) {
+                    displaySubject += ` (${r.period_name})`;
+                } else if (r.month && r.year) {
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    displaySubject += ` (${months[r.month-1]} ${r.year})`;
+                }
+
+                if (!results[displaySubject]) {
+                    results[displaySubject] = { scores: {}, total: 0, maxTotal: 0 };
                 }
                 const examType = r.exam_type || 'score';
                 const score = parseFloat(r.score) || 0;
                 const maxScore = parseFloat(r.max_score) || 100;
-                results[r.subject].scores[examType] = score;
-                results[r.subject].maxScores = results[r.subject].maxScores || {};
-                results[r.subject].maxScores[examType] = maxScore;
-                results[r.subject].total += score;
-                results[r.subject].maxTotal += maxScore;
+                results[displaySubject].scores[examType] = score;
+                results[displaySubject].maxScores = results[displaySubject].maxScores || {};
+                results[displaySubject].maxScores[examType] = maxScore;
+                results[displaySubject].total += score;
+                results[displaySubject].maxTotal += maxScore;
             });
         } catch (e) { /* results table may not exist */ }
 
@@ -231,10 +242,12 @@ router.get('/:studentId', async (req, res) => {
         let announcements = [];
         try {
             const { rows } = await query(
-                `SELECT id, title, message, audience, created_at
+                `SELECT id, title, message, category, audience, created_by, image_url,
+                        title_so, message_so, title_ar, message_ar,
+                        COALESCE(publish_date, created_at::date) as publish_date, created_at
                  FROM announcements
                  WHERE deleted_at IS NULL AND (audience = 'all' OR audience = 'students')
-                 ORDER BY created_at DESC
+                 ORDER BY COALESCE(publish_date, created_at::date) DESC, id DESC
                  LIMIT 10`
             );
             announcements = rows;
