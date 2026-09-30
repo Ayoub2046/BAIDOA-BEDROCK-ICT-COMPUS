@@ -8,7 +8,8 @@ async function ensureTables() {
     await query(`
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,
-            channelid TEXT NOT NULL,
+            channelid TEXT,
+            channel_id TEXT,
             sender TEXT,
             recipient_type TEXT DEFAULT 'general',
             recipient_id TEXT,
@@ -23,11 +24,15 @@ async function ensureTables() {
         )
     `);
     try {
+        await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS channelid TEXT`);
+        await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS channel_id TEXT`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS recipient_type TEXT DEFAULT 'general'`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS recipient_id TEXT`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general'`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en'`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
+        await query(`UPDATE messages SET channelid = channel_id WHERE channelid IS NULL AND channel_id IS NOT NULL`);
+        await query(`UPDATE messages SET channel_id = channelid WHERE channel_id IS NULL AND channelid IS NOT NULL`);
     } catch (e) {}
 }
 
@@ -35,9 +40,9 @@ async function ensureTables() {
 router.get('/', async (req, res) => {
     try {
         await ensureTables();
-        const { rows } = await query(`SELECT * FROM messages WHERE deleted_at IS NULL ORDER BY id DESC`);
+        const { rows } = await query(`SELECT *, COALESCE(channelid, channel_id, 'general') AS channelid FROM messages WHERE deleted_at IS NULL ORDER BY id DESC`);
         const groupedMessages = rows.reduce((acc, msg) => {
-            const channel = msg.channelid || 'general';
+            const channel = msg.channelid || msg.channel_id || 'general';
             if (!acc[channel]) acc[channel] = [];
             msg.unread = msg.isread === false;
             acc[channel].push(msg);
@@ -54,7 +59,7 @@ router.get('/channel/:channelId', async (req, res) => {
     try {
         await ensureTables();
         const { rows } = await query(
-            `SELECT * FROM messages WHERE channelid = $1 AND deleted_at IS NULL ORDER BY id DESC`,
+            `SELECT *, COALESCE(channelid, channel_id) AS channelid FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id DESC`,
             [req.params.channelId]
         );
         res.json(rows);
@@ -70,11 +75,12 @@ router.post('/', async (req, res) => {
     const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     try {
         await ensureTables();
+        const ch = channelId || 'general';
         const { rows } = await query(
-            `INSERT INTO messages (channelid, sender, subject, body, category, recipient_type, recipient_id, language, time) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time) 
+             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
             [
-                channelId || 'general',
+                ch,
                 messageSender,
                 subject || 'Notification',
                 body || '',
@@ -136,8 +142,8 @@ router.post('/send-parent-alert', async (req, res) => {
         const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
         const { rows } = await query(
-            `INSERT INTO messages (channelid, sender, subject, body, category, recipient_type, recipient_id, language, time)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time)
+             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
             [
                 channelId,
                 'School Administration',
@@ -196,8 +202,8 @@ router.post('/direct', async (req, res) => {
         const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
         const { rows } = await query(
-            `INSERT INTO messages (channelid, sender, subject, body, category, recipient_type, recipient_id, time, isread)
-             VALUES ($1, $2, $3, $4, 'direct', $5, $6, $7, false) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, time, isread)
+             VALUES ($1, $1, $2, $3, $4, 'direct', $5, $6, $7, false) RETURNING id`,
             [
                 channelId,
                 `${senderName || 'User'} (${senderRole || 'Student'})`,
@@ -221,7 +227,7 @@ router.get('/thread/:user1/:user2', async (req, res) => {
         await ensureTables();
         const channelId = `direct-${Math.min(user1, user2)}-${Math.max(user1, user2)}`;
         const { rows } = await query(
-            `SELECT * FROM messages WHERE channelid = $1 AND deleted_at IS NULL ORDER BY id ASC`,
+            `SELECT *, COALESCE(channelid, channel_id) AS channelid FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id ASC`,
             [channelId]
         );
         res.json(rows);
@@ -240,7 +246,7 @@ router.get('/notifications/unread', async (req, res) => {
         const params = [];
         if (recipientId) {
             params.push(String(recipientId));
-            sql += ` AND (recipient_id = $${params.length} OR channelid LIKE 'student-' || $${params.length} OR channelid LIKE 'parent-' || $${params.length} OR channelid = 'general')`;
+            sql += ` AND (recipient_id = $${params.length} OR channelid LIKE 'student-' || $${params.length} OR channel_id LIKE 'student-' || $${params.length} OR channelid LIKE 'parent-' || $${params.length} OR channel_id LIKE 'parent-' || $${params.length} OR channelid = 'general' OR channel_id = 'general')`;
         }
         sql += ` ORDER BY id DESC LIMIT 10`;
 
@@ -250,5 +256,7 @@ router.get('/notifications/unread', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+module.exports = router;
 
 module.exports = router;

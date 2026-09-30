@@ -4804,6 +4804,10 @@
                 try {
                     var res = await fetch('/api/messages/thread/' + studentId + '/' + recipientId);
                     var messages = await res.json();
+                    if (!res.ok || !Array.isArray(messages)) {
+                        box.innerHTML = '<div class="text-center text-danger py-3 small">Failed to load thread: ' + (messages.error || 'Server error') + '</div>';
+                        return;
+                    }
                     if (messages.length === 0) {
                         box.innerHTML = '<div class="text-center text-muted py-4 small">No messages yet. Send your first message below!</div>';
                         return;
