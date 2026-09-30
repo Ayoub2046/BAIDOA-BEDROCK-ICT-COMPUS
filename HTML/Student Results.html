@@ -4739,28 +4739,33 @@
                 var container = document.getElementById('qrcode-container');
                 container.innerHTML = '';
                 var qrFormattedText = [
-                    '🎓 BAIDOA BEDROCK ICT CAMPUS',
+                    'BAIDOA BEDROCK ICT CAMPUS',
                     'OFFICIAL DIGITAL STUDENT CARD',
-                    '------------------------------------',
-                    '👤 Name: ' + (data.student.name || '--'),
-                    '🆔 Student ID: ' + bbId,
-                    '📚 Class / Grade: ' + (data.student.grade || '--'),
-                    '🏫 Dept: ICT & Computer Science',
-                    '📅 Valid Period: 2026 - 2028',
-                    '✅ Status: VERIFIED ACTIVE STUDENT',
-                    '🔒 Security Code: BB-VERIFIED-OFFICIAL',
-                    '------------------------------------',
+                    '----------------------------------',
+                    'Name: ' + (data.student.name || '--'),
+                    'Student ID: ' + bbId,
+                    'Class: ' + (data.student.grade || '--'),
+                    'Dept: ICT & Computer Science',
+                    'Valid Period: 2026 - 2028',
+                    'Status: VERIFIED ACTIVE STUDENT',
+                    'Security Code: BB-VERIFIED-OFFICIAL',
+                    '----------------------------------',
                     'Issued by Bedrock Campus Registrar'
                 ].join('\n');
 
-                new QRCode(container, {
-                    text: qrFormattedText,
-                    width: 70,
-                    height: 70,
-                    colorDark: '#0d4f8c',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.M
-                });
+                try {
+                    new QRCode(container, {
+                        text: qrFormattedText,
+                        width: 70,
+                        height: 70,
+                        colorDark: '#0d4f8c',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+                } catch (err) {
+                    console.warn('QR Code generation fallback:', err);
+                    container.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=' + encodeURIComponent(qrFormattedText) + '" style="width:70px;height:70px;">';
+                }
                 new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
             };
 
