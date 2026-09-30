@@ -68,44 +68,150 @@
                     <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
                 </div>
             </nav>
-            <div class="content-area">
-                <div class="card main-table-card">
-                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
-                        <div>
-                            <h6 class="m-0">Mark Attendance</h6>
-                            <small class="text-muted">Select a date to view and mark attendance.</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-outline-warning btn-sm" id="admin-unlock-att-btn" title="Unlock attendance for teachers on this date">
-                                <i class="fas fa-lock-open me-1"></i> Unlock for Teacher
-                            </button>
-                            <input type="date" class="form-control" id="attendance-date" style="width: auto;">
+            <div class="content-area p-4">
+                <ul class="nav nav-tabs mb-3" id="attTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="students-att-tab" data-bs-toggle="tab" data-bs-target="#students-att-pane"><i class="fas fa-user-graduate me-2 text-primary"></i>Student Attendance</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="teachers-att-tab" data-bs-toggle="tab" data-bs-target="#teachers-att-pane"><i class="fas fa-qrcode me-2 text-success"></i>Teacher QR Check-in & Lateness Engine</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="attTabsContent">
+                    <!-- Student Attendance Pane -->
+                    <div class="tab-pane fade show active" id="students-att-pane" role="tabpanel">
+                        <div class="card main-table-card">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="m-0 fw-bold"><i class="fas fa-user-check me-2 text-primary"></i>Mark Student Attendance</h6>
+                                    <small class="text-muted">Select a date to view and mark student attendance.</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-warning btn-sm" id="admin-unlock-att-btn" title="Unlock attendance for teachers on this date">
+                                        <i class="fas fa-lock-open me-1"></i> Unlock for Teacher
+                                    </button>
+                                    <input type="date" class="form-control" id="attendance-date" style="width: auto;">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="save-alert" class="mb-3"></div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <th>Name</th>
+                                                <th class="text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="attendance-tbody">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted py-4">Please select a date to begin.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer text-end bg-white">
+                                <button class="btn btn-primary" id="save-attendance-btn" disabled><i class="fas fa-save me-2"></i>Save Attendance</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div id="save-alert" class="mb-3"></div>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Student ID</th>
-                                        <th>Name</th>
-                                        <th class="text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="attendance-tbody">
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">Please select a date to begin.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                    <!-- Teacher QR Check-in & Lateness Engine Pane -->
+                    <div class="tab-pane fade" id="teachers-att-pane" role="tabpanel">
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body bg-light rounded p-4">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                    <div>
+                                        <h5 class="fw-bold text-dark m-0"><i class="fas fa-clock text-success me-2"></i>Teacher Arrival & Scan Tracking System</h5>
+                                        <p class="text-muted small mb-0">Teachers must scan their QR code upon entering class. Lateness is calculated automatically relative to expected start time.</p>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <button class="btn btn-success" id="btn-open-qr-scanner"><i class="fas fa-camera me-2"></i>Scan Teacher QR Code</button>
+                                        <button class="btn btn-primary" id="btn-print-teacher-poster"><i class="fas fa-print me-2"></i>Print Wall QR Poster & Stamp</button>
+                                    </div>
+                                </div>
+
+                                <hr class="my-3">
+
+                                <!-- Settings Bar -->
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold small">School Arrival Deadline Time (e.g. 13:50:00)</label>
+                                        <div class="input-group">
+                                            <input type="time" step="1" class="form-control" id="teacher-start-time-input" value="13:50:00">
+                                            <button class="btn btn-outline-primary" id="btn-save-teacher-time"><i class="fas fa-save me-1"></i>Save Time</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold small">Select Attendance Date</label>
+                                        <input type="date" class="form-control" id="teacher-att-date">
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-outline-secondary w-100" onclick="fetchTeacherAttendance()"><i class="fas fa-redo me-1"></i>Refresh Teacher Roster</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teacher Attendance Log Table -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 fw-bold"><i class="fas fa-list-check me-2 text-primary"></i>Daily Teacher Attendance & Lateness Log</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="teacher-att-alert" class="p-3"></div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Teacher Name</th>
+                                                <th>Expected Time</th>
+                                                <th>Actual Scan Time</th>
+                                                <th>Status</th>
+                                                <th>Lateness Penalty</th>
+                                                <th>Recorded By</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="teacher-att-tbody">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">Loading teacher records...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-footer text-end">
-                        <button class="btn btn-primary" id="save-attendance-btn" disabled><i
-                                class="fas fa-save me-2"></i>Save Attendance</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher QR Code Scan Modal -->
+    <div class="modal fade" id="teacherScanModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-qrcode me-2"></i>Teacher QR Check-in Terminal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div id="scan-feedback" class="mb-3"></div>
+                    <p class="text-muted small">Select a teacher or enter/scan Teacher ID code to record instant check-in:</p>
+                    <div class="mb-3">
+                        <select id="scan-teacher-select" class="form-select form-select-lg">
+                            <option value="">-- Choose Teacher to Check-in --</option>
+                        </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Simulate Exact Scan Time (Leave empty for live now)</label>
+                        <input type="datetime-local" class="form-control" id="scan-custom-time">
+                    </div>
+                    <button class="btn btn-success btn-lg w-100" id="btn-submit-teacher-scan"><i class="fas fa-check-circle me-2"></i>Record QR Check-in Scan</button>
                 </div>
             </div>
         </div>
@@ -249,6 +355,189 @@
                 });
             }
 
+            fetchAttendanceForDate(today);
+
+            // --- TEACHER QR ATTENDANCE JS LOGIC ---
+            const teacherDateInput = document.getElementById('teacher-att-date');
+            if (teacherDateInput) teacherDateInput.value = today;
+
+            async function fetchTeacherSettings() {
+                try {
+                    const res = await fetch('/api/attendance/teacher/settings');
+                    const data = await res.json();
+                    if (data.teacher_start_time) {
+                        document.getElementById('teacher-start-time-input').value = data.teacher_start_time;
+                    }
+                } catch (e) {}
+            }
+
+            window.fetchTeacherAttendance = async function () {
+                const dt = document.getElementById('teacher-att-date').value || today;
+                const tbody = document.getElementById('teacher-att-tbody');
+                if (!tbody) return;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success me-2"></div> Loading teacher attendance log...</td></tr>`;
+
+                try {
+                    const res = await fetch(`/api/attendance/teacher/daily/${dt}`);
+                    const teachers = await res.json();
+                    
+                    // Also populate teacher select dropdown for QR checkin modal
+                    const select = document.getElementById('scan-teacher-select');
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Choose Teacher to Check-in --</option>' + 
+                            teachers.map(t => `<option value="${t.teacher_id}">${t.teacher_name} (${t.email || 'Teacher'})</option>`).join('');
+                    }
+
+                    if (teachers.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No teachers found in the system.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = teachers.map(t => {
+                        let statusBadge = '<span class="badge bg-secondary">Not Scanned</span>';
+                        let lateText = '<span class="text-muted">0 mins</span>';
+
+                        if (t.status === 'present') {
+                            statusBadge = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>On Time</span>';
+                        } else if (t.status === 'late') {
+                            statusBadge = `<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Late (${t.late_minutes}m)</span>`;
+                            lateText = `<strong class="text-danger">-${t.late_minutes} mins</strong>`;
+                        } else if (t.status === 'absent') {
+                            statusBadge = '<span class="badge bg-dark">Absent</span>';
+                        }
+
+                        const scanTimeStr = t.scan_time ? new Date(t.scan_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '--:--';
+                        const expTimeStr = t.expected_time || '13:50:00';
+
+                        return `
+                            <tr>
+                                <td class="fw-bold text-primary">${t.teacher_name}</td>
+                                <td><span class="badge bg-light text-dark border">${expTimeStr}</span></td>
+                                <td class="fw-semibold">${scanTimeStr}</td>
+                                <td>${statusBadge}</td>
+                                <td>${lateText}</td>
+                                <td><small class="text-muted">${t.recorded_by || '--'}</small></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-success me-1" onclick="quickTeacherScan(${t.teacher_id})" title="Record Instant Check-in"><i class="fas fa-qrcode"></i> Check In</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                } catch (e) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error loading teacher attendance: ${e.message}</td></tr>`;
+                }
+            };
+
+            // Save arrival deadline setting
+            document.getElementById('btn-save-teacher-time')?.addEventListener('click', async () => {
+                const timeVal = document.getElementById('teacher-start-time-input').value;
+                if (!timeVal) return;
+                try {
+                    const res = await fetch('/api/attendance/teacher/settings', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ teacher_start_time: timeVal })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    alert(`Teacher expected start time set to ${timeVal}. Lateness will calculate from this time!`);
+                    fetchTeacherAttendance();
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+
+            // Open QR scan modal
+            document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => {
+                new bootstrap.Modal(document.getElementById('teacherScanModal')).show();
+            });
+
+            // Submit Teacher QR scan
+            window.quickTeacherScan = async function(tId) {
+                const teacherId = tId || document.getElementById('scan-teacher-select').value;
+                const customTime = document.getElementById('scan-custom-time')?.value;
+
+                if (!teacherId) {
+                    alert("Please select a teacher.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/attendance/teacher/scan', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({
+                            teacherId,
+                            scanTime: customTime || new Date().toISOString(),
+                            recordedBy: 'qr_scanner'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+
+                    const alertDiv = document.getElementById('teacher-att-alert');
+                    alertDiv.innerHTML = `<div class="alert alert-${data.status === 'late' ? 'danger' : 'success'} alert-dismissible fade show fw-bold"><i class="fas ${data.status === 'late' ? 'fa-bell' : 'fa-check-circle'} me-2"></i>${data.message}</div>`;
+                    
+                    fetchTeacherAttendance();
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('teacherScanModal'));
+                    if (modal) modal.hide();
+                } catch (err) {
+                    alert(err.message);
+                }
+            };
+
+            document.getElementById('btn-submit-teacher-scan')?.addEventListener('click', () => quickTeacherScan());
+
+            // Print Teacher QR Posters & Stamps for the School Wall
+            document.getElementById('btn-print-teacher-poster')?.addEventListener('click', async () => {
+                try {
+                    const res = await fetch(`/api/attendance/teacher/daily/${today}`);
+                    const teachers = await res.json();
+                    if (teachers.length === 0) {
+                        alert("No teachers found to generate posters.");
+                        return;
+                    }
+
+                    const printWin = window.open('', '_blank', 'width=900,height=800');
+                    let cardsHtml = teachers.map(t => {
+                        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(JSON.stringify({teacherId: t.teacher_id, name: t.teacher_name, school: "Baidoa Bedrock ICT Campus"}))}`;
+                        return `
+                            <div style="border:3px solid #0d4f8c; border-radius:15px; padding:20px; text-align:center; width:380px; margin:15px; display:inline-block; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); position:relative;">
+                                <div style="background:#0d4f8c; color:#fff; padding:10px; border-radius:10px 10px 0 0; margin:-20px -20px 15px -20px;">
+                                    <h4 style="margin:0; font-size:16px;">BAIDOA BEDROCK ICT CAMPUS</h4>
+                                    <p style="margin:0; font-size:11px; color:#f1c40f;">TEACHER ATTENDANCE QR CODE POSTER</p>
+                                </div>
+                                <img src="${qrCodeUrl}" style="width:180px; height:180px; margin:10px auto; border:2px solid #333; padding:5px; border-radius:10px;">
+                                <h3 style="margin:10px 0 5px 0; color:#0d4f8c; font-size:20px;">${t.teacher_name}</h3>
+                                <p style="margin:0; font-size:13px; color:#555;">Expected Start Time: <strong>13:50:00</strong></p>
+                                <p style="margin:5px 0 15px 0; font-size:11px; color:#e74c3c; font-weight:700;">Scan QR before entering class!</p>
+                                <div style="border-top:1px dashed #ccc; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-size:10px; color:#777;">Official Wall Poster</span>
+                                    <div style="border:2px solid #27ae60; color:#27ae60; padding:2px 8px; border-radius:15px; font-size:10px; font-weight:bold; transform:rotate(-5deg);">BEDROCK STAMP</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    printWin.document.write(`
+                        <!DOCTYPE html><html><head><title>Teacher QR Code Wall Poster Sheets</title>
+                        <style>body{font-family:Segoe UI,sans-serif; text-align:center; background:#f4f6f9; padding:20px;} @media print{body{background:#fff; padding:0;}}</style>
+                        </head><body>
+                        <h2 style="color:#0d4f8c;">TEACHER CHECK-IN QR CODE WALL POSTERS</h2>
+                        <p style="color:#555;">Paste these cards on the school wall. Teachers must scan their QR code upon arrival before entering the classroom.</p>
+                        <div>${cardsHtml}</div>
+                        <script>window.onload=function(){setTimeout(function(){window.print();window.close();},600);}<\/script>
+                        </body></html>
+                    `);
+                    printWin.document.close();
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+
+            fetchTeacherSettings();
+            fetchTeacherAttendance();
             fetchAttendanceForDate(today);
         });
 

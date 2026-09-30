@@ -232,4 +232,188 @@ router.put('/recalculate-overall', async (req, res) => {
     }
 });
 
+// --- TEACHER ATTENDANCE & QR SCANNING ENGINE ---
+
+async function ensureTeacherTables() {
+    await query(`
+        CREATE TABLE IF NOT EXISTS teacher_attendance (
+            id SERIAL PRIMARY KEY,
+            teacher_id INT NOT NULL,
+            teacher_name TEXT,
+            date DATE DEFAULT CURRENT_DATE,
+            scan_time TIMESTAMP DEFAULT NOW(),
+            expected_time TIME DEFAULT '13:50:00',
+            status TEXT DEFAULT 'present',
+            late_minutes INT DEFAULT 0,
+            recorded_by TEXT DEFAULT 'qr_scan',
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            deleted_at TIMESTAMP,
+            UNIQUE(teacher_id, date)
+        );
+    `);
+    await query(`
+        CREATE TABLE IF NOT EXISTS school_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+    `);
+    // Insert default teacher_start_time if not exists
+    await query(`
+        INSERT INTO school_settings (key, value)
+        VALUES ('teacher_start_time', '13:50:00')
+        ON CONFLICT (key) DO NOTHING;
+    `);
+}
+
+// GET teacher attendance settings
+router.get('/teacher/settings', async (req, res) => {
+    try {
+        await ensureTeacherTables();
+        const { rows } = await query(`SELECT value FROM school_settings WHERE key = 'teacher_start_time'`);
+        res.json({ teacher_start_time: rows[0] ? rows[0].value : '13:50:00' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST update teacher attendance expected time setting
+router.post('/teacher/settings', async (req, res) => {
+    const { teacher_start_time } = req.body;
+    if (!teacher_start_time) return res.status(400).json({ error: 'teacher_start_time is required' });
+    try {
+        await ensureTeacherTables();
+        await query(
+            `INSERT INTO school_settings (key, value) VALUES ('teacher_start_time', $1)
+             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+            [teacher_start_time]
+        );
+        res.json({ message: 'Teacher expected start time updated successfully.', teacher_start_time });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET teacher attendance records for a specific date
+router.get('/teacher/daily/:date', async (req, res) => {
+    const { date } = req.params;
+    try {
+        await ensureTeacherTables();
+        const { rows } = await query(`
+            SELECT u.id AS teacher_id, u.name AS teacher_name, u.email, u.phone,
+                   ta.id AS attendance_id, ta.date, ta.scan_time, ta.expected_time,
+                   COALESCE(ta.status, 'absent') AS status,
+                   COALESCE(ta.late_minutes, 0) AS late_minutes,
+                   ta.recorded_by, ta.notes
+            FROM users u
+            LEFT JOIN teacher_attendance ta ON u.id = ta.teacher_id AND ta.date = $1 AND ta.deleted_at IS NULL
+            WHERE LOWER(u.role) = 'teacher' AND u.deleted_at IS NULL
+            ORDER BY u.name ASC
+        `, [date]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST scan teacher QR Code or record check-in
+router.post('/teacher/scan', async (req, res) => {
+    const { teacherId, scanTime, recordedBy } = req.body;
+    if (!teacherId) return res.status(400).json({ error: 'teacherId is required' });
+
+    try {
+        await ensureTeacherTables();
+
+        // 1. Fetch teacher info
+        const { rows: tRows } = await query(`SELECT id, name FROM users WHERE id = $1 AND LOWER(role) = 'teacher'`, [parseInt(teacherId)]);
+        if (!tRows[0]) return res.status(404).json({ error: 'Teacher not found' });
+        const teacher = tRows[0];
+
+        // 2. Fetch expected start time setting
+        const { rows: sRows } = await query(`SELECT value FROM school_settings WHERE key = 'teacher_start_time'`);
+        const expectedTimeStr = sRows[0] ? sRows[0].value : '13:50:00';
+
+        // 3. Determine scan timestamp
+        const now = scanTime ? new Date(scanTime) : new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // Parse expected time into Date object for today
+        const [expHours, expMins, expSecs] = expectedTimeStr.split(':').map(n => parseInt(n) || 0);
+        const expectedDate = new Date(now);
+        expectedDate.setHours(expHours, expMins, expSecs || 0, 0);
+
+        // 4. Calculate lateness in minutes
+        let lateMinutes = 0;
+        let status = 'present';
+        if (now > expectedDate) {
+            const diffMs = now.getTime() - expectedDate.getTime();
+            lateMinutes = Math.floor(diffMs / (1000 * 60));
+            if (lateMinutes > 0) {
+                status = 'late';
+            }
+        }
+
+        // 5. Upsert attendance record for today
+        const recBy = recordedBy || 'qr_scan';
+        const formattedScanTime = now.toTimeString().split(' ')[0];
+
+        await query(`
+            INSERT INTO teacher_attendance (teacher_id, teacher_name, date, scan_time, expected_time, status, late_minutes, recorded_by)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (teacher_id, date) DO UPDATE SET
+                scan_time = EXCLUDED.scan_time,
+                expected_time = EXCLUDED.expected_time,
+                status = EXCLUDED.status,
+                late_minutes = EXCLUDED.late_minutes,
+                recorded_by = EXCLUDED.recorded_by
+        `, [teacher.id, teacher.name, todayStr, now, expectedTimeStr, status, lateMinutes, recBy]);
+
+        let msg = `${teacher.name} checked in on time (${formattedScanTime}).`;
+        if (status === 'late') {
+            msg = `ALERT: ${teacher.name} checked in at ${formattedScanTime} (${lateMinutes} minute(s) late!). ${lateMinutes} minute(s) minus on attendance.`;
+        }
+
+        res.json({
+            success: true,
+            teacherId: teacher.id,
+            teacherName: teacher.name,
+            scanTime: formattedScanTime,
+            expectedTime: expectedTimeStr,
+            status,
+            lateMinutes,
+            message: msg
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST manual admin override for teacher attendance
+router.post('/teacher/manual', async (req, res) => {
+    const { teacherId, date, status, lateMinutes, notes } = req.body;
+    if (!teacherId || !date || !status) {
+        return res.status(400).json({ error: 'teacherId, date, and status are required' });
+    }
+    try {
+        await ensureTeacherTables();
+        const { rows: tRows } = await query(`SELECT name FROM users WHERE id = $1`, [parseInt(teacherId)]);
+        const teacherName = tRows[0] ? tRows[0].name : 'Teacher';
+        const lMins = parseInt(lateMinutes) || 0;
+
+        await query(`
+            INSERT INTO teacher_attendance (teacher_id, teacher_name, date, status, late_minutes, recorded_by, notes)
+            VALUES ($1, $2, $3, $4, $5, 'admin_manual', $6)
+            ON CONFLICT (teacher_id, date) DO UPDATE SET
+                status = EXCLUDED.status,
+                late_minutes = EXCLUDED.late_minutes,
+                notes = EXCLUDED.notes,
+                recorded_by = 'admin_manual'
+        `, [parseInt(teacherId), teacherName, date, status, lMins, notes || null]);
+
+        res.json({ message: 'Teacher attendance record updated successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

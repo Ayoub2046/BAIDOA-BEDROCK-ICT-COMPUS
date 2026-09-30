@@ -168,4 +168,87 @@ router.put('/read/:id', async (req, res) => {
     }
 });
 
+// GET recipients list for direct messaging (Teachers, Admins, Managers)
+router.get('/recipients/all', async (req, res) => {
+    try {
+        await ensureTables();
+        const { rows: users } = await query(`
+            SELECT id, name, role, email 
+            FROM users 
+            WHERE deleted_at IS NULL AND LOWER(role) IN ('teacher', 'admin', 'manager')
+            ORDER BY role ASC, name ASC
+        `);
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST send direct 1-on-1 message (Student/Parent -> Teacher/Admin)
+router.post('/direct', async (req, res) => {
+    const { senderId, senderName, senderRole, recipientId, recipientName, recipientRole, subject, body } = req.body;
+    if (!senderId || !recipientId || !body) {
+        return res.status(400).json({ error: 'senderId, recipientId, and message body are required.' });
+    }
+    try {
+        await ensureTables();
+        const channelId = `direct-${Math.min(senderId, recipientId)}-${Math.max(senderId, recipientId)}`;
+        const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+        const { rows } = await query(
+            `INSERT INTO messages (channelid, sender, subject, body, category, recipient_type, recipient_id, time, isread)
+             VALUES ($1, $2, $3, $4, 'direct', $5, $6, $7, false) RETURNING id`,
+            [
+                channelId,
+                `${senderName || 'User'} (${senderRole || 'Student'})`,
+                subject || 'Direct Message',
+                body,
+                recipientRole || 'teacher',
+                String(recipientId),
+                time
+            ]
+        );
+        res.status(201).json({ message: 'Message sent successfully!', id: rows[0].id, channelId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET conversation thread between current user and a target user
+router.get('/thread/:user1/:user2', async (req, res) => {
+    const { user1, user2 } = req.params;
+    try {
+        await ensureTables();
+        const channelId = `direct-${Math.min(user1, user2)}-${Math.max(user1, user2)}`;
+        const { rows } = await query(
+            `SELECT * FROM messages WHERE channelid = $1 AND deleted_at IS NULL ORDER BY id ASC`,
+            [channelId]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET unread system notifications count & latest alerts for top navbar bell
+router.get('/notifications/unread', async (req, res) => {
+    const { recipientId, role } = req.query;
+    try {
+        await ensureTables();
+        let sql = `SELECT id, title_so, message_so, title, message, category, audience, time, created_at, isread 
+                   FROM messages WHERE deleted_at IS NULL AND isread = false`;
+        const params = [];
+        if (recipientId) {
+            params.push(String(recipientId));
+            sql += ` AND (recipient_id = $${params.length} OR channelid LIKE 'student-' || $${params.length} OR channelid LIKE 'parent-' || $${params.length} OR channelid = 'general')`;
+        }
+        sql += ` ORDER BY id DESC LIMIT 10`;
+
+        const { rows } = await query(sql, params);
+        res.json({ unreadCount: rows.length, notifications: rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

@@ -18,6 +18,7 @@
     <script src="/JS/i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --primary-dark: #0d4f8c;
@@ -2309,6 +2310,10 @@
                     <div class="action-icon icon-orange"><i class="fas fa-key"></i></div>
                     <span class="action-label">Password</span>
                 </button>
+                <button class="action-btn" onclick="openDirectMessageModal()">
+                    <div class="action-icon icon-teal"><i class="fas fa-paper-plane"></i></div>
+                    <span class="action-label">Message</span>
+                </button>
                 <button class="action-btn" onclick="switchToTab('clearance')">
                     <div class="action-icon icon-red"><i class="fas fa-id-card"></i></div>
                     <span class="action-label">Clearance</span>
@@ -2793,20 +2798,67 @@
 
     <!-- Digital ID Modal -->
     <div class="modal fade" id="digitalIdModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:#fff;">
-                    <h5 class="modal-title"><i class="fas fa-id-card me-2"></i>Digital Student ID</h5>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
+                <div class="modal-header border-0 text-white p-3" style="background:linear-gradient(135deg,#0d4f8c,#1e6091);">
+                    <h5 class="modal-title fs-6 fw-bold"><i class="fas fa-id-card me-2"></i>Official Digital Student ID Card</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center py-4">
-                    <div id="qrcode-container" class="mb-3" style="display:flex;justify-content:center;"></div>
-                    <h6 class="fw-bold mb-1" id="did-name">--</h6>
-                    <p class="mb-1 text-muted small" id="did-id">--</p>
-                    <p class="mb-0 text-muted small" id="did-class">--</p>
+                <div class="modal-body p-4 bg-light">
+                    <!-- Real Physical ID Card Mockup -->
+                    <div id="real-id-card" style="width:360px; max-width:100%; margin:0 auto; background:#ffffff; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:2px solid #0d4f8c; position:relative; font-family:'Segoe UI',sans-serif;">
+                        <!-- Header Banner -->
+                        <div style="background:linear-gradient(135deg,#0d4f8c,#002b5b); padding:12px; text-align:center; color:#ffffff; border-bottom:3px solid #f39c12; position:relative;">
+                            <img src="/images/BEDRCOK LOGO.JPG" style="width:42px; height:42px; border-radius:50%; border:2px solid #fff; position:absolute; left:12px; top:10px;">
+                            <div style="margin-left:45px;">
+                                <div style="font-size:11px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#f1c40f;">Baidoa Bedrock ICT Campus</div>
+                                <div style="font-size:9px; opacity:0.9; text-transform:uppercase; font-weight:600;">Student Identification Card</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Body -->
+                        <div style="padding:15px; position:relative; background:radial-gradient(circle at center, #ffffff 60%, #f4f6f9 100%);">
+                            <!-- Background Stamp Watermark -->
+                            <div style="position:absolute; right:15px; bottom:15px; opacity:0.06; pointer-events:none;">
+                                <img src="/images/BEDRCOK LOGO.JPG" style="width:120px; height:120px;">
+                            </div>
+
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                <!-- Photo Frame -->
+                                <div style="width:85px; height:105px; border-radius:10px; border:2px solid #0d4f8c; overflow:hidden; background:#eee; flex-shrink:0; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+                                    <img id="did-photo" src="/images/BEDRCOK LOGO.JPG" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+
+                                <!-- Student Details -->
+                                <div style="flex-grow:1; font-size:11px; line-height:1.4; color:#2c3e50;">
+                                    <div style="font-size:13px; font-weight:800; color:#0d4f8c; margin-bottom:2px;" id="did-name">--</div>
+                                    <div><strong style="color:#7f8c8d;">ID CODE:</strong> <span id="did-id" style="font-weight:700; color:#27ae60;">--</span></div>
+                                    <div><strong style="color:#7f8c8d;">CLASS:</strong> <span id="did-class" style="font-weight:600;">--</span></div>
+                                    <div><strong style="color:#7f8c8d;">DEPT:</strong> <span style="font-weight:600;">ICT & Computer Science</span></div>
+                                    <div><strong style="color:#7f8c8d;">VALID THRU:</strong> <span style="font-weight:600;">2026 - 2028</span></div>
+                                    <div style="margin-top:4px;">
+                                        <span class="badge bg-success" style="font-size:9px; padding:3px 8px; border-radius:10px;"><i class="fas fa-check-circle me-1"></i>VERIFIED STUDENT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom QR Code & Barcode Row -->
+                            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="text-align:left;">
+                                    <div style="font-size:8px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Official Campus Seal</div>
+                                    <div style="font-size:10px; font-weight:800; color:#0d4f8c; font-style:italic;">Bedrock Registrar</div>
+                                </div>
+                                <div id="qrcode-container" style="background:#fff; padding:4px; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.05);"></div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Accent Line -->
+                        <div style="background:#0d4f8c; height:6px; width:100%;"></div>
+                    </div>
                 </div>
-                <div class="modal-footer justify-content-center">
-                    <button class="btn btn-success btn-sm" onclick="printDigitalId()"><i class="fas fa-print me-1"></i>Print</button>
+                <div class="modal-footer justify-content-center gap-2 bg-white">
+                    <button class="btn btn-primary btn-sm px-3" onclick="downloadDigitalId()"><i class="fas fa-download me-1"></i>Download PNG</button>
+                    <button class="btn btn-success btn-sm px-3" onclick="printDigitalId()"><i class="fas fa-print me-1"></i>Print ID Card</button>
                     <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -2832,6 +2884,43 @@
                 <div class="modal-footer">
                     <button class="btn btn-primary btn-sm" onclick="applyWhatIf()"><i class="fas fa-check me-1"></i>Apply</button>
                     <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Messaging Modal (Student -> Teacher / Admin) -->
+    <div class="modal fade" id="directMessageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-lg border-0" style="border-radius:18px; overflow:hidden;">
+                <div class="modal-header text-white p-3" style="background:linear-gradient(135deg,#0d4f8c,#1e6091);">
+                    <h5 class="modal-title fs-6 fw-bold"><i class="fas fa-paper-plane me-2"></i>Private Direct Message</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div id="dm-alert"></div>
+                    <div class="row g-3">
+                        <div class="col-md-5 border-end pe-md-3">
+                            <h6 class="fw-bold mb-2 text-primary"><i class="fas fa-user-check me-2"></i>Select Recipient</h6>
+                            <select id="dm-recipient-select" class="form-select mb-3" onchange="loadDmThread()">
+                                <option value="">-- Choose Teacher or Admin --</option>
+                            </select>
+
+                            <h6 class="fw-bold mb-2 text-secondary small text-uppercase">Message Subject</h6>
+                            <input type="text" class="form-control mb-3" id="dm-subject-input" placeholder="e.g. Question about Homework / Exam">
+
+                            <h6 class="fw-bold mb-2 text-secondary small text-uppercase">Your Message</h6>
+                            <textarea class="form-control mb-3" id="dm-body-input" rows="4" placeholder="Write your message here..."></textarea>
+                            
+                            <button class="btn btn-primary w-100 fw-bold" onclick="sendDirectMessage()"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
+                        </div>
+                        <div class="col-md-7 ps-md-3">
+                            <h6 class="fw-bold mb-2 text-dark"><i class="fas fa-comments me-2 text-success"></i>Conversation History</h6>
+                            <div id="dm-thread-box" style="height:320px; overflow-y:auto; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px;" class="d-flex flex-column gap-2">
+                                <div class="text-center text-muted py-5 small"><i class="fas fa-comments fs-3 mb-2 opacity-50 d-block"></i>Select a recipient to view conversation history.</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3978,7 +4067,24 @@
                 container.innerHTML = html;
 
                 var overallPercentage = grandMax > 0 ? Math.round((grandTotal / grandMax) * 100) : 0;
-                var gpa = data.student.gpa || 'N/A';
+                
+                // Helper to compute realistic GPA on 4.0 scale from percentage
+                function computeGpaFromPercentage(pct) {
+                    if (pct >= 90) return 4.00;
+                    if (pct >= 85) return 3.70;
+                    if (pct >= 80) return 3.30;
+                    if (pct >= 75) return 3.00;
+                    if (pct >= 70) return 2.70;
+                    if (pct >= 65) return 2.30;
+                    if (pct >= 60) return 2.00;
+                    if (pct >= 50) return 1.00;
+                    return 0.00;
+                }
+
+                var gpaVal = (data.student && data.student.gpa && parseFloat(data.student.gpa) > 0) 
+                    ? parseFloat(data.student.gpa) 
+                    : computeGpaFromPercentage(overallPercentage);
+                var gpa = gpaVal.toFixed(2);
 
                 document.getElementById('summary-subjects').textContent = subjectCount;
                 document.getElementById('summary-average').textContent = overallPercentage + '%';
@@ -4627,12 +4733,15 @@
                 document.getElementById('did-name').textContent = data.student.name || '--';
                 document.getElementById('did-id').textContent = bbId;
                 document.getElementById('did-class').textContent = data.student.grade || '--';
+                if (data.student.image) {
+                    document.getElementById('did-photo').src = data.student.image;
+                }
                 var container = document.getElementById('qrcode-container');
                 container.innerHTML = '';
                 new QRCode(container, {
-                    text: JSON.stringify({ id: data.student.id, bbId: bbId, name: data.student.name, grade: data.student.grade, school: 'Baidoa Bedrock ICT Campus' }),
-                    width: 140,
-                    height: 140,
+                    text: JSON.stringify({ id: data.student.id, bbId: bbId, name: data.student.name, grade: data.student.grade, school: 'Baidoa Bedrock ICT Campus', valid: '2026-2028' }),
+                    width: 60,
+                    height: 60,
                     colorDark: '#0d4f8c',
                     colorLight: '#ffffff',
                     correctLevel: QRCode.CorrectLevel.H
@@ -4640,15 +4749,133 @@
                 new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
             };
 
+            window.downloadDigitalId = function () {
+                var cardEl = document.getElementById('real-id-card');
+                if (!cardEl) return;
+                if (typeof html2canvas !== 'undefined') {
+                    html2canvas(cardEl, { scale: 3, useCORS: true }).then(function(canvas) {
+                        var link = document.createElement('a');
+                        link.download = 'Student_ID_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Card') + '.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    });
+                } else {
+                    window.printDigitalId();
+                }
+            };
+
             window.printDigitalId = function () {
-                var name = document.getElementById('did-name').textContent;
-                var id = document.getElementById('did-id').textContent;
-                var cls = document.getElementById('did-class').textContent;
-                var qrEl = document.querySelector('#qrcode-container img');
-                var qrSrc = qrEl ? qrEl.src : '';
-                var win = window.open('', '_blank', 'width=400,height=600');
-                win.document.write('<!DOCTYPE html><html><head><title>Digital ID - Baidoa Bedrock ICT Campus</title><style>body{font-family:Segoe UI,sans-serif;padding:2rem;text-align:center;}img{width:180px;height:180px;}.card{border:2px solid #0d4f8c;border-radius:20px;padding:2rem;max-width:350px;margin:0 auto;box-shadow:0 4px 15px rgba(0,0,0,0.1);}.badge{background:#0d4f8c;color:#fff;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.75rem;display:inline-block;margin-bottom:1rem;font-weight:700;}.name{font-size:1.3rem;font-weight:700;color:#0d4f8c;}.info{color:#555;margin:0.2rem 0;}</style></head><body><div class="card"><div class="badge">BEDROCK STUDENT</div>' + (qrSrc ? '<div><img src="' + qrSrc + '"></div>' : '') + '<div class="name">' + name + '</div><p class="info"><strong>' + id + '</strong></p><p class="info">' + cls + '</p><p class="info" style="font-size:0.85rem;color:#0d4f8c;font-weight:600;margin-top:0.8rem;">Baidoa Bedrock ICT Campus</p></div><script>window.onload=function(){window.print();window.close();}<\/script></body></html>');
+                var cardHtml = document.getElementById('real-id-card').outerHTML;
+                var win = window.open('', '_blank', 'width=500,height=700');
+                win.document.write('<!DOCTYPE html><html><head><title>Student ID Card - Baidoa Bedrock ICT Campus</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"><style>body{font-family:Segoe UI,sans-serif;padding:3rem;background:#f8fafc;display:flex;justify-content:center;align-items:center;min-height:90vh;}@media print{body{padding:0;background:#fff;}}</style></head><body>' + cardHtml + '<script>window.onload=function(){setTimeout(function(){window.print();window.close();},500);}<\/script></body></html>');
                 win.document.close();
+            };
+
+            // ========== DIRECT MESSAGING SYSTEM ==========
+
+            window.openDirectMessageModal = async function () {
+                var select = document.getElementById('dm-recipient-select');
+                if (select) {
+                    select.innerHTML = '<option value="">-- Choose Teacher or Admin --</option>';
+                    try {
+                        var res = await fetch('/api/messages/recipients/all');
+                        var recipients = await res.json();
+                        recipients.forEach(function (r) {
+                            var opt = document.createElement('option');
+                            opt.value = r.id;
+                            opt.setAttribute('data-role', r.role);
+                            opt.textContent = r.name + ' (' + r.role + ')';
+                            select.appendChild(opt);
+                        });
+                    } catch (e) {}
+                }
+                new bootstrap.Modal(document.getElementById('directMessageModal')).show();
+            };
+
+            window.loadDmThread = async function () {
+                var recipientId = document.getElementById('dm-recipient-select').value;
+                var box = document.getElementById('dm-thread-box');
+                if (!recipientId || !dashboardData || !dashboardData.student) {
+                    box.innerHTML = '<div class="text-center text-muted py-5 small"><i class="fas fa-comments fs-3 mb-2 opacity-50 d-block"></i>Select a recipient to view conversation history.</div>';
+                    return;
+                }
+                var studentId = dashboardData.student.id;
+                box.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Loading chat history...</div>';
+                try {
+                    var res = await fetch('/api/messages/thread/' + studentId + '/' + recipientId);
+                    var messages = await res.json();
+                    if (messages.length === 0) {
+                        box.innerHTML = '<div class="text-center text-muted py-4 small">No messages yet. Send your first message below!</div>';
+                        return;
+                    }
+                    box.innerHTML = messages.map(function (msg) {
+                        var isMe = msg.sender && msg.sender.includes(dashboardData.student.name);
+                        return '<div class="d-flex flex-column ' + (isMe ? 'align-items-end' : 'align-items-start') + ' mb-2">' +
+                            '<div style="max-width:80%; padding:8px 12px; border-radius:12px; font-size:12px;' + (isMe ? 'background:#0d4f8c; color:#fff;' : 'background:#e2e8f0; color:#1e293b;') + '">' +
+                            '<div class="fw-bold mb-1" style="font-size:10px; opacity:0.8;">' + (msg.sender || 'User') + '</div>' +
+                            '<div>' + (msg.body || '') + '</div>' +
+                            '<div class="text-end mt-1" style="font-size:9px; opacity:0.7;">' + (msg.time || '') + '</div>' +
+                            '</div></div>';
+                    }).join('');
+                    box.scrollTop = box.scrollHeight;
+                } catch (e) {
+                    box.innerHTML = '<div class="text-center text-danger py-3 small">Failed to load thread: ' + e.message + '</div>';
+                }
+            };
+
+            window.sendDirectMessage = async function () {
+                var select = document.getElementById('dm-recipient-select');
+                var recipientId = select.value;
+                var selectedOpt = select.options[select.selectedIndex];
+                var recipientRole = selectedOpt ? selectedOpt.getAttribute('data-role') : 'teacher';
+                var subject = document.getElementById('dm-subject-input').value;
+                var body = document.getElementById('dm-body-input').value;
+
+                if (!recipientId || !body.trim()) {
+                    alert('Please select a recipient and enter a message.');
+                    return;
+                }
+
+                var student = dashboardData ? dashboardData.student : { id: 1, name: 'Student' };
+
+                try {
+                    var res = await fetch('/api/messages/direct', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            senderId: student.id,
+                            senderName: student.name,
+                            senderRole: 'Student',
+                            recipientId: recipientId,
+                            recipientRole: recipientRole,
+                            subject: subject || 'Student Query',
+                            body: body
+                        })
+                    });
+                    var data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+
+                    document.getElementById('dm-body-input').value = '';
+                    document.getElementById('dm-subject-input').value = '';
+                    loadDmThread();
+                } catch (err) {
+                    alert(err.message);
+                }
+            };
+
+            // ========== SYSTEM NOTIFICATIONS WIDGET ==========
+
+            window.loadSystemNotifications = async function () {
+                if (!dashboardData || !dashboardData.student) return;
+                try {
+                    var studentId = dashboardData.student.id;
+                    var res = await fetch('/api/messages/notifications/unread?recipientId=' + studentId + '&role=student');
+                    var data = await res.json();
+                    var badge = document.querySelector('.header-icons .badge-dot');
+                    if (badge) {
+                        badge.style.display = data.unreadCount > 0 ? 'inline-block' : 'none';
+                    }
+                } catch (e) {}
             };
 
             // ========== WHAT-IF GPA ==========
