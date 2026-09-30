@@ -19,6 +19,7 @@ async function ensureTables() {
             language TEXT DEFAULT 'en',
             time TEXT,
             isread BOOLEAN DEFAULT false,
+            is_read BOOLEAN DEFAULT false,
             created_at TIMESTAMP DEFAULT NOW(),
             deleted_at TIMESTAMP
         )
@@ -26,6 +27,8 @@ async function ensureTables() {
     try {
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS channelid TEXT`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS channel_id TEXT`);
+        await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS isread BOOLEAN DEFAULT false`);
+        await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS recipient_type TEXT DEFAULT 'general'`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS recipient_id TEXT`);
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general'`);
@@ -33,6 +36,8 @@ async function ensureTables() {
         await query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
         await query(`UPDATE messages SET channelid = channel_id WHERE channelid IS NULL AND channel_id IS NOT NULL`);
         await query(`UPDATE messages SET channel_id = channelid WHERE channel_id IS NULL AND channelid IS NOT NULL`);
+        await query(`UPDATE messages SET isread = is_read WHERE isread IS NULL AND is_read IS NOT NULL`);
+        await query(`UPDATE messages SET is_read = isread WHERE is_read IS NULL AND isread IS NOT NULL`);
     } catch (e) {}
 }
 
@@ -40,11 +45,11 @@ async function ensureTables() {
 router.get('/', async (req, res) => {
     try {
         await ensureTables();
-        const { rows } = await query(`SELECT *, COALESCE(channelid, channel_id, 'general') AS channelid FROM messages WHERE deleted_at IS NULL ORDER BY id DESC`);
+        const { rows } = await query(`SELECT *, COALESCE(channelid, channel_id, 'general') AS channelid, COALESCE(isread, is_read, false) AS isread FROM messages WHERE deleted_at IS NULL ORDER BY id DESC`);
         const groupedMessages = rows.reduce((acc, msg) => {
             const channel = msg.channelid || msg.channel_id || 'general';
             if (!acc[channel]) acc[channel] = [];
-            msg.unread = msg.isread === false;
+            msg.unread = msg.isread === false && msg.is_read === false;
             acc[channel].push(msg);
             return acc;
         }, {});
@@ -59,7 +64,7 @@ router.get('/channel/:channelId', async (req, res) => {
     try {
         await ensureTables();
         const { rows } = await query(
-            `SELECT *, COALESCE(channelid, channel_id) AS channelid FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id DESC`,
+            `SELECT *, COALESCE(channelid, channel_id) AS channelid, COALESCE(isread, is_read, false) AS isread FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id DESC`,
             [req.params.channelId]
         );
         res.json(rows);
@@ -77,8 +82,8 @@ router.post('/', async (req, res) => {
         await ensureTables();
         const ch = channelId || 'general';
         const { rows } = await query(
-            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time) 
-             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time, isread, is_read) 
+             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9, false, false) RETURNING id`,
             [
                 ch,
                 messageSender,
@@ -111,7 +116,6 @@ router.post('/send-parent-alert', async (req, res) => {
         let subject = customSubject;
         let body = customMessage;
 
-        // Auto-template presets based on alert type & selected language if custom subject/body not provided
         if (!subject || !body) {
             if (alertType === 'fee') {
                 if (lang === 'so') {
@@ -142,8 +146,8 @@ router.post('/send-parent-alert', async (req, res) => {
         const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
         const { rows } = await query(
-            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time)
-             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, language, time, isread, is_read)
+             VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9, false, false) RETURNING id`,
             [
                 channelId,
                 'School Administration',
@@ -167,7 +171,7 @@ router.post('/send-parent-alert', async (req, res) => {
 router.put('/read/:id', async (req, res) => {
     try {
         await ensureTables();
-        await query(`UPDATE messages SET isread = true WHERE id = $1`, [req.params.id]);
+        await query(`UPDATE messages SET isread = true, is_read = true WHERE id = $1`, [req.params.id]);
         res.json({ message: 'success' });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -202,8 +206,8 @@ router.post('/direct', async (req, res) => {
         const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
         const { rows } = await query(
-            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, time, isread)
-             VALUES ($1, $1, $2, $3, $4, 'direct', $5, $6, $7, false) RETURNING id`,
+            `INSERT INTO messages (channelid, channel_id, sender, subject, body, category, recipient_type, recipient_id, time, isread, is_read)
+             VALUES ($1, $1, $2, $3, $4, 'direct', $5, $6, $7, false, false) RETURNING id`,
             [
                 channelId,
                 `${senderName || 'User'} (${senderRole || 'Student'})`,
@@ -227,7 +231,7 @@ router.get('/thread/:user1/:user2', async (req, res) => {
         await ensureTables();
         const channelId = `direct-${Math.min(user1, user2)}-${Math.max(user1, user2)}`;
         const { rows } = await query(
-            `SELECT *, COALESCE(channelid, channel_id) AS channelid FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id ASC`,
+            `SELECT *, COALESCE(channelid, channel_id) AS channelid, COALESCE(isread, is_read, false) AS isread FROM messages WHERE (channelid = $1 OR channel_id = $1) AND deleted_at IS NULL ORDER BY id ASC`,
             [channelId]
         );
         res.json(rows);
@@ -241,8 +245,8 @@ router.get('/notifications/unread', async (req, res) => {
     const { recipientId, role } = req.query;
     try {
         await ensureTables();
-        let sql = `SELECT id, title_so, message_so, title, message, category, audience, time, created_at, isread 
-                   FROM messages WHERE deleted_at IS NULL AND isread = false`;
+        let sql = `SELECT id, title_so, message_so, title, message, category, audience, time, created_at, COALESCE(isread, is_read, false) AS isread 
+                   FROM messages WHERE deleted_at IS NULL AND (isread = false OR is_read = false OR (isread IS NULL AND is_read IS NULL))`;
         const params = [];
         if (recipientId) {
             params.push(String(recipientId));
@@ -256,7 +260,5 @@ router.get('/notifications/unread', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-module.exports = router;
 
 module.exports = router;
