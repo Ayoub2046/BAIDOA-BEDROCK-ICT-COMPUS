@@ -4705,6 +4705,21 @@
 
                 if (studentId) {
                     try {
+                        var freshStudentRes = await fetch('/api/students/' + studentId);
+                        if (freshStudentRes.ok) {
+                            var freshStudent = await freshStudentRes.json();
+                            if (freshStudent.image) {
+                                photoUrl = freshStudent.image;
+                                if (data && data.student) data.student.image = freshStudent.image;
+                            }
+                            if (freshStudent.name) studentName = freshStudent.name;
+                            if (freshStudent.grade || freshStudent.class_name) studentClass = freshStudent.grade || freshStudent.class_name;
+                        }
+                    } catch (err) {
+                        console.warn('Could not fetch fresh student profile for clearance:', err);
+                    }
+
+                    try {
                         var res = await fetch('/api/clearance/student/' + studentId);
                         if (res.ok) {
                             var liveClearance = await res.json();
