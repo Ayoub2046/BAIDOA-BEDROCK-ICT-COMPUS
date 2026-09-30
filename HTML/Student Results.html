@@ -2164,6 +2164,162 @@
             justify-content: space-between;
         }
         .book-mini-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
+
+        /* ========== ADVANCED EXAM CLEARANCE PASS CARD ========== */
+        .clearance-pass-card {
+            background: linear-gradient(145deg, #064e3b 0%, #065f46 60%, #022c22 100%);
+            border: 2px solid #10b981;
+            border-radius: 20px;
+            padding: 24px;
+            color: #fff;
+            max-width: 680px;
+            width: 100%;
+            box-shadow: 0 16px 40px rgba(6, 78, 59, 0.4);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            text-align: left;
+        }
+        .clearance-pass-card::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.12);
+            pointer-events: none;
+        }
+        .pass-header {
+            border-bottom: 2px solid rgba(16, 185, 129, 0.4);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+        .pass-logo {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            border: 2px solid #10b981;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: #fff;
+        }
+        .pass-sub-title {
+            font-size: 0.72rem;
+            color: #6ee7b7;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .pass-main-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+        .pass-badge-cleared {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .pass-photo-frame {
+            width: 110px;
+            height: 130px;
+            border-radius: 14px;
+            border: 2px solid #10b981;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .pass-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .pass-qr-box {
+            width: 100px;
+            height: 100px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 5px;
+            border: 2px solid #6ee7b7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pass-qr-box img, .pass-qr-box canvas {
+            width: 90px !important;
+            height: 90px !important;
+            display: block;
+        }
+        .pass-qr-hint {
+            font-size: 0.65rem;
+            color: #a7f3d0;
+            font-weight: 600;
+        }
+        .pass-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 16px;
+        }
+        .pass-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .pass-label {
+            font-size: 0.65rem;
+            color: #a7f3d0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .pass-val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .text-emerald {
+            color: #34d399 !important;
+            font-family: 'Courier New', monospace;
+        }
+        .pass-status-banner {
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+        }
+        .pass-footer {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(110, 231, 183, 0.3);
+            font-size: 0.72rem;
+            color: #d1fae5;
+        }
+        .pass-footer-seal strong {
+            color: #34d399;
+        }
+        .pass-validity {
+            font-weight: 700;
+            color: #6ee7b7;
+        }
+        .btn-emerald {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-emerald:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -4529,6 +4685,10 @@
 
                 var clearance = data ? data.clearance : null;
                 var studentId = (data && data.student) ? data.student.id : null;
+                var studentName = (data && data.student) ? (data.student.name || 'Student Name') : 'Student Name';
+                var studentClass = (data && data.student) ? (data.student.grade || 'ICT Class') : 'ICT Class';
+                var studentDept = (data && data.student) ? (data.student.department || 'ICT & Computer Science') : 'ICT & Computer Science';
+                var photoUrl = (data && data.student && data.student.image) ? data.student.image : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
 
                 if (studentId) {
                     try {
@@ -4546,17 +4706,95 @@
                 }
 
                 if (clearance && clearance.isCleared) {
-                    var html = '<div class="clearance-card-cleared">';
-                    html += '<div class="check-icon"><i class="fas fa-check"></i></div>';
-                    html += '<h4 style="color: #1e8449; font-weight: 700;">Cleared</h4>';
-                    html += '<p class="mb-1"><strong>' + (data && data.student ? data.student.name : '') + '</strong></p>';
-                    html += '<p class="mb-1">Student ID: ' + elpId + '</p>';
-                    html += '<p class="mb-1">Semester: ' + (clearance.semester || 'Current Semester') + '</p>';
-                    html += '<p class="mb-1">Released by: ' + (clearance.released_by || 'Fee Clearance System') + '</p>';
-                    html += '<p class="mb-3"><small>' + formatDate(clearance.released_at || new Date()) + '</small></p>';
-                    html += '<button class="btn btn-success no-print" onclick="printClearanceCard()"><i class="fas fa-print me-1"></i>Print Clearance Card</button>';
+                    var verifyUrl = window.location.origin + '/HTML/verify-clearance.html?id=' + studentId + '&code=' + elpId;
+                    var issuedDate = formatDate(clearance.released_at || new Date());
+                    var semester = clearance.semester || 'Current Semester 2026';
+                    var releasedBy = clearance.released_by || 'Fee Clearance System';
+
+                    var html = '<div class="official-clearance-wrapper my-3 d-flex flex-column align-items-center">';
+                    html += '  <div class="clearance-pass-card" id="officialClearanceCard">';
+                    html += '    <div class="pass-header">';
+                    html += '      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">';
+                    html += '        <div class="d-flex align-items-center gap-3">';
+                    html += '          <img src="/images/BEDRCOK LOGO.JPG" alt="School Logo" class="pass-logo" onerror="this.src=\'https://via.placeholder.com/60?text=ICT\'">';
+                    html += '          <div>';
+                    html += '            <div class="pass-sub-title"><i class="fas fa-university me-1"></i>BAIDOA BEDROCK ICT CAMPUS</div>';
+                    html += '            <h5 class="pass-main-title mb-0">OFFICIAL EXAM CLEARANCE PASS</h5>';
+                    html += '          </div>';
+                    html += '        </div>';
+                    html += '        <div class="pass-badge-cleared">';
+                    html += '          <i class="fas fa-check-circle me-1"></i>VERIFIED CLEARED';
+                    html += '        </div>';
+                    html += '      </div>';
+                    html += '    </div>';
+
+                    html += '    <div class="pass-body">';
+                    html += '      <div class="row align-items-center g-3">';
+                    html += '        <div class="col-md-4 text-center">';
+                    html += '          <div class="pass-photo-frame mx-auto mb-2">';
+                    html += '            <img id="pass-student-photo" src="' + photoUrl + '" alt="Student Photo" onerror="this.src=\'https://cdn-icons-png.flaticon.com/512/3135/3135715.png\'">';
+                    html += '          </div>';
+                    html += '          <div id="clearance-qrcode-box" class="pass-qr-box mx-auto"></div>';
+                    html += '          <div class="pass-qr-hint mt-1"><i class="fas fa-qrcode me-1"></i>Scan to Verify Clearance</div>';
+                    html += '        </div>';
+
+                    html += '        <div class="col-md-8">';
+                    html += '          <div class="pass-detail-grid">';
+                    html += '            <div class="pass-field"><span class="pass-label">Student Name</span><span class="pass-val text-uppercase">' + studentName + '</span></div>';
+                    html += '            <div class="pass-field"><span class="pass-label">Student ID Code</span><span class="pass-val text-emerald fw-bold">' + elpId + '</span></div>';
+                    html += '            <div class="pass-field"><span class="pass-label">Class / Grade</span><span class="pass-val">' + studentClass + '</span></div>';
+                    html += '            <div class="pass-field"><span class="pass-label">Department</span><span class="pass-val">' + studentDept + '</span></div>';
+                    html += '            <div class="pass-field"><span class="pass-label">Semester</span><span class="pass-val">' + semester + '</span></div>';
+                    html += '            <div class="pass-field"><span class="pass-label">Clearance Authority</span><span class="pass-val text-success fw-bold"><i class="fas fa-user-shield me-1"></i>' + releasedBy + '</span></div>';
+                    html += '          </div>';
+
+                    html += '          <div class="pass-status-banner mt-3">';
+                    html += '            <i class="fas fa-shield-check text-success fs-3 me-3"></i>';
+                    html += '            <div>';
+                    html += '              <div class="fw-bold text-success" style="font-size:0.92rem;">EXAMINATION ENTRY PERMIT GRANTED</div>';
+                    html += '              <small class="text-white-50">Fee Status: 100% Paid & Verified by Bursar Office</small>';
+                    html += '            </div>';
+                    html += '          </div>';
+                    html += '        </div>';
+                    html += '      </div>';
+                    html += '    </div>';
+
+                    html += '    <div class="pass-footer">';
+                    html += '      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">';
+                    html += '        <div class="pass-footer-seal"><strong>OFFICIAL CAMPUS EXAM SEAL</strong> &bull; Issued: ' + issuedDate + '</div>';
+                    html += '        <div class="pass-validity"><i class="fas fa-lock me-1 text-emerald"></i>Valid for Semester Examinations 2026</div>';
+                    html += '      </div>';
+                    html += '    </div>';
+                    html += '  </div>';
+
+                    html += '  <div class="pass-actions no-print mt-3 d-flex gap-2 flex-wrap justify-content-center">';
+                    html += '    <button class="btn btn-emerald px-4 py-2 rounded-3 fw-bold" onclick="downloadClearancePassPng()"><i class="fas fa-download me-2"></i>Download Clearance Pass (PNG)</button>';
+                    html += '    <button class="btn btn-outline-light px-4 py-2 rounded-3 fw-bold" onclick="printClearanceCard()"><i class="fas fa-print me-2"></i>Print Official Clearance Pass</button>';
+                    html += '  </div>';
                     html += '</div>';
+
                     contentEl.innerHTML = html;
+
+                    // Generate QR Code
+                    setTimeout(function() {
+                        var qrBox = document.getElementById('clearance-qrcode-box');
+                        if (qrBox) {
+                            qrBox.innerHTML = '';
+                            try {
+                                new QRCode(qrBox, {
+                                    text: verifyUrl,
+                                    width: 90,
+                                    height: 90,
+                                    colorDark: '#022c22',
+                                    colorLight: '#ffffff',
+                                    correctLevel: QRCode.CorrectLevel.L
+                                });
+                            } catch (e) {
+                                qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(verifyUrl) + '" style="width:90px;height:90px;display:block;">';
+                            }
+                        }
+                    }, 100);
+
                 } else {
                     var html = '<div class="clearance-card-not-cleared">';
                     html += '<div class="x-icon"><i class="fas fa-times"></i></div>';
@@ -4566,6 +4804,21 @@
                     contentEl.innerHTML = html;
                 }
             }
+
+            window.downloadClearancePassPng = function () {
+                var cardEl = document.getElementById('officialClearanceCard');
+                if (!cardEl) return;
+                if (typeof html2canvas !== 'undefined') {
+                    html2canvas(cardEl, { scale: 3, useCORS: true, backgroundColor: null }).then(function(canvas) {
+                        var link = document.createElement('a');
+                        link.download = 'Official_Exam_Clearance_Pass_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Pass') + '.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    });
+                } else {
+                    window.printClearanceCard();
+                }
+            };
 
             // ========== PRINT CLEARANCE ==========
 
