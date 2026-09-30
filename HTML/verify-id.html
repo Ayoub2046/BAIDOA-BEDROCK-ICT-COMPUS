@@ -251,8 +251,13 @@
                 document.getElementById('vid-name').textContent = student.name || 'Student Name';
                 document.getElementById('vid-id').textContent = bbCode;
                 document.getElementById('vid-class').textContent = student.grade || student.class_name || 'ICT Class';
-                if (student.image) {
-                    document.getElementById('vid-photo').src = student.image;
+                const photoUrl = student.image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                const photoEl = document.getElementById('vid-photo');
+                if (photoEl) {
+                    photoEl.src = photoUrl;
+                    photoEl.onerror = function() {
+                        this.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    };
                 }
             } catch (err) {
                 console.warn('Fallback rendering for student card:', err);
