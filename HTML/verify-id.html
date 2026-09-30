@@ -231,7 +231,10 @@
                     <div class="id-field-label">Class / Grade</div>
                     <div class="id-field-val" id="vid-class">--</div>
 
-                    <span style="background:#1a8a4a;color:#fff;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(26,138,74,0.4);margin-top:2px;">
+                    <div class="id-field-label">Phone Number</div>
+                    <div class="id-field-val" id="vid-phone">--</div>
+
+                    <span style="background:#10b981;color:#fff;font-size:0.72rem;font-weight:800;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(16,185,129,0.35);margin-top:2px;">
                         <i class="fas fa-shield-alt"></i>ACTIVE
                     </span>
                 </div>
@@ -281,6 +284,7 @@
                 document.getElementById('vid-name').textContent = student.name || 'Student Name';
                 document.getElementById('vid-id').textContent = bbCode;
                 document.getElementById('vid-class').textContent = student.grade || student.class_name || 'ICT Class';
+                document.getElementById('vid-phone').textContent = student.phone || student.parent_phone || '--';
                 const photoUrl = student.image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                 const photoEl = document.getElementById('vid-photo');
                 if (photoEl) {

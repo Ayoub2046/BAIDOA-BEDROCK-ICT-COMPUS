@@ -196,6 +196,7 @@ const { query } = require('./database');
             await query(`ALTER TABLE students ADD COLUMN IF NOT EXISTS attendance VARCHAR(50)`);
             await query(`ALTER TABLE students ADD COLUMN IF NOT EXISTS gpa NUMERIC(3, 2)`);
             await query(`ALTER TABLE students ADD COLUMN IF NOT EXISTS remarks TEXT`);
+            await query(`ALTER TABLE students ADD COLUMN IF NOT EXISTS phone TEXT`);
             await query(`ALTER TABLE students ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP DEFAULT NULL`);
             console.log('Classes and students columns ready.');
         } catch (alterErr) {

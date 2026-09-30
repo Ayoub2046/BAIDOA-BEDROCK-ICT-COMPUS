@@ -186,11 +186,17 @@
                                 <input type="text" name="academic_year" class="form-control" placeholder="e.g. 2026">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Parent Account</label>
-                            <select name="parentid" class="form-select">
-                                <option value="">— No parent assigned —</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" name="phone" class="form-control" placeholder="e.g. +252 61 500 0000">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Parent Account</label>
+                                <select name="parentid" class="form-select">
+                                    <option value="">— No parent assigned —</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold"><i class="fas fa-camera me-1 text-primary"></i>Student Photo (ID Card & Clearance)</label>
@@ -470,6 +476,7 @@
                     studentForm.elements.enrollmentDate.value = toDateInputValue(student.enrollmentdate);
                     studentForm.elements.birthDate.value = toDateInputValue(student.birthdate);
                     studentForm.elements.password.value = student.plain_password || ('bb' + (260000 + student.id));
+                    if (studentForm.elements.phone) studentForm.elements.phone.value = student.phone || '';
                     studentForm.elements.image.value = student.image || '';
                     const imgPreview = document.getElementById('student-image-preview');
                     if (student.image) {
@@ -529,6 +536,7 @@
                     attendance: parseInt(studentForm.elements.attendance.value) || null,
                     parentid: pid ? parseInt(pid) : null,
                     password: studentForm.elements.password.value,
+                    phone: studentForm.elements.phone ? studentForm.elements.phone.value : '',
                     image: studentForm.elements.image ? studentForm.elements.image.value : '',
                     status: studentForm.elements.status ? studentForm.elements.status.value : 'Active',
                     academic_year: studentForm.elements.academic_year ? studentForm.elements.academic_year.value : '2026'

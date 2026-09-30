@@ -218,9 +218,9 @@ router.post('/', async (req, res) => {
 
         await query(
             `INSERT INTO students 
-                (id, name, grade, enrollmentdate, birthdate, attendance, parentid, student_id_code, admission_batch_id, academic_year, status, remarks, image, deleted_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NULL)`,
-            [newId, name, grade, enrollmentDate || null, birthDate || null, attendance || null, parentid || null, finalCode, batch.id, targetYear, targetStatus, remarks || null, image || null]
+                (id, name, grade, enrollmentdate, birthdate, attendance, parentid, student_id_code, admission_batch_id, academic_year, status, remarks, image, phone, deleted_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NULL)`,
+            [newId, name, grade, enrollmentDate || null, birthDate || null, attendance || null, parentid || null, finalCode, batch.id, targetYear, targetStatus, remarks || null, image || null, req.body.phone || null]
         );
 
         // Password handling
@@ -248,7 +248,7 @@ router.post('/', async (req, res) => {
 
 // PUT update student details
 router.put('/:id', async (req, res) => {
-    const { name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid, password, status, academic_year, student_id_code, image } = req.body;
+    const { name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid, password, status, academic_year, student_id_code, image, phone } = req.body;
     const studentId = parseInt(req.params.id);
     try {
         let cleanCode = null;
@@ -271,9 +271,10 @@ router.put('/:id', async (req, res) => {
                 status = COALESCE($9, status),
                 academic_year = COALESCE($10, academic_year),
                 student_id_code = COALESCE($11, student_id_code),
-                image = COALESCE($12, image)
-             WHERE id = $13 AND deleted_at IS NULL`,
-            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, cleanCode || null, image || null, studentId]
+                image = COALESCE($12, image),
+                phone = COALESCE($13, phone)
+             WHERE id = $14 AND deleted_at IS NULL`,
+            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, cleanCode || null, image || null, phone || null, studentId]
         );
 
         if (password && String(password).trim()) {
