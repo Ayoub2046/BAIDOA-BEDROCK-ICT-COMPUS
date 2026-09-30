@@ -614,12 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (count) count.textContent = studentsToRender.length;
         list.innerHTML = studentsToRender.map(s => {
             const att = attColor(s.attendance);
-            const initial = (s.name || '?').charAt(0).toUpperCase();
-            const colors = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#0dcaf0','#20c997','#e83e8c'];
-            const avatarColor = colors[s.id % colors.length];
+            const studentPhoto = s.image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
             return `<div class="directory-item" data-id="${s.id}">
                 <div class="d-flex align-items-center gap-3 w-100">
-                    <div class="avatar-circle" style="background:${avatarColor};">${initial}</div>
+                    <img src="${studentPhoto}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #0d6efd;box-shadow:0 2px 5px rgba(0,0,0,0.12);" class="flex-shrink-0" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
                     <div class="flex-grow-1 min-w-0">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <span class="fw-semibold dir-name">${s.name}</span>

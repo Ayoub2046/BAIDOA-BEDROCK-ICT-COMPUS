@@ -323,7 +323,8 @@
                     const pwd = s.plain_password || ('bb' + (260000 + s.id));
                     const status = s.status || 'Active';
                     const statusBadge = STATUS_BADGES[status] || 'bg-light text-dark';
-                    const avatar = s.image ? `<img src="${s.image}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #0d4f8c;" class="me-2">` : `<div style="width:36px;height:36px;border-radius:50%;background:#0d4f8c;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;" class="me-2">${(s.name||'?')[0].toUpperCase()}</div>`;
+                    const studentPhoto = s.image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    const avatar = `<img src="${studentPhoto}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #0d4f8c;box-shadow:0 2px 5px rgba(0,0,0,0.15);" class="me-2" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">`;
                     return `
                 <tr>
                     <td><span class="badge" style="background:#e6f2fb; color:#1a7fd4; font-size:0.9rem; font-weight:700; padding:6px 10px; border-radius:8px;">${bbId}</span></td>
