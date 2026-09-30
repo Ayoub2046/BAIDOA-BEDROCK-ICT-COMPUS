@@ -171,7 +171,7 @@ router.get('/:id/academic-history', async (req, res) => {
 router.post('/', async (req, res) => {
     const { 
         name, grade, enrollmentDate, birthDate, attendance, parentid, 
-        password, student_id_code, admission_batch_id, academic_year, status, remarks 
+        password, student_id_code, admission_batch_id, academic_year, status, remarks, image 
     } = req.body;
 
     try {
@@ -218,9 +218,9 @@ router.post('/', async (req, res) => {
 
         await query(
             `INSERT INTO students 
-                (id, name, grade, enrollmentdate, birthdate, attendance, parentid, student_id_code, admission_batch_id, academic_year, status, remarks, deleted_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NULL)`,
-            [newId, name, grade, enrollmentDate || null, birthDate || null, attendance || null, parentid || null, finalCode, batch.id, targetYear, targetStatus, remarks || null]
+                (id, name, grade, enrollmentdate, birthdate, attendance, parentid, student_id_code, admission_batch_id, academic_year, status, remarks, image, deleted_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NULL)`,
+            [newId, name, grade, enrollmentDate || null, birthDate || null, attendance || null, parentid || null, finalCode, batch.id, targetYear, targetStatus, remarks || null, image || null]
         );
 
         // Password handling
@@ -248,7 +248,7 @@ router.post('/', async (req, res) => {
 
 // PUT update student details
 router.put('/:id', async (req, res) => {
-    const { name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid, password, status, academic_year, student_id_code } = req.body;
+    const { name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid, password, status, academic_year, student_id_code, image } = req.body;
     const studentId = parseInt(req.params.id);
     try {
         let cleanCode = null;
@@ -270,9 +270,10 @@ router.put('/:id', async (req, res) => {
                 parentid = COALESCE($8, parentid),
                 status = COALESCE($9, status),
                 academic_year = COALESCE($10, academic_year),
-                student_id_code = COALESCE($11, student_id_code)
-             WHERE id = $12 AND deleted_at IS NULL`,
-            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, cleanCode || null, studentId]
+                student_id_code = COALESCE($11, student_id_code),
+                image = COALESCE($12, image)
+             WHERE id = $13 AND deleted_at IS NULL`,
+            [name, grade, enrollmentDate, birthDate, attendance, gpa, remarks, parentid || null, status, academic_year, cleanCode || null, image || null, studentId]
         );
 
         if (password && String(password).trim()) {

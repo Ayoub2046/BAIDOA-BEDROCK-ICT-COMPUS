@@ -193,6 +193,14 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label fw-semibold"><i class="fas fa-camera me-1 text-primary"></i>Student ID Card Photo</label>
+                            <input type="file" id="student-image-file" class="form-control" accept="image/*">
+                            <input type="hidden" name="image">
+                            <div class="mt-2" id="student-image-preview" style="display:none;">
+                                <img src="" alt="Student Photo Preview" style="max-height:100px;border-radius:10px;border:2px solid #0d4f8c;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label fw-bold"><i class="fas fa-key me-1 text-primary"></i>Student Password</label>
                             <div class="input-group">
                                 <input type="text" name="password" id="modalStudentPassword" class="form-control" placeholder="e.g. bb260001 (or custom)">
@@ -315,10 +323,11 @@
                     const pwd = s.plain_password || ('bb' + (260000 + s.id));
                     const status = s.status || 'Active';
                     const statusBadge = STATUS_BADGES[status] || 'bg-light text-dark';
+                    const avatar = s.image ? `<img src="${s.image}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #0d4f8c;" class="me-2">` : `<div style="width:36px;height:36px;border-radius:50%;background:#0d4f8c;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;" class="me-2">${(s.name||'?')[0].toUpperCase()}</div>`;
                     return `
                 <tr>
                     <td><span class="badge" style="background:#e6f2fb; color:#1a7fd4; font-size:0.9rem; font-weight:700; padding:6px 10px; border-radius:8px;">${bbId}</span></td>
-                    <td><strong>${s.name}</strong><br><small class="text-muted">${s.batch_year ? 'Batch ' + s.batch_year : ''}</small></td>
+                    <td><div class="d-flex align-items-center">${avatar}<div><strong>${s.name}</strong><br><small class="text-muted">${s.batch_year ? 'Batch ' + s.batch_year : ''}</small></div></div></td>
                     <td><span class="badge ${statusBadge} px-2 py-1">${status}</span></td>
                     <td>${s.grade || '—'}</td>
                     <td>${s.parent_name || '<span class="text-muted">—</span>'}</td>
@@ -380,11 +389,34 @@
                 });
             }
 
+            document.getElementById('student-image-file')?.addEventListener('change', async () => {
+                const input = document.getElementById('student-image-file');
+                const file = input.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('folder', 'students');
+                try {
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    studentForm.elements.image.value = data.url;
+                    const preview = document.getElementById('student-image-preview');
+                    preview.style.display = 'block';
+                    preview.querySelector('img').src = data.url;
+                } catch (error) {
+                    alert('Photo upload failed: ' + error.message);
+                    input.value = '';
+                }
+            });
+
             document.getElementById('btn-add-student').addEventListener('click', async () => {
                 document.getElementById('studentModalTitle').textContent = 'Add New Student';
                 studentForm.reset();
                 studentForm.dataset.mode = 'add';
                 delete studentForm.dataset.id;
+                studentForm.elements.image.value = '';
+                document.getElementById('student-image-preview').style.display = 'none';
                 const nextId = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
                 studentForm.elements.student_id_code.value = 'BB' + (260000 + nextId);
                 studentForm.elements.password.value = 'bb' + (260000 + nextId);
@@ -412,6 +444,15 @@
                     studentForm.elements.enrollmentDate.value = toDateInputValue(student.enrollmentdate);
                     studentForm.elements.birthDate.value = toDateInputValue(student.birthdate);
                     studentForm.elements.password.value = student.plain_password || ('bb' + (260000 + student.id));
+                    studentForm.elements.image.value = student.image || '';
+                    const imgPreview = document.getElementById('student-image-preview');
+                    if (student.image) {
+                        imgPreview.style.display = 'block';
+                        imgPreview.querySelector('img').src = student.image;
+                    } else {
+                        imgPreview.style.display = 'none';
+                        imgPreview.querySelector('img').src = '';
+                    }
                     if (studentForm.elements.status) studentForm.elements.status.value = student.status || 'Active';
                     if (studentForm.elements.academic_year) studentForm.elements.academic_year.value = student.academic_year || '2026';
                     if (studentForm.elements.parentid.options.length <= 1) await loadParents();
@@ -462,6 +503,7 @@
                     attendance: parseInt(studentForm.elements.attendance.value) || null,
                     parentid: pid ? parseInt(pid) : null,
                     password: studentForm.elements.password.value,
+                    image: studentForm.elements.image ? studentForm.elements.image.value : '',
                     status: studentForm.elements.status ? studentForm.elements.status.value : 'Active',
                     academic_year: studentForm.elements.academic_year ? studentForm.elements.academic_year.value : '2026'
                 };
