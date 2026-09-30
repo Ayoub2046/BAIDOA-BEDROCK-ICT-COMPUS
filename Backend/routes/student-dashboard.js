@@ -168,19 +168,36 @@ router.get('/:studentId', async (req, res) => {
         let clearance = { isCleared: false };
         try {
             const { rows } = await query(
-                `SELECT * FROM clearance_cards WHERE student_id = $1 ORDER BY created_at DESC LIMIT 1`,
+                `SELECT * FROM clearance_cards WHERE student_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`,
                 [studentId]
             );
+            const { rows: feeRows } = await query(
+                `SELECT COUNT(*) FILTER (WHERE LOWER(status) IN ('pending', 'overdue', 'unpaid')) AS unpaid_count
+                 FROM fees WHERE studentid = $1 AND deleted_at IS NULL`,
+                [studentId]
+            );
+            const unpaidCount = feeRows[0] ? parseInt(feeRows[0].unpaid_count || 0) : 0;
+
             if (rows.length > 0) {
                 const c = rows[0];
+                const isCleared = c.is_cleared || (unpaidCount === 0);
                 clearance = {
-                    isCleared: c.is_cleared,
-                    released_by: c.released_by,
-                    released_at: c.released_at,
-                    semester: c.semester
+                    isCleared: !!isCleared,
+                    released_by: c.released_by || (unpaidCount === 0 ? 'Fee Clearance System' : 'Admin'),
+                    released_at: c.released_at || new Date(),
+                    semester: c.semester || 'Current Semester'
+                };
+            } else {
+                clearance = {
+                    isCleared: unpaidCount === 0,
+                    released_by: unpaidCount === 0 ? 'Fee Clearance System' : null,
+                    released_at: unpaidCount === 0 ? new Date() : null,
+                    semester: 'Current Semester'
                 };
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error('Clearance query error:', e);
+        }
 
         // 9. Exam schedule (based on class)
         let examSchedule = [];

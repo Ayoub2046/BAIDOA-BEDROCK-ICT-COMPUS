@@ -7,13 +7,14 @@ const router = express.Router();
 // Auto-update clearance based on fee status
 async function autoUpdateClearance(studentId) {
     const { rows } = await query(
-        `SELECT COUNT(*) FILTER (WHERE status = 'Paid') AS paid,
-                COUNT(*) FILTER (WHERE status IN ('Pending','Overdue')) AS unpaid
+        `SELECT COUNT(*) FILTER (WHERE LOWER(status) = 'paid') AS paid,
+                COUNT(*) FILTER (WHERE LOWER(status) IN ('pending','overdue','unpaid')) AS unpaid
          FROM fees WHERE studentid = $1 AND deleted_at IS NULL`,
         [studentId]
     );
     const { paid, unpaid } = rows[0];
-    const shouldClear = parseInt(paid) > 0 && parseInt(unpaid) === 0;
+    const unpaidCount = parseInt(unpaid) || 0;
+    const shouldClear = unpaidCount === 0;
 
     const existing = await query(
         `SELECT id, is_cleared FROM clearance_cards WHERE student_id = $1 AND deleted_at IS NULL`,

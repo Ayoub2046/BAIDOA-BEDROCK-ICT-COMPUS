@@ -4523,19 +4523,37 @@
 
             // ========== TAB 6: CLEARANCE ==========
 
-            function loadClearance(data, elpId) {
+            async function loadClearance(data, elpId) {
                 var contentEl = document.getElementById('clearance-content');
-                var clearance = data.clearance;
+                if (!contentEl) return;
+
+                var clearance = data ? data.clearance : null;
+                var studentId = (data && data.student) ? data.student.id : null;
+
+                if (studentId) {
+                    try {
+                        var res = await fetch('/api/clearance/student/' + studentId);
+                        if (res.ok) {
+                            var liveClearance = await res.json();
+                            if (liveClearance && typeof liveClearance.isCleared !== 'undefined') {
+                                clearance = liveClearance;
+                                if (data) data.clearance = liveClearance;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Live clearance fetch error:', e);
+                    }
+                }
 
                 if (clearance && clearance.isCleared) {
                     var html = '<div class="clearance-card-cleared">';
                     html += '<div class="check-icon"><i class="fas fa-check"></i></div>';
                     html += '<h4 style="color: #1e8449; font-weight: 700;">Cleared</h4>';
-                    html += '<p class="mb-1"><strong>' + (data.student.name || '') + '</strong></p>';
+                    html += '<p class="mb-1"><strong>' + (data && data.student ? data.student.name : '') + '</strong></p>';
                     html += '<p class="mb-1">Student ID: ' + elpId + '</p>';
-                    html += '<p class="mb-1">Semester: ' + (clearance.semester || 'N/A') + '</p>';
-                    html += '<p class="mb-1">Released by: ' + (clearance.released_by || 'Admin') + '</p>';
-                    html += '<p class="mb-3"><small>' + formatDate(clearance.released_at) + '</small></p>';
+                    html += '<p class="mb-1">Semester: ' + (clearance.semester || 'Current Semester') + '</p>';
+                    html += '<p class="mb-1">Released by: ' + (clearance.released_by || 'Fee Clearance System') + '</p>';
+                    html += '<p class="mb-3"><small>' + formatDate(clearance.released_at || new Date()) + '</small></p>';
                     html += '<button class="btn btn-success no-print" onclick="printClearanceCard()"><i class="fas fa-print me-1"></i>Print Clearance Card</button>';
                     html += '</div>';
                     contentEl.innerHTML = html;

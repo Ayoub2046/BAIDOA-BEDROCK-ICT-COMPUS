@@ -7,21 +7,36 @@ const router = express.Router();
 // GET clearance status for a student
 router.get('/student/:studentId', async (req, res) => {
     try {
+        const studentId = parseInt(req.params.studentId);
         const { rows } = await query(
-            `SELECT * FROM clearance_cards WHERE student_id = $1 ORDER BY created_at DESC LIMIT 1`,
-            [req.params.studentId]
+            `SELECT * FROM clearance_cards WHERE student_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+            [studentId]
         );
-        if (rows.length === 0) {
-            return res.json({ isCleared: false, message: 'No clearance card found.' });
+        const { rows: feeRows } = await query(
+            `SELECT COUNT(*) FILTER (WHERE LOWER(status) IN ('pending','overdue','unpaid')) AS unpaid
+             FROM fees WHERE studentid = $1 AND deleted_at IS NULL`,
+            [studentId]
+        );
+        const unpaidCount = feeRows[0] ? parseInt(feeRows[0].unpaid || 0) : 0;
+        
+        if (rows.length > 0) {
+            const c = rows[0];
+            const isCleared = c.is_cleared || (unpaidCount === 0);
+            return res.json({
+                isCleared: !!isCleared,
+                released_by: c.released_by || (unpaidCount === 0 ? 'Fee Clearance System' : 'Admin'),
+                released_at: c.released_at || new Date(),
+                semester: c.semester || 'Current Semester',
+                id: c.id,
+                student_id: c.student_id
+            });
         }
-        const c = rows[0];
+        
         res.json({
-            isCleared: c.is_cleared,
-            released_by: c.released_by,
-            released_at: c.released_at,
-            semester: c.semester,
-            id: c.id,
-            student_id: c.student_id
+            isCleared: unpaidCount === 0,
+            released_by: unpaidCount === 0 ? 'Fee Clearance System' : null,
+            released_at: unpaidCount === 0 ? new Date() : null,
+            semester: 'Current Semester'
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
