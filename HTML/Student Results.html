@@ -4726,14 +4726,32 @@
 
             // ========== DIGITAL ID ==========
 
-            window.openDigitalId = function () {
+            window.openDigitalId = async function () {
                 var data = dashboardData;
                 if (!data) return;
-                var bbId = 'BB' + String(260000 + data.student.id).padStart(6, '0');
+                var studentId = data.student.id;
+                var bbId = data.student.student_id_code || ('BB' + String(260000 + studentId).padStart(6, '0'));
+
                 document.getElementById('did-name').textContent = data.student.name || '--';
                 document.getElementById('did-id').textContent = bbId;
                 document.getElementById('did-class').textContent = data.student.grade || '--';
-                var photoUrl = (data.student && data.student.image) ? data.student.image : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+                // Fetch fresh student profile live from DB to ensure image is up-to-date
+                var studentPhoto = data.student.image || '';
+                try {
+                    var freshRes = await fetch('/api/students/' + studentId);
+                    if (freshRes.ok) {
+                        var freshStudent = await freshRes.json();
+                        if (freshStudent.image) {
+                            studentPhoto = freshStudent.image;
+                            data.student.image = freshStudent.image;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch fresh student profile:', err);
+                }
+
+                var photoUrl = studentPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                 var photoEl = document.getElementById('did-photo');
                 if (photoEl) {
                     photoEl.src = photoUrl;
@@ -4743,7 +4761,7 @@
                 }
                 var container = document.getElementById('qrcode-container');
                 container.innerHTML = '';
-                var verifyUrl = window.location.origin + '/HTML/verify-id.html?id=' + data.student.id + '&code=' + bbId;
+                var verifyUrl = window.location.origin + '/HTML/verify-id.html?id=' + studentId + '&code=' + bbId;
 
                 try {
                     new QRCode(container, {
