@@ -4738,13 +4738,28 @@
                 }
                 var container = document.getElementById('qrcode-container');
                 container.innerHTML = '';
+                var qrFormattedText = [
+                    '🎓 BAIDOA BEDROCK ICT CAMPUS',
+                    'OFFICIAL DIGITAL STUDENT CARD',
+                    '------------------------------------',
+                    '👤 Name: ' + (data.student.name || '--'),
+                    '🆔 Student ID: ' + bbId,
+                    '📚 Class / Grade: ' + (data.student.grade || '--'),
+                    '🏫 Dept: ICT & Computer Science',
+                    '📅 Valid Period: 2026 - 2028',
+                    '✅ Status: VERIFIED ACTIVE STUDENT',
+                    '🔒 Security Code: BB-VERIFIED-OFFICIAL',
+                    '------------------------------------',
+                    'Issued by Bedrock Campus Registrar'
+                ].join('\n');
+
                 new QRCode(container, {
-                    text: JSON.stringify({ id: data.student.id, bbId: bbId, name: data.student.name, grade: data.student.grade, school: 'Baidoa Bedrock ICT Campus', valid: '2026-2028' }),
-                    width: 60,
-                    height: 60,
+                    text: qrFormattedText,
+                    width: 70,
+                    height: 70,
                     colorDark: '#0d4f8c',
                     colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H
+                    correctLevel: QRCode.CorrectLevel.M
                 });
                 new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
             };
