@@ -403,7 +403,48 @@
             <button class="td-nav-btn" data-section="students"><i class="fas fa-users"></i> Students</button>
             <button class="td-nav-btn" data-section="results"><i class="fas fa-file-alt"></i> Results</button>
             <button class="td-nav-btn" data-section="timetable"><i class="fas fa-calendar-week"></i> Schedule</button>
-            <button class="td-nav-btn" data-section="fees"><i class="fas fa-hand-holding-usd"></i> My Fees & Salary</button>
+            <button class="td-nav-btn" data-section="fees"><i class="fas fa-hand-holding-usd"></i> My Fees &amp; Salary</button>
+            <button class="td-nav-btn" data-section="messages" id="msgs-tab-btn"><i class="fas fa-envelope"></i> Messages <span id="msg-badge" class="badge bg-danger ms-1" style="display:none;font-size:9px;">0</span></button>
+        </div>
+
+        <!-- ======================== MESSAGES INBOX ======================== -->
+        <div class="td-section" id="section-messages">
+            <div class="row g-3">
+                <!-- Inbox List -->
+                <div class="col-md-4">
+                    <div class="td-card" style="height:520px;display:flex;flex-direction:column;">
+                        <div class="td-card-h">
+                            <h5><i class="fas fa-inbox"></i> Inbox</h5>
+                            <button class="btn btn-sm btn-outline-primary" style="font-size:11px;" onclick="loadDmInbox()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
+                        <div id="dm-inbox-list" style="overflow-y:auto;flex:1;"></div>
+                    </div>
+                </div>
+                <!-- Thread View -->
+                <div class="col-md-8">
+                    <div class="td-card" style="height:520px;display:flex;flex-direction:column;">
+                        <div class="td-card-h" id="dm-thread-panel" style="display:none;">
+                            <h5 id="dm-thread-header" style="font-size:0.85rem;"><i class="fas fa-comments"></i> Select a conversation</h5>
+                        </div>
+                        <div id="dm-thread-box-teacher" style="flex:1;overflow-y:auto;padding:1rem;" class="d-flex flex-column">
+                            <div class="text-center text-muted py-5 small">
+                                <i class="fas fa-comments fs-2 d-block mb-2 opacity-50"></i>
+                                Select a conversation from the inbox to view messages.
+                            </div>
+                        </div>
+                        <!-- Reply Box -->
+                        <div class="p-2 border-top" style="background:#f8fafc;flex-shrink:0;">
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="dm-reply-input" class="form-control" placeholder="Type your reply and press Send..." onkeydown="if(event.key==='Enter'){sendTeacherReply();}">
+                                <button class="btn btn-primary" id="dm-reply-btn" onclick="sendTeacherReply()" style="font-size:12px;">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:10px;">Replies are sent directly to the student/parent who messaged you.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ======================== OVERVIEW ======================== -->
@@ -2318,6 +2359,137 @@
             } catch(e) { console.error("Error fetching teacher announcements:", e); }
         }
         fetchTeacherAnnouncements();
+
+        // === MESSAGES INBOX ===
+        let dmThreadOpen = null;
+        let teacherUserId = null;
+
+        async function initMessagesInbox() {
+            try {
+                // Get current teacher's user ID from session or profile
+                if (activeUser && activeUser.id) {
+                    teacherUserId = activeUser.id;
+                } else {
+                    const profileRes = await fetch('/api/auth/profile');
+                    const prof = await profileRes.json();
+                    teacherUserId = prof.id || prof.user_id;
+                }
+                loadDmInbox();
+            } catch(e) { console.warn('Could not initialise message inbox:', e.message); }
+        }
+
+        async function loadDmInbox() {
+            const list = document.getElementById('dm-inbox-list');
+            if (!list) return;
+            list.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+            try {
+                const res = await fetch('/api/messages/inbox/' + teacherUserId);
+                const data = await res.json();
+                const threads = Array.isArray(data) ? data : (data.threads || []);
+                if (threads.length === 0) {
+                    list.innerHTML = '<div class="text-center text-muted py-5 small"><i class="fas fa-inbox fs-2 d-block mb-2 opacity-50"></i>No messages yet. Students & parents can send you direct messages.</div>';
+                    return;
+                }
+                // Update badge
+                const unread = threads.filter(t => !t.isread && !t.is_read).length;
+                const badge = document.getElementById('msg-badge');
+                if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? 'inline' : 'none'; }
+
+                list.innerHTML = threads.map(t => `
+                    <div class="dm-thread-item p-3 border-bottom" style="cursor:pointer;transition:background 0.15s;" 
+                         onclick="openDmThread('${t.channel}', '${(t.sender||'').replace(/'/g,"\\'")}')"
+                         onmouseover="this.style.background='rgba(13,75,140,0.05)'" onmouseout="this.style.background=''">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0d4f8c,#1a7fd4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;flex-shrink:0;">
+                                ${(t.sender||'?')[0].toUpperCase()}
+                            </div>
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold small" style="font-size:0.82rem;">${t.sender || 'Unknown'}</span>
+                                    <small class="text-muted" style="font-size:10px;">${t.time || ''}</small>
+                                </div>
+                                <div class="text-muted" style="font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${t.body || t.subject || ''}</div>
+                            </div>
+                            ${(!t.isread && !t.is_read) ? '<span class="badge bg-primary ms-1" style="font-size:9px;">New</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                list.innerHTML = '<div class="text-center text-danger py-3 small">Failed to load messages: ' + e.message + '</div>';
+            }
+        }
+
+        async function openDmThread(channel, senderLabel) {
+            dmThreadOpen = channel;
+            const threadBox = document.getElementById('dm-thread-box-teacher');
+            const threadHeader = document.getElementById('dm-thread-header');
+            const threadPanel = document.getElementById('dm-thread-panel');
+            if (!threadBox) return;
+            if (threadHeader) threadHeader.textContent = 'Conversation with: ' + senderLabel;
+            if (threadPanel) threadPanel.style.display = 'block';
+            threadBox.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+            try {
+                const res = await fetch('/api/messages/channel/' + encodeURIComponent(channel));
+                const msgs = await res.json();
+                if (!Array.isArray(msgs) || msgs.length === 0) {
+                    threadBox.innerHTML = '<div class="text-center text-muted py-3 small">No messages in this conversation.</div>';
+                    return;
+                }
+                threadBox.innerHTML = msgs.map(msg => {
+                    const isMe = msg.sender && activeUser && activeUser.name && msg.sender.includes(activeUser.name);
+                    return `<div class="d-flex flex-column ${isMe?'align-items-end':'align-items-start'} mb-2">
+                        <div style="max-width:80%;padding:9px 14px;border-radius:14px;font-size:12px;${isMe?'background:#0d4f8c;color:#fff;':'background:#f0f4f8;color:#1e293b;'}">
+                            <div class="fw-bold mb-1" style="font-size:10px;opacity:0.75;">${msg.sender||'User'}</div>
+                            <div>${msg.body||''}</div>
+                            <div class="text-end mt-1" style="font-size:9px;opacity:0.65;">${msg.time||''}</div>
+                        </div></div>`;
+                }).join('');
+                threadBox.scrollTop = threadBox.scrollHeight;
+                // Mark as read
+                if (msgs[0] && msgs[0].id) fetch('/api/messages/read/' + msgs[0].id, {method:'PUT'});
+            } catch(e) {
+                threadBox.innerHTML = '<div class="text-center text-danger py-2 small">Error: ' + e.message + '</div>';
+            }
+        }
+        window.openDmThread = openDmThread;
+
+        async function sendTeacherReply() {
+            if (!dmThreadOpen) return;
+            const input = document.getElementById('dm-reply-input');
+            const body = input ? input.value.trim() : '';
+            if (!body) return;
+            const btn = document.getElementById('dm-reply-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; }
+            try {
+                // Extract sender id from channel pattern "direct-X-Y"
+                const parts = dmThreadOpen.replace('direct-','').split('-');
+                const otherId = parts.find(p => String(p) !== String(teacherUserId)) || parts[0];
+                await fetch('/api/messages/direct', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        senderId: teacherUserId,
+                        senderName: (activeUser && activeUser.name) || 'Teacher',
+                        senderRole: (activeUser && activeUser.role) || 'Teacher',
+                        recipientId: otherId,
+                        recipientRole: 'student',
+                        subject: 'Reply',
+                        body: body
+                    })
+                });
+                if (input) input.value = '';
+                await openDmThread(dmThreadOpen, document.getElementById('dm-thread-header')?.textContent.replace('Conversation with: ','') || '');
+            } catch(e) { alert('Failed to send reply: ' + e.message); }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send'; }
+        }
+        window.sendTeacherReply = sendTeacherReply;
+
+        // Trigger inbox load when tab clicked
+        document.querySelector('.td-nav-btn[data-section="messages"]')?.addEventListener('click', () => {
+            loadDmInbox();
+        });
+
+        initMessagesInbox();
     });
 
     function toggleTheme() {

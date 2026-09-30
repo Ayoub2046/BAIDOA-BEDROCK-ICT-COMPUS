@@ -194,6 +194,42 @@ router.get('/recipients/all', async (req, res) => {
     }
 });
 
+// GET inbox for a teacher/admin: shows latest message per direct thread targeting this user
+router.get('/inbox/:userId', async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    try {
+        await ensureTables();
+        // Get all direct-channel messages where recipient_id matches userId
+        // Return the most recent message per channel as thread preview
+        const { rows } = await query(`
+            SELECT DISTINCT ON (COALESCE(channelid, channel_id))
+                id,
+                COALESCE(channelid, channel_id) AS channel,
+                sender,
+                subject,
+                body,
+                time,
+                created_at,
+                COALESCE(isread, is_read, false) AS isread,
+                COALESCE(is_read, isread, false) AS is_read,
+                recipient_id,
+                category
+            FROM messages
+            WHERE deleted_at IS NULL
+              AND category = 'direct'
+              AND (
+                  recipient_id = $1
+                  OR COALESCE(channelid, channel_id) LIKE '%' || $1 || '%'
+              )
+            ORDER BY COALESCE(channelid, channel_id), id DESC
+        `, [String(userId)]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST send direct 1-on-1 message (Student/Parent -> Teacher/Admin)
 router.post('/direct', async (req, res) => {
     const { senderId, senderName, senderRole, recipientId, recipientName, recipientRole, subject, body } = req.body;
