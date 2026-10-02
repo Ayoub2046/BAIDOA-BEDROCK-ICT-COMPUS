@@ -138,10 +138,34 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Cover Image</label>
-                        <input type="file" id="cover-file" class="form-control" accept="image/*">
+                        <label class="form-label fw-bold"><i class="fas fa-image me-1 text-primary"></i>Cover Image</label>
+                        <!-- Tab toggle -->
+                        <div class="btn-group btn-group-sm w-100 mb-2" role="group">
+                            <input type="radio" class="btn-check" name="cover-mode" id="cover-mode-file" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="cover-mode-file"><i class="fas fa-upload me-1"></i>Upload File</label>
+                            <input type="radio" class="btn-check" name="cover-mode" id="cover-mode-url" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cover-mode-url"><i class="fas fa-link me-1"></i>Paste URL</label>
+                        </div>
+                        <!-- File upload panel -->
+                        <div id="cover-file-panel">
+                            <input type="file" id="cover-file" class="form-control" accept="image/*">
+                            <div id="cover-upload-status" class="small mt-1"></div>
+                        </div>
+                        <!-- URL paste panel -->
+                        <div id="cover-url-panel" style="display:none;">
+                            <input type="text" id="cover-url-input" class="form-control" placeholder="https://example.com/book-cover.jpg">
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1 w-100" id="btn-preview-url"><i class="fas fa-eye me-1"></i>Preview URL</button>
+                        </div>
+                        <!-- Hidden actual cover URL stored here -->
                         <input type="hidden" name="cover">
-                        <div class="mt-2" id="cover-preview" style="display:none;"><img src="" alt="Cover preview" style="max-height:100px;border-radius:6px;border:2px solid #dee2e6;"></div>
+                        <!-- Preview -->
+                        <div class="mt-2" id="cover-preview" style="display:none;">
+                            <img src="" alt="Cover preview" style="max-height:120px;border-radius:8px;border:2px solid #dee2e6;object-fit:cover;width:100%;">
+                            <div class="mt-1 d-flex justify-content-between align-items-center">
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Cover ready</small>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0" id="btn-clear-cover"><i class="fas fa-times"></i> Clear</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Digital Document File (PDF / DOC)</label>
@@ -190,28 +214,88 @@
         let books = [];
         let students = [];
 
+        // Cover mode toggle
+        document.querySelectorAll('input[name="cover-mode"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const isFile = document.getElementById('cover-mode-file').checked;
+                document.getElementById('cover-file-panel').style.display = isFile ? '' : 'none';
+                document.getElementById('cover-url-panel').style.display = isFile ? 'none' : '';
+            });
+        });
+
+        // Preview from URL
+        document.getElementById('btn-preview-url').addEventListener('click', () => {
+            const url = document.getElementById('cover-url-input').value.trim();
+            if (!url) return;
+            setCoverPreview(url);
+        });
+        document.getElementById('cover-url-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-preview-url').click(); }
+        });
+
+        // Clear cover
+        document.getElementById('btn-clear-cover').addEventListener('click', () => {
+            bookForm.elements.cover.value = '';
+            document.getElementById('cover-preview').style.display = 'none';
+            document.getElementById('cover-preview').querySelector('img').src = '';
+            document.getElementById('cover-file').value = '';
+            document.getElementById('cover-url-input').value = '';
+            document.getElementById('cover-upload-status').textContent = '';
+        });
+
+        function setCoverPreview(url) {
+            bookForm.elements.cover.value = url;
+            const preview = document.getElementById('cover-preview');
+            preview.style.display = 'block';
+            const img = preview.querySelector('img');
+            img.src = url;
+            img.onerror = () => {
+                document.getElementById('cover-upload-status').innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Image could not be loaded — check the URL</span>';
+                preview.style.display = 'none';
+                bookForm.elements.cover.value = '';
+            };
+            img.onload = () => {
+                document.getElementById('cover-upload-status').innerHTML = '';
+            };
+        }
+
         async function uploadLibraryFile(fileInputId, hiddenName, field, folder) {
             const input = document.getElementById(fileInputId);
             const file = input.files[0];
             if (!file) return;
+
+            const statusEl = document.getElementById('cover-upload-status');
+            if (statusEl) statusEl.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin me-1"></i>Uploading...</span>';
+
+            // Try server upload first
             const formData = new FormData();
             formData.append(field, file);
             formData.append('folder', folder);
             try {
                 const res = await fetch(UPLOAD_API, { method: 'POST', body: formData });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-                bookForm.elements[hiddenName].value = data.url;
+                if (!res.ok) throw new Error(data.error || 'Upload failed');
                 if (hiddenName === 'cover') {
-                    const coverPreview = document.getElementById('cover-preview');
-                    coverPreview.style.display = 'block';
-                    coverPreview.querySelector('img').src = data.url;
+                    setCoverPreview(data.url);
+                    if (statusEl) statusEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Cover uploaded!</span>';
                 } else {
-                    document.getElementById('digital-file-name').textContent = 'Uploaded: ' + file.name;
+                    bookForm.elements[hiddenName].value = data.url;
+                    document.getElementById('digital-file-name').textContent = '✅ Uploaded: ' + file.name;
                 }
-            } catch (error) {
-                alert('Upload failed: ' + error.message);
-                input.value = '';
+            } catch (serverErr) {
+                // Fallback: encode image as base64 data URL so it works locally without a storage backend
+                if (hiddenName === 'cover') {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        setCoverPreview(ev.target.result);
+                        if (statusEl) statusEl.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Server upload failed — using local preview. You may also paste an image URL instead.</span>';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    if (statusEl) statusEl.innerHTML = '';
+                    alert('Document upload failed: ' + serverErr.message);
+                    input.value = '';
+                }
             }
         }
 
