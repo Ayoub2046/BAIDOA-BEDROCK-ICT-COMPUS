@@ -1,8 +1,42 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const webPush = require('web-push');
 const { query } = require('../database');
 
-// Ensure database tables exist and have all required columns (Auto-migration)
+// Load or initialize VAPID Keys
+let vapidKeys = {
+    publicKey: process.env.VAPID_PUBLIC_KEY || "BH1CsgBgAM7tZxZGeTEwDD7CUshgolUrDEUB4q6k9KLPAS_NqFvRvgVC_1ts1bLk8r30SgQd_aDa5uyodbOvdtw",
+    privateKey: process.env.VAPID_PRIVATE_KEY || "oPT95bXFC4NBb4HEOH6HSN4mtiZ260GmFQ8SD1nUDho"
+};
+
+const vapidFile = path.join(__dirname, '..', 'vapid.json');
+if (fs.existsSync(vapidFile)) {
+    try {
+        const fileData = JSON.parse(fs.readFileSync(vapidFile, 'utf8'));
+        if (fileData.publicKey && fileData.privateKey) {
+            vapidKeys = fileData;
+        }
+    } catch (e) {}
+}
+
+try {
+    webPush.setVapidDetails(
+        'mailto:baidobedrcok@gmail.com',
+        vapidKeys.publicKey,
+        vapidKeys.privateKey
+    );
+} catch (e) {
+    console.warn('VAPID setup warning:', e.message);
+}
+
+// GET Public VAPID Key for browser subscription
+router.get('/vapid-public-key', (req, res) => {
+    res.json({ publicKey: vapidKeys.publicKey });
+});
+
+// Ensure database tables exist automatically
 async function initTables() {
     try {
         await query(`
@@ -24,7 +58,6 @@ async function initTables() {
             );
         `);
 
-        // Safely add missing columns to pre-existing tables if they don't exist
         const columnsToAdd = [
             'ALTER TABLE announcements ADD COLUMN IF NOT EXISTS content TEXT;',
             'ALTER TABLE announcements ADD COLUMN IF NOT EXISTS message TEXT;',
@@ -60,7 +93,45 @@ async function initTables() {
 }
 initTables();
 
-// GET all announcements (Fixes 404 on /api/announcements)
+// Helper to broadcast VAPID Push Notification to all subscribed devices
+async function broadcastPushNotification(payloadData) {
+    try {
+        const { rows } = await query(`SELECT * FROM push_subscriptions`);
+        if (!rows || rows.length === 0) return;
+
+        const payload = JSON.stringify({
+            title: payloadData.title || 'Baidoa Bedrock ICT Campus',
+            body: payloadData.body || payloadData.message || payloadData.content || 'New urgent announcement!',
+            icon: payloadData.icon || '/images/icons/icon-192.png',
+            badge: '/images/icons/icon-192.png',
+            url: payloadData.url || '/HTML/index.html'
+        });
+
+        const sendPromises = rows.map(async (sub) => {
+            const pushSubscription = {
+                endpoint: sub.endpoint,
+                keys: {
+                    p256dh: sub.keys_p256dh,
+                    auth: sub.keys_auth
+                }
+            };
+            try {
+                await webPush.sendNotification(pushSubscription, payload);
+            } catch (err) {
+                // If subscription expired or invalid (410/404), remove from DB
+                if (err.statusCode === 410 || err.statusCode === 404) {
+                    await query(`DELETE FROM push_subscriptions WHERE endpoint = $1`, [sub.endpoint]).catch(() => {});
+                }
+            }
+        });
+
+        await Promise.allSettled(sendPromises);
+    } catch (err) {
+        console.warn('Push broadcast error:', err.message);
+    }
+}
+
+// GET all announcements
 router.get('/', async (req, res) => {
     try {
         const { rows } = await query(`
@@ -83,7 +154,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET latest announcements (for homepage display)
+// GET latest announcements
 router.get('/latest', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 6;
@@ -107,7 +178,7 @@ router.get('/latest', async (req, res) => {
     }
 });
 
-// GET active announcements for pre-app splash screen & notification popup
+// GET active announcements
 router.get('/active', async (req, res) => {
     try {
         const { target = 'all' } = req.query;
@@ -134,7 +205,7 @@ router.get('/active', async (req, res) => {
     }
 });
 
-// GET single announcement by ID
+// GET single announcement
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,7 +230,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST create a new announcement / pre-app news item
+// POST create a new announcement & trigger real OS Lock-Screen Push Broadcast
 router.post('/', async (req, res) => {
     try {
         const { title, content, message, category, target_audience, audience, is_urgent, is_banner, publishDate, imageUrl, expires_at } = req.body;
@@ -191,13 +262,22 @@ router.post('/', async (req, res) => {
             expiry
         ]);
 
-        res.status(201).json(rows[0]);
+        const newAnnouncement = rows[0];
+
+        // Trigger real background Web Push notification to all phone / lock screens
+        broadcastPushNotification({
+            title: title.trim(),
+            body: bodyText,
+            url: '/HTML/index.html'
+        });
+
+        res.status(201).json(newAnnouncement);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// PUT update existing announcement
+// PUT update announcement
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -223,6 +303,7 @@ router.put('/:id', async (req, res) => {
         `, [title ? title.trim() : null, bodyText || null, category || null, aud, is_urgent, is_banner, pDate, imageUrl || null, id]);
 
         if (rows.length === 0) return res.status(404).json({ error: 'Announcement not found' });
+
         res.json(rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -260,7 +341,7 @@ router.post('/subscribe', async (req, res) => {
                 user_role = EXCLUDED.user_role
         `, [endpoint, p256dh, auth, user_role || 'guest']);
 
-        res.json({ success: true, message: 'Web Push Subscription registered.' });
+        res.json({ success: true, message: 'Web Push Subscription registered successfully.' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

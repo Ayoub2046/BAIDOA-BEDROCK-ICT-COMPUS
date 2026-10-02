@@ -421,18 +421,95 @@
     document.head.appendChild(s);
   }
 
-  // ─── Register Service Worker ──────────────────────────────────────────────
+  // ─── VAPID Web Push Subscription Handler ──────────────────────────────────
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    var rawData = window.atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  async function registerWebPushSubscription(reg) {
+    try {
+      if (!('pushManager' in reg)) return;
+
+      var res = await fetch('/api/announcements/vapid-public-key');
+      if (!res.ok) return;
+      var data = await res.json();
+      if (!data.publicKey) return;
+
+      var existingSub = await reg.pushManager.getSubscription();
+      var sub = existingSub;
+      if (!sub) {
+        var applicationServerKey = urlBase64ToUint8Array(data.publicKey);
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: applicationServerKey
+        });
+      }
+
+      if (sub) {
+        var subObj = sub.toJSON();
+        var role = 'student';
+        try {
+          var user = JSON.parse(sessionStorage.getItem('activeUser') || '{}');
+          if (user.role) role = user.role.toLowerCase();
+        } catch (e) {}
+
+        await fetch('/api/announcements/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: subObj.endpoint,
+            keys: subObj.keys,
+            user_role: role
+          })
+        });
+        console.log('[PWA] Phone lock screen Web Push registered successfully!');
+      }
+    } catch (pushErr) {
+      console.warn('[PWA] Web Push subscription note:', pushErr.message);
+    }
+  }
+
+  // ─── Register Service Worker & Web Push ───────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
         .then(function (reg) {
           console.log('[PWA] Service Worker active, scope:', reg.scope);
+          if ('Notification' in window && Notification.permission === 'granted') {
+            registerWebPushSubscription(reg);
+          }
         })
         .catch(function (err) {
           console.warn('[PWA] Service Worker registration failed:', err);
         });
     });
   }
+
+  // Helper function exposed globally to trigger push prompt anytime
+  window.enableLockScreenPushNotifications = async function () {
+    if (!('Notification' in window)) {
+      alert('Push notifications are not supported on this browser version.');
+      return false;
+    }
+    try {
+      var perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        var reg = await navigator.serviceWorker.ready;
+        await registerWebPushSubscription(reg);
+        return true;
+      }
+    } catch (e) {
+      console.warn('Push request error:', e);
+    }
+    return false;
+  };
 
   // ─── Listen for Installability ────────────────────────────────────────────
   window.addEventListener('beforeinstallprompt', function (e) {
@@ -447,16 +524,15 @@
     markInstalledAndHide();
   });
 
-  // ─── Public API (if called anywhere) ──────────────────────────────────────
+  // ─── Public API ───────────────────────────────────────────────────────────
   window.showBedrockPwaInstall = showInstallModal;
 
   // ─── Initialize ───────────────────────────────────────────────────────────
   function init() {
     cleanUpInstallUI();
 
-    if (isInstalled()) return; // Already installed, do nothing
+    if (isInstalled()) return;
 
-    // Automatic Popup on FIRST visit per session — skips admin pages
     if (!wasDismissedThisSession() && !isAdminPage()) {
       window.setTimeout(function () {
         if (!isInstalled() && !wasDismissedThisSession()) {

@@ -134,12 +134,16 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body,
-    icon: payload.icon,
-    badge: payload.badge,
-    vibrate: [200, 100, 200],
+    icon: payload.icon || '/images/icons/icon-192.png',
+    badge: payload.badge || '/images/icons/icon-192.png',
+    image: payload.image || payload.imageUrl || null,
+    vibrate: [300, 100, 300, 100, 300], // Phone screen vibration pulse
+    tag: 'bedrock-campus-push-' + Date.now(),
+    renotify: true,
+    requireInteraction: true, // Key for phone lock screen: stays visible until user taps!
     data: { url: payload.url || '/HTML/index.html' },
     actions: [
-      { action: 'open', title: 'Open News' },
+      { action: 'open', title: '📲 Open Message' },
       { action: 'dismiss', title: 'Dismiss' }
     ]
   };

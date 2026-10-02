@@ -158,36 +158,18 @@
         } catch (e) {}
     }
 
-    // Request Notification permission from user screen
+    // Request VAPID Push Notification permission from user screen
     async function requestScreenNotifications() {
-        if (!('Notification' in window)) {
-            alert('Notifications are not supported on this device/browser.');
-            return;
-        }
-        try {
+        if (window.enableLockScreenPushNotifications) {
+            const success = await window.enableLockScreenPushNotifications();
+            if (success) {
+                alert('🔔 Phone Lock-Screen Push Notifications Enabled!\n\nYou will now receive WhatsApp-style notifications on your phone lock screen whenever campus updates are posted!');
+            }
+        } else if ('Notification' in window) {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
-                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                    const reg = await navigator.serviceWorker.ready;
-                    const sub = await reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: null
-                    }).catch(() => null);
-
-                    if (sub) {
-                        fetch('/api/announcements/subscribe', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.toJSON().keys, user_role: 'guest' })
-                        });
-                    }
-                }
-                alert('🔔 Screen notifications enabled! You will now receive news and alerts on your screen.');
-            } else {
-                alert('Notification permission denied or dismissed.');
+                alert('🔔 Notifications enabled!');
             }
-        } catch (err) {
-            console.warn('Push subscription error:', err);
         }
     }
 
