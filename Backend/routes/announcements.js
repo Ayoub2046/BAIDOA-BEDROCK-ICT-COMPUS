@@ -36,7 +36,7 @@ router.get('/vapid-public-key', (req, res) => {
     res.json({ publicKey: vapidKeys.publicKey });
 });
 
-// Ensure database tables exist automatically
+// Auto-migrate tables and columns
 async function initTables() {
     try {
         await query(`
@@ -93,20 +93,31 @@ async function initTables() {
 }
 initTables();
 
-// Helper to broadcast VAPID Push Notification to all subscribed devices
-async function broadcastPushNotification(payloadData) {
+// Helper to broadcast VAPID Push Notification to all or target subscribed devices
+async function broadcastPushNotification(payloadData, targetRole = 'all') {
     try {
-        const { rows } = await query(`SELECT * FROM push_subscriptions`);
-        if (!rows || rows.length === 0) return;
+        let sql = `SELECT * FROM push_subscriptions`;
+        let params = [];
+        if (targetRole && targetRole !== 'all') {
+            sql += ` WHERE user_role = 'guest' OR user_role = 'all' OR user_role = $1`;
+            params.push(targetRole);
+        }
+
+        const { rows } = await query(sql, params);
+        if (!rows || rows.length === 0) {
+            console.log('[Push Notification] No registered device tokens found in push_subscriptions table.');
+            return { sentCount: 0, totalDevices: 0 };
+        }
 
         const payload = JSON.stringify({
             title: payloadData.title || 'Baidoa Bedrock ICT Campus',
-            body: payloadData.body || payloadData.message || payloadData.content || 'New urgent announcement!',
+            body: payloadData.body || payloadData.message || payloadData.content || 'New announcement posted!',
             icon: payloadData.icon || '/images/icons/icon-192.png',
             badge: '/images/icons/icon-192.png',
             url: payloadData.url || '/HTML/index.html'
         });
 
+        let successCount = 0;
         const sendPromises = rows.map(async (sub) => {
             const pushSubscription = {
                 endpoint: sub.endpoint,
@@ -117,8 +128,8 @@ async function broadcastPushNotification(payloadData) {
             };
             try {
                 await webPush.sendNotification(pushSubscription, payload);
+                successCount++;
             } catch (err) {
-                // If subscription expired or invalid (410/404), remove from DB
                 if (err.statusCode === 410 || err.statusCode === 404) {
                     await query(`DELETE FROM push_subscriptions WHERE endpoint = $1`, [sub.endpoint]).catch(() => {});
                 }
@@ -126,12 +137,39 @@ async function broadcastPushNotification(payloadData) {
         });
 
         await Promise.allSettled(sendPromises);
+        console.log(`[Push Notification] Delivered to ${successCount} out of ${rows.length} devices.`);
+        return { sentCount: successCount, totalDevices: rows.length };
     } catch (err) {
-        console.warn('Push broadcast error:', err.message);
+        console.warn('[Push Notification] Broadcast error:', err.message);
+        return { sentCount: 0, error: err.message };
     }
 }
 
-// GET all announcements
+// GET count of registered subscribers (Admin diagnostic)
+router.get('/subscribers/count', async (req, res) => {
+    try {
+        const { rows } = await query(`SELECT COUNT(*) FROM push_subscriptions`);
+        res.json({ subscriberCount: parseInt(rows[0].count) || 0 });
+    } catch (err) {
+        res.json({ subscriberCount: 0 });
+    }
+});
+
+// POST send test push notification to all subscribers (Admin diagnostic)
+router.post('/test-push', async (req, res) => {
+    try {
+        const result = await broadcastPushNotification({
+            title: '🔔 Bedrock Campus Push Test',
+            body: 'Test notification from Admin Panel! Push notifications are working on your device screen.',
+            url: '/HTML/index.html'
+        }, 'all');
+        res.json({ success: true, message: `Sent test push notification to ${result.sentCount} out of ${result.totalDevices} registered devices.`, ...result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET all announcements (Admin Panel only - shows all)
 router.get('/', async (req, res) => {
     try {
         const { rows } = await query(`
@@ -154,11 +192,14 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET latest announcements
+// GET latest announcements WITH STRICT AUDIENCE FILTERING
+// Usage: GET /api/announcements/latest?audience=all (public) or ?audience=students or ?audience=teachers
 router.get('/latest', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 6;
-        const { rows } = await query(`
+        const reqAudience = (req.query.audience || req.query.target || 'all').toLowerCase().trim();
+
+        let sql = `
             SELECT id, title, 
                    COALESCE(content, message, '') AS content,
                    COALESCE(message, content, '') AS message,
@@ -169,20 +210,35 @@ router.get('/latest', async (req, res) => {
                    COALESCE(publish_date, created_at::date) AS publish_date,
                    image_url, created_at
             FROM announcements 
-            ORDER BY created_at DESC 
-            LIMIT $1
-        `, [limit]);
+            WHERE (expires_at IS NULL OR expires_at >= NOW())
+        `;
+        const params = [];
+
+        if (reqAudience === 'all') {
+            // For public website (index.html): ONLY show announcements meant for 'all' / public!
+            sql += ` AND LOWER(COALESCE(target_audience, audience, 'all')) = 'all'`;
+        } else {
+            // For portals (e.g. students or teachers): show 'all' OR their specific role
+            params.push(reqAudience);
+            sql += ` AND (LOWER(COALESCE(target_audience, audience, 'all')) = 'all' OR LOWER(COALESCE(target_audience, audience, 'all')) = $1)`;
+        }
+
+        sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+        params.push(limit);
+
+        const { rows } = await query(sql, params);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// GET active announcements
+// GET active announcements WITH STRICT AUDIENCE FILTERING
 router.get('/active', async (req, res) => {
     try {
-        const { target = 'all' } = req.query;
-        const { rows } = await query(`
+        const reqAudience = (req.query.audience || req.query.target || 'all').toLowerCase().trim();
+
+        let sql = `
             SELECT id, title, 
                    COALESCE(content, message, '') AS content,
                    COALESCE(message, content, '') AS message,
@@ -194,11 +250,20 @@ router.get('/active', async (req, res) => {
                    COALESCE(publish_date, created_at::date) AS publish_date,
                    image_url, created_at
             FROM announcements 
-            WHERE (COALESCE(target_audience, audience, 'all') = 'all' OR COALESCE(target_audience, audience, 'all') = $1)
-              AND (expires_at IS NULL OR expires_at >= NOW())
-            ORDER BY is_urgent DESC, created_at DESC 
-            LIMIT 10
-        `, [target]);
+            WHERE (expires_at IS NULL OR expires_at >= NOW())
+        `;
+        const params = [];
+
+        if (reqAudience === 'all') {
+            sql += ` AND LOWER(COALESCE(target_audience, audience, 'all')) = 'all'`;
+        } else {
+            params.push(reqAudience);
+            sql += ` AND (LOWER(COALESCE(target_audience, audience, 'all')) = 'all' OR LOWER(COALESCE(target_audience, audience, 'all')) = $1)`;
+        }
+
+        sql += ` ORDER BY is_urgent DESC, created_at DESC LIMIT 10`;
+
+        const { rows } = await query(sql, params);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -230,7 +295,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST create a new announcement & trigger real OS Lock-Screen Push Broadcast
+// POST create a new announcement & broadcast OS push alert
 router.post('/', async (req, res) => {
     try {
         const { title, content, message, category, target_audience, audience, is_urgent, is_banner, publishDate, imageUrl, expires_at } = req.body;
@@ -240,7 +305,7 @@ router.post('/', async (req, res) => {
         }
 
         const expiry = expires_at ? new Date(expires_at) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-        const aud = target_audience || audience || 'all';
+        const aud = (target_audience || audience || 'all').toLowerCase().trim();
         const pDate = publishDate ? new Date(publishDate) : new Date();
 
         const { rows } = await query(`
@@ -265,13 +330,13 @@ router.post('/', async (req, res) => {
         const newAnnouncement = rows[0];
 
         // Trigger real background Web Push notification to all phone / lock screens
-        broadcastPushNotification({
+        const pushResult = await broadcastPushNotification({
             title: title.trim(),
             body: bodyText,
-            url: '/HTML/index.html'
-        });
+            url: aud === 'students' ? '/HTML/Student Results.html' : (aud === 'teachers' ? '/HTML/teacher-dashboard.html' : '/HTML/index.html')
+        }, aud);
 
-        res.status(201).json(newAnnouncement);
+        res.status(201).json({ ...newAnnouncement, pushResult });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -283,7 +348,7 @@ router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { title, content, message, category, target_audience, audience, is_urgent, is_banner, publishDate, imageUrl } = req.body;
         const bodyText = (content || message || '').trim();
-        const aud = target_audience || audience || 'all';
+        const aud = (target_audience || audience || 'all').toLowerCase().trim();
         const pDate = publishDate ? new Date(publishDate) : new Date();
 
         const { rows } = await query(`

@@ -181,7 +181,11 @@
                                     <h5 class="fw-bold m-0"><i class="fas fa-bullhorn text-primary me-2"></i>Daily Announcements</h5>
                                     <p class="text-muted small mb-0">Publish daily updates, notices, and bulletins with photos. They appear on the homepage and student portal.</p>
                                 </div>
-                                <span class="badge bg-primary px-3 py-2 fs-6" id="announcement-count-badge">0 Announcements</span>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <span class="badge bg-info text-dark px-3 py-2 fs-6" id="push-subscriber-badge"><i class="fas fa-mobile-alt me-1"></i>0 Subscribed Devices</span>
+                                    <span class="badge bg-primary px-3 py-2 fs-6" id="announcement-count-badge">0 Announcements</span>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill" id="btn-test-push"><i class="fas fa-bell me-1"></i>Test Phone Push Notification</button>
+                                </div>
                             </div>
                             
                             <!-- Announcement Form -->
@@ -741,8 +745,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const annDateInput = document.getElementById('ann-publish-date');
     if (annDateInput && !annDateInput.value) annDateInput.value = todayStr;
 
+    const subBadge = document.getElementById('push-subscriber-badge');
+    const testPushBtn = document.getElementById('btn-test-push');
+
+    async function fetchSubscriberCount() {
+        if (!subBadge) return;
+        try {
+            const res = await fetch(ANNOUNCEMENTS_API + '/subscribers/count');
+            const data = await res.json();
+            subBadge.innerHTML = `<i class="fas fa-mobile-alt me-1"></i>${data.subscriberCount || 0} Subscribed Devices`;
+        } catch (e) {}
+    }
+    fetchSubscriberCount();
+
+    if (testPushBtn) {
+        testPushBtn.addEventListener('click', async () => {
+            testPushBtn.disabled = true;
+            testPushBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending Test...';
+            try {
+                // Ensure local browser permission first
+                if (window.enableLockScreenPushNotifications) {
+                    await window.enableLockScreenPushNotifications();
+                }
+                const res = await fetch(ANNOUNCEMENTS_API + '/test-push', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                alertMsg('save-alert-announcements', '🔔 ' + data.message, 'success', true);
+                fetchSubscriberCount();
+            } catch (err) {
+                alertMsg('save-alert-announcements', 'Test Push Error: ' + err.message, 'danger', true);
+            } finally {
+                testPushBtn.disabled = false;
+                testPushBtn.innerHTML = '<i class="fas fa-bell me-1"></i>Test Phone Push Notification';
+            }
+        });
+    }
+
     async function fetchAnnouncements() {
         if (!annTbody) return;
+        fetchSubscriberCount();
         annTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading announcements...</td></tr>';
         try {
             const res = await fetch(ANNOUNCEMENTS_API);
@@ -758,7 +799,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? `<img src="${a.image_url}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">`
                     : `<span class="badge bg-light text-secondary border py-2 px-2" style="font-size:10px;"><i class="fas fa-image"></i> No Pic</span>`;
                 const dateVal = a.publish_date ? String(a.publish_date).split('T')[0] : (a.created_at ? String(a.created_at).split('T')[0] : '-');
-                const audBadge = a.audience === 'all' ? '<span class="badge bg-success">Everyone</span>' : `<span class="badge bg-info text-dark">${a.audience}</span>`;
+                const audVal = (a.audience || a.target_audience || 'all').toLowerCase();
+                const audBadge = audVal === 'all' 
+                    ? '<span class="badge bg-success">Everyone (Public)</span>' 
+                    : (audVal === 'students' ? '<span class="badge bg-primary">Students Only</span>' : `<span class="badge bg-info text-dark">${audVal}</span>`);
                 return `<tr>
                     <td>${imgHtml}</td>
                     <td>
