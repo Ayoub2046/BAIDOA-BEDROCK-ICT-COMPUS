@@ -476,14 +476,26 @@
     }
   }
 
-  // ─── Register Service Worker & Web Push ───────────────────────────────────
+  // ─── Register Service Worker & Auto Web Push ──────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-        .then(function (reg) {
+        .then(async function (reg) {
           console.log('[PWA] Service Worker active, scope:', reg.scope);
-          if ('Notification' in window && Notification.permission === 'granted') {
-            registerWebPushSubscription(reg);
+          if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+              registerWebPushSubscription(reg);
+            } else if (Notification.permission === 'default') {
+              // Automatically request push permission on visit
+              try {
+                var perm = await Notification.requestPermission();
+                if (perm === 'granted') {
+                  registerWebPushSubscription(reg);
+                }
+              } catch (permErr) {
+                console.warn('[PWA] Push permission request note:', permErr);
+              }
+            }
           }
         })
         .catch(function (err) {
