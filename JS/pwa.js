@@ -2,6 +2,16 @@
 (function () {
   'use strict';
 
+  // ─── Auto-load Push Subscription Manager on every page ──────────────────
+  (function loadPushSubscribeScript() {
+    if (document.getElementById('bedrock-push-sub-script')) return;
+    var s = document.createElement('script');
+    s.id = 'bedrock-push-sub-script';
+    s.src = '/JS/push-subscribe.js';
+    s.async = true;
+    document.head.appendChild(s);
+  })();
+
   var INSTALLED_KEY = 'bedrock-pwa-installed';
   var DISMISSED_KEY = 'bedrock-pwa-dismissed';
 
