@@ -3364,6 +3364,11 @@
             }
 
             window.switchToTab = function (tabId) {
+                if (tabId === 'library') {
+                    if (window.openFullLibrary) window.openFullLibrary();
+                    window.location.href = '/HTML/student-library.html';
+                    return;
+                }
                 var tabButtons = document.querySelectorAll('#dashboard-tabs .nav-link');
                 tabButtons.forEach(function (b) { b.classList.remove('active'); });
                 var targetBtn = document.querySelector('#dashboard-tabs .nav-link[data-tab="' + tabId + '"]');

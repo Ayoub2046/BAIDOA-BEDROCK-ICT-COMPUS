@@ -131,12 +131,12 @@ router.get('/categories', async (req, res) => {
 router.post('/', uploadLibraryFiles, async (req, res) => {
   const docFile = req.files && req.files.document && req.files.document[0];
   const coverFile = req.files && req.files.cover && req.files.cover[0];
-  const { title, author, isbn, category, subject, academic_year, status, description, digitallink, target_audience } = req.body;
+  const { title, author, isbn, category, subject, academic_year, status, description, digitallink, digitalLink, cover: coverFromBody, target_audience } = req.body;
 
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
   try {
-    let filePath = digitallink || '';
+    let filePath = digitallink || digitalLink || '';
     if (docFile) {
       try {
         filePath = await uploadBuffer(docFile.buffer, 'library', `doc_${Date.now()}${path.extname(docFile.originalname)}`, docFile.mimetype);
@@ -149,7 +149,7 @@ router.post('/', uploadLibraryFiles, async (req, res) => {
       }
     }
 
-    let coverUrl = '';
+    let coverUrl = coverFromBody || '';
     if (coverFile) {
       try {
         coverUrl = await uploadBuffer(coverFile.buffer, 'library_covers', `cover_${Date.now()}${path.extname(coverFile.originalname)}`, coverFile.mimetype);

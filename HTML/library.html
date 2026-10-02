@@ -14,6 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/edupulse-theme.css">
     <script src="/JS/bedrock-dialog.js"></script>
 </head>
 <body>
@@ -267,13 +268,15 @@
             }
             booksContainer.innerHTML = filteredBooks.map(book => {
                 const statusColor = book.status === 'Available' ? 'bg-success' : 'bg-danger';
-                const coverStyle = book.cover ? `background-image: url('${book.cover}')` : `background-image: linear-gradient(135deg, #1e3c72, #2a5298)`;
                 const docUrl = book.file_path || book.digitallink || book.digitalLink || '';
+                const coverHtml = book.cover
+                    ? `<img src="${book.cover}" alt="${book.title}" style="width:100%;height:180px;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="book-cover-fallback" style="display:none;min-height:180px;background:linear-gradient(135deg,#1e3c72,#2a5298);color:#fff;font-weight:700;font-size:0.85rem;padding:1rem;align-items:center;justify-content:center;text-align:center;">${book.title || 'Resource'}</div>`
+                    : `<div class="book-cover-fallback" style="min-height:180px;background:linear-gradient(135deg,#1e3c72,#2a5298);color:#fff;font-weight:700;font-size:0.85rem;padding:1rem;display:flex;align-items:center;justify-content:center;text-align:center;">${book.title || 'Resource'}</div>`;
                 return `
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="book-card shadow-sm border-0 h-100 d-flex flex-column">
-                        <div class="book-cover" style="${coverStyle}; min-height: 180px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-weight:bold; padding:10px;">
-                            ${!book.cover ? (book.title || 'Resource') : ''}
+                        <div class="book-cover-wrap" style="overflow:hidden;">
+                            ${coverHtml}
                         </div>
                         <div class="card-body d-flex flex-column flex-grow-1">
                             <div class="d-flex flex-wrap gap-1 mb-2">
@@ -290,8 +293,9 @@
                             </div>
                             ${book.status === 'Checked Out' ? `<small class="d-block text-muted mt-1">To: ${book.checkedOutTo || book.checkedoutto}</small>` : ''}
                         </div>
-                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center gap-1">
+                        <div class="card-footer bg-white border-top-0 d-flex flex-wrap justify-content-between align-items-center gap-1">
                             <button class="btn btn-sm btn-outline-secondary btn-edit-book" data-id="${book.id}"><i class="fas fa-edit me-1"></i>Edit</button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete-book" data-id="${book.id}"><i class="fas fa-trash me-1"></i>Delete</button>
                             ${docUrl ? `<a href="${docUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="Download Document"><i class="fas fa-file-download me-1"></i>File</a>` : ''}
                             ${book.status === 'Available' ? `<button class="btn btn-sm btn-primary btn-checkout-book" data-id="${book.id}">Check Out</button>` : `<button class="btn btn-sm btn-success btn-checkin-book" data-id="${book.id}">Check In</button>`}
                         </div>
@@ -343,6 +347,25 @@
                 const existingFile = book.digitalLink || book.digitallink || book.file_path;
                 document.getElementById('digital-file-name').textContent = existingFile ? 'Current file: ' + existingFile.split('/').pop() : '';
                 bookModal.show();
+            } else if (button.classList.contains('btn-delete-book')) {
+                const ok = await BedrockDialog.confirm({
+                    title: 'Delete Resource',
+                    message: `Are you sure you want to delete <strong>"${book.title || 'this resource'}"</strong>?`,
+                    confirmText: 'Delete Resource',
+                    cancelText: 'Cancel',
+                    type: 'danger',
+                    icon: 'fa-trash'
+                });
+                if (ok) {
+                    try {
+                        const response = await fetch(`${BOOKS_API_URL}/${id}`, { method: 'DELETE' });
+                        if (!response.ok) throw new Error('Delete operation failed');
+                        await loadPageData();
+                        BedrockDialog.alert({ title: 'Deleted', message: 'Resource removed successfully.', type: 'success' });
+                    } catch (error) {
+                        BedrockDialog.alert({ title: 'Error', message: error.message, type: 'danger' });
+                    }
+                }
             } else if (button.classList.contains('btn-checkout-book')) {
                 const studentSelect = checkoutForm.elements.studentId;
                 checkoutForm.elements.bookId.value = id;

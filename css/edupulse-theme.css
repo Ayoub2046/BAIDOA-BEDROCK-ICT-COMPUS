@@ -1,0 +1,694 @@
+/* ==========================================================================
+   EDUPULSE MODERN SAAS DASHBOARD DESIGN SYSTEM
+   Inspired by EduPulse UI Architecture
+   Compatible with Baidoa Bedrock ICT Campus System
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --ep-bg: #f4f7fd;
+    --ep-card-bg: #ffffff;
+    --ep-sidebar-bg: #ffffff;
+    --ep-text-main: #0f172a;
+    --ep-text-muted: #64748b;
+    --ep-text-light: #94a3b8;
+    --ep-border: #e2e8f0;
+    --ep-border-light: #f1f5f9;
+    
+    /* Primary Pill/Active State */
+    --ep-active-navy: #0f172a;
+    --ep-active-navy-hover: #1e293b;
+    
+    /* Pastel Card Gradients (EduPulse Quick Actions) */
+    --ep-blue-pastel: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
+    --ep-purple-pastel: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    --ep-pink-pastel: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%);
+    --ep-magenta-pastel: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    --ep-emerald-pastel: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    --ep-amber-pastel: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    
+    /* Soft Shadows */
+    --ep-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --ep-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+    --ep-shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.08);
+    --ep-shadow-glass: 0 20px 40px rgba(15, 23, 42, 0.05);
+    
+    /* Radius */
+    --ep-radius-sm: 10px;
+    --ep-radius-md: 16px;
+    --ep-radius-lg: 24px;
+    --ep-radius-pill: 9999px;
+}
+
+body {
+    background-color: var(--ep-bg) !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    color: var(--ep-text-main) !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   GLOBAL LAYOUT & SIDEBAR
+   ========================================================================== */
+
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--ep-bg);
+}
+
+.sidebar {
+    width: 270px !important;
+    background: var(--ep-sidebar-bg) !important;
+    border-right: 1px solid var(--ep-border-light) !important;
+    padding: 1.5rem 1.25rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: var(--ep-shadow-sm) !important;
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding-bottom: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    border-bottom: 1px solid var(--ep-border-light) !important;
+}
+
+.sidebar-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--ep-text-main);
+}
+
+.sidebar-header img {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    box-shadow: var(--ep-shadow-sm);
+    object-fit: cover;
+}
+
+.sidebar-nav {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.sidebar-nav li a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: var(--ep-radius-md) !important;
+    color: var(--ep-text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-nav li a i {
+    font-size: 1.1rem;
+    width: 22px;
+    text-align: center;
+    color: var(--ep-text-muted);
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav li a:hover {
+    background-color: var(--ep-bg) !important;
+    color: var(--ep-text-main) !important;
+}
+
+.sidebar-nav li a:hover i {
+    color: var(--ep-text-main);
+}
+
+.sidebar-nav li a.active {
+    background-color: var(--ep-active-navy) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25) !important;
+}
+
+.sidebar-nav li a.active i {
+    color: #ffffff !important;
+}
+
+/* User Profile Footer Card in Sidebar */
+.sidebar-user-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--ep-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ep-bg);
+    padding: 0.85rem;
+    border-radius: var(--ep-radius-md);
+}
+
+.sidebar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.sidebar-user-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--ep-text-main);
+    line-height: 1.2;
+}
+
+.sidebar-user-role {
+    font-size: 0.72rem;
+    color: var(--ep-text-muted);
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   TOP NAVBAR
+   ========================================================================== */
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.top-navbar {
+    background: var(--ep-card-bg) !important;
+    border-bottom: 1px solid var(--ep-border-light) !important;
+    padding: 1.1rem 2rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--ep-shadow-sm);
+}
+
+.top-navbar h4 {
+    font-weight: 800 !important;
+    font-size: 1.4rem !important;
+    color: var(--ep-text-main) !important;
+    letter-spacing: -0.02em;
+}
+
+.top-navbar .input-group {
+    background: var(--ep-bg);
+    border-radius: var(--ep-radius-pill);
+    padding: 4px 16px;
+    border: 1px solid var(--ep-border-light);
+}
+
+.top-navbar .input-group input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.top-navbar .input-group input::placeholder {
+    color: var(--ep-text-light);
+}
+
+.ep-icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--ep-bg);
+    border: 1px solid var(--ep-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ep-text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.ep-icon-btn:hover {
+    background: #ffffff;
+    color: var(--ep-text-main);
+    box-shadow: var(--ep-shadow-sm);
+}
+
+.ep-badge-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+/* ==========================================================================
+   STAT CARDS (PLATFORM OVERVIEW)
+   ========================================================================== */
+
+.stat-card {
+    background: var(--ep-card-bg) !important;
+    border: 1px solid var(--ep-border-light) !important;
+    border-radius: var(--ep-radius-md) !important;
+    padding: 1.35rem 1.5rem !important;
+    box-shadow: var(--ep-shadow-sm) !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--ep-shadow-md) !important;
+}
+
+.stat-card .stat-label {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: var(--ep-text-muted) !important;
+    margin-bottom: 0.4rem !important;
+}
+
+.stat-card .stat-value {
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
+    color: var(--ep-text-main) !important;
+    letter-spacing: -0.03em !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.6rem !important;
+}
+
+.stat-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    border-radius: var(--ep-radius-pill) !important;
+    background-color: #ecfdf5 !important;
+    color: #10b981 !important;
+}
+
+.stat-trend.down {
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
+}
+
+.stat-icon-circle {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--ep-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ep-text-main);
+    font-size: 1.1rem;
+}
+
+/* ==========================================================================
+   QUICK ACTIONS ROW (EDUPULSE PASTEL CARDS)
+   ========================================================================== */
+
+.ep-quick-actions-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.ep-action-card {
+    border-radius: var(--ep-radius-md);
+    padding: 1.25rem 1.35rem;
+    text-decoration: none;
+    color: var(--ep-text-main);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 115px;
+    position: relative;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.ep-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ep-shadow-md);
+    color: var(--ep-text-main);
+}
+
+.ep-action-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ep-action-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--ep-text-main);
+}
+
+.ep-action-arrow {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--ep-text-main);
+    transition: transform 0.2s ease;
+}
+
+.ep-action-card:hover .ep-action-arrow {
+    transform: translate(2px, -2px);
+}
+
+.ep-action-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-top: 0.5rem;
+    line-height: 1.2;
+}
+
+.ep-action-sub {
+    font-size: 0.74rem;
+    color: var(--ep-text-muted);
+    font-weight: 500;
+}
+
+/* Color Variations */
+.ep-card-blue { background: var(--ep-blue-pastel); }
+.ep-card-purple { background: var(--ep-purple-pastel); }
+.ep-card-pink { background: var(--ep-pink-pastel); }
+.ep-card-magenta { background: var(--ep-magenta-pastel); }
+.ep-card-emerald { background: var(--ep-emerald-pastel); }
+.ep-card-amber { background: var(--ep-amber-pastel); }
+
+/* ==========================================================================
+   CARDS & CONTAINERS
+   ========================================================================== */
+
+.dashboard-card, .td-card, .card {
+    background: var(--ep-card-bg) !important;
+    border: 1px solid var(--ep-border-light) !important;
+    border-radius: var(--ep-radius-md) !important;
+    box-shadow: var(--ep-shadow-sm) !important;
+}
+
+.card-header, .td-card-h {
+    background: transparent !important;
+    border-bottom: 1px solid var(--ep-border-light) !important;
+    padding: 1.1rem 1.5rem !important;
+}
+
+.card-header span, .td-card-h h5 {
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    color: var(--ep-text-main) !important;
+}
+
+/* Modern Pill Toggle Tabs */
+.ep-tab-pills {
+    display: inline-flex;
+    background: var(--ep-bg);
+    padding: 4px;
+    border-radius: var(--ep-radius-pill);
+    gap: 4px;
+}
+
+.ep-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 16px;
+    border-radius: var(--ep-radius-pill);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ep-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ep-tab-btn.active {
+    background: var(--ep-active-navy);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+}
+
+/* ==========================================================================
+   TEACHER DASHBOARD SPECIFIC OVERRIDES
+   ========================================================================== */
+
+.td-wrap {
+    max-width: 1440px !important;
+    padding: 1.5rem 2rem !important;
+}
+
+.td-header {
+    background: var(--ep-card-bg) !important;
+    border: 1px solid var(--ep-border-light) !important;
+    border-radius: var(--ep-radius-md) !important;
+    box-shadow: var(--ep-shadow-sm) !important;
+    color: var(--ep-text-main) !important;
+    padding: 1.25rem 1.75rem !important;
+}
+
+.td-header-left h1 {
+    color: var(--ep-text-main) !important;
+    font-weight: 800 !important;
+}
+
+.td-header-left .td-school-name {
+    color: #2563eb !important;
+}
+
+.td-header-logo {
+    border: 3px solid #2563eb !important;
+    box-shadow: none !important;
+}
+
+.td-nav {
+    background: var(--ep-card-bg) !important;
+    border: 1px solid var(--ep-border-light) !important;
+    border-radius: var(--ep-radius-pill) !important;
+    padding: 6px !important;
+}
+
+.td-nav .td-nav-btn {
+    border-radius: var(--ep-radius-pill) !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+    padding: 0.6rem 1.2rem !important;
+}
+
+.td-nav .td-nav-btn.active {
+    background: var(--ep-active-navy) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Student Insights Widget Circle */
+.ep-insights-box {
+    text-align: center;
+    padding: 1rem;
+}
+
+.ep-retention-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(#2563eb 0% 87%, #e2e8f0 87% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    position: relative;
+}
+
+.ep-retention-circle::before {
+    content: '';
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: var(--ep-card-bg);
+    position: absolute;
+}
+
+.ep-retention-val {
+    position: relative;
+    z-index: 2;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--ep-text-main);
+}
+
+/* ==========================================================================
+   DARK MODE ADAPTABILITY
+   ========================================================================== */
+
+body[data-theme="dark"] {
+    --ep-bg: #0b0f17;
+    --ep-card-bg: #141c2e;
+    --ep-sidebar-bg: #141c2e;
+    --ep-text-main: #f8fafc;
+    --ep-text-muted: #94a3b8;
+    --ep-border-light: #1e293b;
+    --ep-active-navy: #3b82f6;
+}
+
+body[data-theme="dark"] .ep-action-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+body[data-theme="dark"] .ep-action-icon,
+body[data-theme="dark"] .ep-action-arrow {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   GLOBAL TABLES, FORMS & BADGES (EDUPULSE STYLES)
+   ========================================================================== */
+
+.table {
+    color: var(--ep-text-main) !important;
+    border-color: var(--ep-border-light) !important;
+    vertical-align: middle !important;
+}
+
+.table thead th {
+    background-color: var(--ep-bg) !important;
+    color: var(--ep-text-muted) !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    border-bottom: 1px solid var(--ep-border) !important;
+    padding: 0.9rem 1rem !important;
+}
+
+.table tbody td {
+    padding: 0.95rem 1rem !important;
+    border-bottom: 1px solid var(--ep-border-light) !important;
+    font-size: 0.88rem !important;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease !important;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(244, 247, 253, 0.6) !important;
+}
+
+/* EduPulse Pill Badges */
+.badge {
+    border-radius: var(--ep-radius-pill) !important;
+    padding: 0.4em 0.85em !important;
+    font-weight: 700 !important;
+    font-size: 0.74rem !important;
+    letter-spacing: 0.01em !important;
+}
+
+.badge.bg-success, .badge-success {
+    background-color: #ecfdf5 !important;
+    color: #10b981 !important;
+}
+
+.badge.bg-warning, .badge-warning {
+    background-color: #fffbeb !important;
+    color: #f59e0b !important;
+}
+
+.badge.bg-danger, .badge-danger {
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
+}
+
+.badge.bg-info, .badge-info {
+    background-color: #eff6ff !important;
+    color: #3b82f6 !important;
+}
+
+.badge.bg-primary, .badge-primary {
+    background-color: #f5f3ff !important;
+    color: #8b5cf6 !important;
+}
+
+/* Modern Form Inputs & Buttons */
+.form-control, .form-select {
+    border-radius: var(--ep-radius-sm) !important;
+    border: 1px solid var(--ep-border) !important;
+    padding: 0.6rem 0.9rem !important;
+    font-size: 0.88rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12) !important;
+}
+
+.btn-primary {
+    background-color: var(--ep-active-navy) !important;
+    border-color: var(--ep-active-navy) !important;
+    border-radius: var(--ep-radius-sm) !important;
+    font-weight: 600 !important;
+    padding: 0.55rem 1.25rem !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--ep-active-navy-hover) !important;
+    border-color: var(--ep-active-navy-hover) !important;
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--ep-active-navy) !important;
+    border-color: var(--ep-border) !important;
+    border-radius: var(--ep-radius-sm) !important;
+    font-weight: 600 !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--ep-active-navy) !important;
+    color: #ffffff !important;
+}
+

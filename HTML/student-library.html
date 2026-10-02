@@ -591,6 +591,7 @@
             line-height: 1.35;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -1536,7 +1537,9 @@
                         <div class="book-cover-wrap">
                             <span class="book-cat-badge">${escapeHtml(b.category || 'General')}</span>
                             <span class="book-status ${isAvailable ? 'available' : 'checked'}">${isAvailable ? 'Available' : 'Checked Out'}</span>
-                            ${b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.replaceWith(bookPlaceholder('${escapeHtml(b.title)}'))">` : bookPlaceholder(b.title)}
+                            ${b.cover
+                                ? `<img src="${b.cover}" alt="${escapeHtml(b.title)}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\'book-cover-placeholder\'><i class=\'fas fa-book-reader\'></i><span>${escapeHtml(b.title).substring(0,30)}</span></div>')">`
+                                : bookPlaceholder(b.title)}
                         </div>
                         <div class="book-card-body">
                             <h6 class="book-title" title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</h6>
