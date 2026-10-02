@@ -222,8 +222,22 @@
                                         <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="ann-remove-image-btn"><i class="fas fa-times me-1"></i>Remove Picture</button>
                                     </div>
                                 </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mt-1">
+                                            <input class="form-check-input" type="checkbox" id="ann-is-urgent" checked>
+                                            <label class="form-check-label fw-semibold text-danger" for="ann-is-urgent"><i class="fas fa-exclamation-triangle me-1"></i>Show in Pre-App Entrance Splash Screen (Before Login)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mt-1">
+                                            <input class="form-check-input" type="checkbox" id="ann-send-push" checked>
+                                            <label class="form-check-label fw-semibold text-primary" for="ann-send-push"><i class="fas fa-bell me-1"></i>Send OS Device Screen Notification</label>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary" id="ann-submit-btn"><i class="fas fa-paper-plane me-2"></i>Post Announcement</button>
+                                    <button type="submit" class="btn btn-primary" id="ann-submit-btn"><i class="fas fa-paper-plane me-2"></i>Post & Broadcast Announcement</button>
                                     <button type="button" class="btn btn-outline-secondary" id="ann-cancel-btn" style="display:none;"><i class="fas fa-times me-1"></i>Cancel</button>
                                 </div>
                             </form>
@@ -831,10 +845,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (submitBtn) submitBtn.disabled = false;
             }
+            const titleVal = document.getElementById('ann-title').value.trim();
+            const messageVal = document.getElementById('ann-message').value.trim();
+            const audienceVal = document.getElementById('ann-audience').value;
+            const isUrgent = document.getElementById('ann-is-urgent') ? document.getElementById('ann-is-urgent').checked : false;
+
             const payload = {
-                title: document.getElementById('ann-title').value.trim(),
-                message: document.getElementById('ann-message').value.trim(),
-                audience: document.getElementById('ann-audience').value,
+                title: titleVal,
+                content: messageVal,
+                message: messageVal,
+                target_audience: audienceVal,
+                audience: audienceVal,
+                category: isUrgent ? 'Urgent Notice' : 'Campus News',
+                is_urgent: isUrgent,
+                is_banner: isUrgent,
                 publishDate: document.getElementById('ann-publish-date').value,
                 imageUrl: document.getElementById('ann-imageUrl').value
             };
@@ -855,7 +879,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const resData = await res.json();
                 if (!res.ok) throw new Error(resData.error || 'Operation failed');
-                alertMsg('save-alert-announcements', editingAnnId ? 'Announcement updated successfully!' : 'Announcement posted successfully!', 'success', true);
+
+                // Trigger browser desktop OS push alert if requested
+                if (document.getElementById('ann-send-push') && document.getElementById('ann-send-push').checked && 'Notification' in window && Notification.permission === 'granted') {
+                    try {
+                        new Notification(titleVal, {
+                            body: messageVal,
+                            icon: '/images/icons/icon-192.png',
+                            badge: '/images/icons/icon-192.png'
+                        });
+                    } catch (nErr) {}
+                }
+
+                alertMsg('save-alert-announcements', editingAnnId ? 'Announcement updated successfully!' : 'Announcement posted & broadcasted successfully!', 'success', true);
                 resetAnnouncementForm();
                 await fetchAnnouncements();
             } catch (err) {

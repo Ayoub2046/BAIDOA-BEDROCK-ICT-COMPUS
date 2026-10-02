@@ -112,3 +112,59 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// --- WEB PUSH NOTIFICATIONS (Background Screen Alerts) ---
+self.addEventListener('push', (event) => {
+  let payload = {
+    title: 'Baidoa Bedrock ICT Campus',
+    body: 'New announcement or urgent news available!',
+    icon: '/images/icons/icon-192.png',
+    badge: '/images/icons/icon-192.png',
+    url: '/HTML/index.html'
+  };
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      payload = { ...payload, ...data };
+    } catch (e) {
+      payload.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: payload.body,
+    icon: payload.icon,
+    badge: payload.badge,
+    vibrate: [200, 100, 200],
+    data: { url: payload.url || '/HTML/index.html' },
+    actions: [
+      { action: 'open', title: 'Open News' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'dismiss') return;
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/HTML/index.html';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+

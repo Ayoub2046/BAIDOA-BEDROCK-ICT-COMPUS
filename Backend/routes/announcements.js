@@ -1,173 +1,144 @@
-// Backend/routes/announcements.js
-// Announcements / broadcasts shown on student dashboards, teacher dashboards, parent portal & homepage
-
 const express = require('express');
-const { query } = require('../database.js');
 const router = express.Router();
+const { query } = require('../database');
 
-// Ensure the announcements table and needed columns exist
-async function ensureTables() {
-    await query(`
-        CREATE TABLE IF NOT EXISTS announcements (
-            id SERIAL PRIMARY KEY,
-            title TEXT NOT NULL,
-            message TEXT,
-            category TEXT DEFAULT 'general',
-            audience TEXT DEFAULT 'all',
-            created_by TEXT,
-            image_url TEXT,
-            title_so TEXT,
-            message_so TEXT,
-            title_ar TEXT,
-            message_ar TEXT,
-            publish_date DATE DEFAULT CURRENT_DATE,
-            created_at TIMESTAMP DEFAULT NOW(),
-            deleted_at TIMESTAMP
-        )
-    `);
+// Ensure database tables exist automatically on route import
+async function initTables() {
     try {
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS image_url TEXT`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general'`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS publish_date DATE DEFAULT CURRENT_DATE`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS title_so TEXT`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS message_so TEXT`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS title_ar TEXT`);
-        await query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS message_ar TEXT`);
+        await query(`
+            CREATE TABLE IF NOT EXISTS announcements (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                category VARCHAR(100) DEFAULT 'Campus News',
+                target_audience VARCHAR(50) DEFAULT 'all',
+                is_urgent BOOLEAN DEFAULT false,
+                is_banner BOOLEAN DEFAULT true,
+                starts_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days'),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        await query(`
+            CREATE TABLE IF NOT EXISTS push_subscriptions (
+                id SERIAL PRIMARY KEY,
+                endpoint TEXT UNIQUE NOT NULL,
+                keys_p256dh TEXT,
+                keys_auth TEXT,
+                user_role VARCHAR(50) DEFAULT 'guest',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Insert default welcome/announcement if empty
+        const { rows } = await query(`SELECT COUNT(*) FROM announcements`);
+        if (parseInt(rows[0].count) === 0) {
+            await query(`
+                INSERT INTO announcements (title, content, category, target_audience, is_urgent, is_banner)
+                VALUES 
+                ('Welcome to Baidoa Bedrock ICT Campus Portal', 'Stay tuned for academic updates, exam timetables, fee notices, and digital library resources directly on your device.', 'Campus News', 'all', false, true),
+                ('Academic Calendar & Digital Library Access', 'All students can now access digital textbooks and study resources through the Digital Library Portal.', 'Academic', 'students', true, true);
+            `);
+        }
     } catch (e) {
-        // columns already exist or db error
+        console.warn('Announcements table init warning:', e.message);
     }
 }
+initTables();
 
-// GET all announcements (admin view with filter)
-router.get('/', async (req, res) => {
+// GET active announcements for pre-app splash screen & notification popup
+router.get('/active', async (req, res) => {
     try {
-        await ensureTables();
-        const { audience, category } = req.query;
-        let sql = `SELECT id, title, message, category, audience, created_by, image_url, 
-                          title_so, message_so, title_ar, message_ar,
-                          COALESCE(publish_date, created_at::date) as publish_date, created_at 
-                   FROM announcements 
-                   WHERE deleted_at IS NULL`;
-        const params = [];
-
-        if (audience) {
-            params.push(audience);
-            sql += ` AND (audience = 'all' OR audience = $${params.length})`;
-        }
-        if (category) {
-            params.push(category);
-            sql += ` AND category = $${params.length}`;
-        }
-
-        sql += ` ORDER BY COALESCE(publish_date, created_at::date) DESC, id DESC`;
-        const { rows } = await query(sql, params);
+        const { target = 'all' } = req.query;
+        const { rows } = await query(`
+            SELECT * FROM announcements 
+            WHERE (target_audience = 'all' OR target_audience = $1)
+              AND (expires_at IS NULL OR expires_at >= NOW())
+            ORDER BY is_urgent DESC, created_at DESC 
+            LIMIT 10
+        `, [target]);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// GET latest announcements for student/teacher dashboards and homepage
-router.get('/latest', async (req, res) => {
+// GET all announcements (Admin list)
+router.get('/all', async (req, res) => {
     try {
-        await ensureTables();
-        const limit = parseInt(req.query.limit) || 10;
-        const audience = req.query.audience || null;
-
-        let sql = `SELECT id, title, message, category, audience, created_by, image_url, 
-                          title_so, message_so, title_ar, message_ar,
-                          COALESCE(publish_date, created_at::date) as publish_date, created_at
-                   FROM announcements
-                   WHERE deleted_at IS NULL`;
-        const params = [];
-
-        if (audience) {
-            params.push(audience);
-            sql += ` AND (audience = 'all' OR audience = $${params.length})`;
-        } else {
-            sql += ` AND audience = 'all'`; // Hide private messages from public homepage
-        }
-
-        params.push(limit);
-        sql += ` ORDER BY COALESCE(publish_date, created_at::date) DESC, id DESC LIMIT $${params.length}`;
-
-        const { rows } = await query(sql, params);
+        const { rows } = await query(`SELECT * FROM announcements ORDER BY created_at DESC`);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// GET single announcement
-router.get('/:id', async (req, res) => {
-    try {
-        await ensureTables();
-        const { rows } = await query(`SELECT * FROM announcements WHERE id = $1 AND deleted_at IS NULL`, [req.params.id]);
-        if (!rows[0]) return res.status(404).json({ error: 'Announcement not found' });
-        res.json(rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// POST create an announcement
+// POST create a new announcement / pre-app news item
 router.post('/', async (req, res) => {
-    const { title, message, category, audience, createdBy, imageUrl, publishDate, title_so, message_so, title_ar, message_ar } = req.body;
-    if (!title) return res.status(400).json({ error: 'Announcement title is required.' });
     try {
-        await ensureTables();
-        const pDate = publishDate && publishDate.trim() ? publishDate : new Date().toISOString().split('T')[0];
-        const { rows } = await query(
-            `INSERT INTO announcements (title, message, category, audience, created_by, image_url, publish_date, title_so, message_so, title_ar, message_ar)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, title, publish_date`,
-            [
-                title,
-                message || '',
-                category || 'general',
-                audience || 'all',
-                createdBy || 'Admin',
-                imageUrl || null,
-                pDate,
-                title_so || null,
-                message_so || null,
-                title_ar || null,
-                message_ar || null
-            ]
-        );
-        res.status(201).json({ id: rows[0].id, message: 'Announcement created successfully.' });
+        const { title, content, category, target_audience, is_urgent, is_banner, expires_at } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ error: 'Title and content are required' });
+        }
+
+        const expiry = expires_at ? new Date(expires_at) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        const { rows } = await query(`
+            INSERT INTO announcements 
+            (title, content, category, target_audience, is_urgent, is_banner, expires_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [
+            title.trim(),
+            content.trim(),
+            category || 'Campus News',
+            target_audience || 'all',
+            !!is_urgent,
+            is_banner !== false,
+            expiry
+        ]);
+
+        res.status(201).json(rows[0]);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
-// PUT update an announcement
-router.put('/:id', async (req, res) => {
-    const { title, message, category, audience, imageUrl, publishDate, title_so, message_so, title_ar, message_ar } = req.body;
-    if (!title) return res.status(400).json({ error: 'Announcement title is required.' });
-    try {
-        await ensureTables();
-        const pDate = publishDate && publishDate.trim() ? publishDate : new Date().toISOString().split('T')[0];
-        await query(
-            `UPDATE announcements 
-             SET title = $1, message = $2, category = $3, audience = $4, image_url = $5, publish_date = $6,
-                 title_so = $7, message_so = $8, title_ar = $9, message_ar = $10
-             WHERE id = $11 AND deleted_at IS NULL`,
-            [title, message || '', category || 'general', audience || 'all', imageUrl || null, pDate, title_so || null, message_so || null, title_ar || null, message_ar || null, req.params.id]
-        );
-        res.json({ message: 'Announcement updated successfully.' });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
-
-// DELETE an announcement (soft-delete)
+// DELETE announcement
 router.delete('/:id', async (req, res) => {
     try {
-        await ensureTables();
-        await query(`UPDATE announcements SET deleted_at = NOW() WHERE id = $1`, [req.params.id]);
-        res.json({ message: 'Announcement deleted.' });
+        const { id } = req.params;
+        await query(`DELETE FROM announcements WHERE id = $1`, [id]);
+        res.json({ message: 'Announcement deleted successfully' });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST register Web Push subscription token
+router.post('/subscribe', async (req, res) => {
+    try {
+        const { endpoint, keys, user_role } = req.body;
+        if (!endpoint) {
+            return res.status(400).json({ error: 'Endpoint is required' });
+        }
+
+        const p256dh = keys ? keys.p256dh : '';
+        const auth = keys ? keys.auth : '';
+
+        await query(`
+            INSERT INTO push_subscriptions (endpoint, keys_p256dh, keys_auth, user_role)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (endpoint) DO UPDATE 
+            SET keys_p256dh = EXCLUDED.keys_p256dh,
+                keys_auth = EXCLUDED.keys_auth,
+                user_role = EXCLUDED.user_role
+        `, [endpoint, p256dh, auth, user_role || 'guest']);
+
+        res.json({ success: true, message: 'Web Push Subscription registered.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
