@@ -127,7 +127,15 @@ async function broadcastPushNotification(payloadData, targetRole = 'all') {
                 }
             };
             try {
-                await webPush.sendNotification(pushSubscription, payload);
+                const pushOptions = {
+                    TTL: 86400, // 24 hours
+                    urgency: 'high', // Forces mobile OS (FCM / APNs) to wake lock screen immediately
+                    topic: 'campus-announcements',
+                    headers: {
+                        'Urgency': 'high'
+                    }
+                };
+                await webPush.sendNotification(pushSubscription, payload, pushOptions);
                 successCount++;
             } catch (err) {
                 if (err.statusCode === 410 || err.statusCode === 404) {
