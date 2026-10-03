@@ -98,14 +98,20 @@ async function broadcastPushNotification(payloadData, targetRole = 'all') {
     try {
         let sql = `SELECT * FROM push_subscriptions`;
         let params = [];
-        if (targetRole && targetRole !== 'all') {
-            sql += ` WHERE user_role = 'guest' OR user_role = 'all' OR user_role = $1`;
-            params.push(targetRole);
+        const role = (targetRole || 'all').toLowerCase().trim();
+
+        if (role !== 'all' && role !== 'everyone') {
+            // Normalize singular and plural roles (e.g. 'students' -> 'student', 'teachers' -> 'teacher')
+            const singular = role.endsWith('s') ? role.slice(0, -1) : role;
+            const plural = role.endsWith('s') ? role : role + 's';
+
+            sql += ` WHERE LOWER(COALESCE(user_role, 'guest')) IN ($1, $2, 'all', 'guest', 'admin') OR user_role IS NULL`;
+            params.push(singular, plural);
         }
 
         const { rows } = await query(sql, params);
         if (!rows || rows.length === 0) {
-            console.log('[Push Notification] No registered device tokens found in push_subscriptions table.');
+            console.log('[Push Notification] No registered device tokens found in push_subscriptions table for target role:', role);
             return { sentCount: 0, totalDevices: 0 };
         }
 
