@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Push Notification Test — Baidoa Bedrock ICT Campus</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Poppins', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0a1628 0%, #0d3a6b 100%);
+    min-height: 100vh; color: #fff; padding: 20px;
+}
+.card {
+    background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px; padding: 24px; margin-bottom: 16px;
+    max-width: 600px; margin-left: auto; margin-right: auto;
+}
+h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; text-align: center; }
+.sub { font-size: 0.82rem; opacity: 0.7; text-align: center; margin-bottom: 24px; }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; }
+.row:last-child { border: none; }
+.label { opacity: 0.75; }
+.val { font-weight: 700; }
+.ok { color: #4ade80; }
+.warn { color: #fb923c; }
+.err { color: #f87171; }
+.btn {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 700; cursor: pointer;
+    margin-top: 12px; transition: all 0.2s;
+}
+.btn-primary { background: #fff; color: #0a3d6b; }
+.btn-primary:hover { background: #e0eeff; }
+.btn-success { background: #22c55e; color: #fff; }
+.btn-success:hover { background: #16a34a; }
+.btn-danger { background: #ef4444; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+#log {
+    background: rgba(0,0,0,0.4); border-radius: 10px;
+    padding: 12px; font-size: 0.75rem; font-family: monospace;
+    max-height: 200px; overflow-y: auto; margin-top: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.log-ok { color: #4ade80; }
+.log-err { color: #f87171; }
+.log-info { color: #93c5fd; }
+</style>
+</head>
+<body>
+<div class="card">
+    <h1>🔔 Push Notification Tester</h1>
+    <p class="sub">Baidoa Bedrock ICT Campus — Admin Diagnostic Page</p>
+
+    <div id="status-rows">
+        <div class="row"><span class="label">Protocol (HTTPS Required)</span><span class="val" id="st-https">checking…</span></div>
+        <div class="row"><span class="label">Service Worker Support</span><span class="val" id="st-sw">checking…</span></div>
+        <div class="row"><span class="label">Push API Support</span><span class="val" id="st-push">checking…</span></div>
+        <div class="row"><span class="label">Notification Permission</span><span class="val" id="st-perm">checking…</span></div>
+        <div class="row"><span class="label">Your Platform</span><span class="val" id="st-platform">checking…</span></div>
+        <div class="row"><span class="label">Existing Subscription</span><span class="val" id="st-sub">checking…</span></div>
+        <div class="row"><span class="label">Server-Registered Devices</span><span class="val" id="st-count">loading…</span></div>
+    </div>
+</div>
+
+<div class="card">
+    <button class="btn btn-primary" id="btn-subscribe">🔔 Step 1: Subscribe This Device</button>
+    <button class="btn btn-success" id="btn-test">📱 Step 2: Send Test Push to ALL Devices</button>
+    <button class="btn btn-danger" id="btn-unsubscribe">🗑️ Clear Subscription (for re-testing)</button>
+    <div id="log"></div>
+</div>
+
+<div class="card" id="ios-info" style="display:none;">
+    <strong>⚠️ iPhone / iPad Instructions</strong>
+    <p style="font-size:0.82rem;margin-top:8px;opacity:0.85;">
+        iOS Safari requires the site to be <strong>installed as a PWA</strong> to support push notifications.<br><br>
+        1. Tap the <strong>Share ⬆️ button</strong> in Safari.<br>
+        2. Tap <strong>"Add to Home Screen"</strong>.<br>
+        3. Open the app from the home screen icon.<br>
+        4. Then subscribe here.
+    </p>
+</div>
+
+<script>
+(function() {
+var log = document.getElementById('log');
+function logMsg(msg, type) {
+    var d = document.createElement('div');
+    d.className = 'log-' + (type || 'info');
+    d.textContent = '[' + new Date().toTimeString().split(' ')[0] + '] ' + msg;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+}
+
+function cls(id, val, ok) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    el.className = 'val ' + (ok === true ? 'ok' : ok === false ? 'err' : 'warn');
+}
+
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function isStandalone() {
+    return window.navigator.standalone === true ||
+        window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function urlBase64ToUint8Array(b64) {
+    var padding = '='.repeat((4 - b64.length % 4) % 4);
+    var base64 = (b64 + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    var raw = window.atob(base64); var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+}
+
+async function checkStatus() {
+    var isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+    cls('st-https', isHttps ? '✅ ' + location.protocol : '❌ HTTP — HTTPS required!', isHttps);
+
+    var hasSW = 'serviceWorker' in navigator;
+    cls('st-sw', hasSW ? '✅ Supported' : '❌ Not supported', hasSW);
+
+    var hasPush = 'PushManager' in window;
+    cls('st-push', hasPush ? '✅ Supported' : '❌ Not supported', hasPush);
+
+    var perm = 'Notification' in window ? Notification.permission : 'unsupported';
+    var permOk = perm === 'granted';
+    cls('st-perm', perm === 'granted' ? '✅ Granted' : perm === 'denied' ? '❌ DENIED (go to browser settings)' : '⚠️ Default (not asked yet)', permOk ? true : perm === 'denied' ? false : null);
+
+    var ios = isIOS();
+    var standalone = isStandalone();
+    var platformStr = ios ? ('iPhone/iPad — ' + (standalone ? '✅ PWA mode' : '⚠️ Safari (install as PWA first)')) : 'Android/Desktop';
+    cls('st-platform', platformStr, ios ? standalone : true);
+    if (ios && !standalone) document.getElementById('ios-info').style.display = 'block';
+
+    if (hasSW && hasPush) {
+        try {
+            var reg = await navigator.serviceWorker.ready;
+            var existingSub = await reg.pushManager.getSubscription();
+            cls('st-sub', existingSub ? '✅ Already subscribed' : '⚠️ Not subscribed', !!existingSub);
+            if (existingSub) logMsg('Existing subscription found: ' + existingSub.endpoint.substring(0, 50) + '…', 'ok');
+        } catch (e) { cls('st-sub', '⚠️ Error checking: ' + e.message, false); }
+    } else {
+        cls('st-sub', '—', null);
+    }
+
+    // fetch server count
+    try {
+        var r = await fetch('/api/announcements/subscribers/count');
+        var d = await r.json();
+        cls('st-count', '📱 ' + (d.subscriberCount || 0) + ' device(s)', d.subscriberCount > 0);
+    } catch(e) { cls('st-count', 'Error fetching', false); }
+}
+
+document.getElementById('btn-subscribe').addEventListener('click', async function() {
+    var btn = this;
+    btn.disabled= true;
+    btn.textContent = '⏳ Subscribing…';
+    logMsg('Requesting notification permission…', 'info');
+    try {
+        if (!('Notification' in window)) throw new Error('Notifications not supported in this browser');
+        var perm = Notification.permission === 'default'
+            ? await Notification.requestPermission()
+            : Notification.permission;
+        logMsg('Permission: ' + perm, perm === 'granted' ? 'ok' : 'err');
+        if (perm !== 'granted') throw new Error('Permission not granted. Go to browser Settings → Notifications to allow.');
+
+        var reg = await navigator.serviceWorker.ready;
+        logMsg('Service worker ready', 'ok');
+
+        var keyRes = await fetch('/api/announcements/vapid-public-key');
+        var keyData = await keyRes.json();
+        logMsg('VAPID key: ' + keyData.publicKey.substring(0,20) + '…', 'ok');
+
+        var existingSub = await reg.pushManager.getSubscription();
+        if (existingSub) { await existingSub.unsubscribe(); logMsg('Old subscription cleared', 'info'); }
+
+        var sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
+        });
+        logMsg('Browser subscription created!', 'ok');
+
+        var subJson = sub.toJSON();
+        var resp = await fetch('/api/announcements/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: subJson.endpoint, keys: subJson.keys, user_role: 'admin' })
+        });
+        var result = await resp.json();
+        if (!resp.ok) throw new Error(result.error);
+        logMsg('✅ Registered with server! ' + JSON.stringify(result), 'ok');
+        btn.textContent = '✅ Subscribed!';
+        checkStatus();
+    } catch(e) {
+        logMsg('❌ ' + e.message, 'err');
+        btn.textContent = '🔔 Try Again';
+    }
+    btn.disabled = false;
+});
+
+document.getElementById('btn-test').addEventListener('click', async function() {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending…';
+    logMsg('Sending test push to all registered devices…', 'info');
+    try {
+        var r = await fetch('/api/announcements/test-push', { method: 'POST' });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        logMsg('✅ ' + d.message, 'ok');
+        btn.textContent = '✅ Sent!';
+    } catch(e) {
+        logMsg('❌ ' + e.message, 'err');
+        btn.textContent = '📱 Try Again';
+    }
+    btn.disabled = false;
+    checkStatus();
+});
+
+document.getElementById('btn-unsubscribe').addEventListener('click', async function() {
+    try {
+        var reg = await navigator.serviceWorker.ready;
+        var sub = await reg.pushManager.getSubscription();
+        if (sub) {
+            await sub.unsubscribe();
+            logMsg('Subscription cleared from browser. Refresh to re-subscribe.', 'info');
+        } else {
+            logMsg('No active subscription to clear.', 'info');
+        }
+        localStorage.removeItem('bedrock_push_subscribed');
+        checkStatus();
+    } catch(e) { logMsg('Error: ' + e.message, 'err'); }
+});
+
+// Auto-check on load
+checkStatus();
+})();
+</script>
+</body>
+</html>
