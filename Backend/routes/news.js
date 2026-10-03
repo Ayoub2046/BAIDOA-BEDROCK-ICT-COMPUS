@@ -1,7 +1,6 @@
-// Backend/routes/news.js
-
 const express = require('express');
 const { query } = require('../database.js');
+const { broadcastPushNotification } = require('../services/pushService.js');
 const router = express.Router();
 
 // GET all news articles (exclude soft-deleted)
@@ -25,7 +24,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST a new news article
+// POST a new news article & broadcast push alert to all devices
 router.post('/', async (req, res) => {
     const { title, summary, imageUrl, content } = req.body;
     const publishDate = new Date().toISOString().split('T')[0];
@@ -34,7 +33,17 @@ router.post('/', async (req, res) => {
             `INSERT INTO news (title, summary, imageurl, content, publishdate) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
             [title, summary, imageUrl, content, publishDate]
         );
-        res.status(201).json({ id: rows[0].id });
+        const newsId = rows[0].id;
+
+        // Broadcast Push Notification to all devices!
+        broadcastPushNotification({
+            title: '📰 News: ' + (title || 'Campus News'),
+            body: summary || content || 'New campus news published! Tap to read.',
+            icon: imageUrl || '/images/icons/icon-192.png',
+            url: '/HTML/news-single.html?id=' + newsId
+        }, 'all');
+
+        res.status(201).json({ id: newsId });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

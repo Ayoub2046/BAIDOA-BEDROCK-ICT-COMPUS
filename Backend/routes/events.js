@@ -1,7 +1,6 @@
-// Backend/routes/events.js
-
 const express = require('express');
 const { query } = require('../database.js');
+const { broadcastPushNotification } = require('../services/pushService.js');
 const router = express.Router();
 
 // GET all events
@@ -14,7 +13,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST (add) a new event
+// POST (add) a new event & broadcast push notification
 router.post('/', async (req, res) => {
     const { title, start, end, backgroundColor, borderColor } = req.body;
     try {
@@ -22,7 +21,16 @@ router.post('/', async (req, res) => {
             `INSERT INTO events (title, start, "end", backgroundcolor, bordercolor) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
             [title, start, end || null, backgroundColor, borderColor]
         );
-        res.status(201).json({ id: rows[0].id });
+        const eventId = rows[0].id;
+
+        // Broadcast Push Notification to all devices!
+        broadcastPushNotification({
+            title: '📅 Event: ' + (title || 'New Campus Event'),
+            body: 'Date: ' + (start || 'Upcoming') + '. Tap to view details.',
+            url: '/HTML/event.html'
+        }, 'all');
+
+        res.status(201).json({ id: eventId });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
