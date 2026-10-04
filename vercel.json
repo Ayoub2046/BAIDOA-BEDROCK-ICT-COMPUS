@@ -2,7 +2,8 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "manifest.json,service-worker.js"
+      "includeFiles": "manifest.json,service-worker.js",
+      "maxDuration": 30
     }
   },
   "headers": [
@@ -23,9 +24,17 @@
       ]
     },
     {
-      "source": "/images/icons/(.*)",
+      "source": "/images/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
       ]
     }
   ],
@@ -47,12 +56,9 @@
       "destination": "/images/icons/icon-192.png"
     },
     {
-      "source": "/goal",
-      "destination": "/HTML/index.html"
-    },
-    {
       "source": "/:page.html",
       "destination": "/HTML/:page.html"
     }
   ]
 }
+
