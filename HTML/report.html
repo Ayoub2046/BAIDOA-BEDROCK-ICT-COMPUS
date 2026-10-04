@@ -1,237 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0d4f8c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
-    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Generation | Admin Panel</title>
     <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <link rel="stylesheet" href="/css/edupulse-theme.css">
-    <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* [PASTE THE COMMON CSS FROM THE PREVIOUS RESPONSE HERE] */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #f4f7fc; }
 
-        :root {
-            /* Light Mode */
-            --sidebar-bg: #000009d8;
-            --sidebar-text: #b0b8d3;
-            --sidebar-text-active: #ffffff;
-            --sidebar-active-bg: rgba(255, 255, 255, 0.08);
-            --sidebar-active-border: #367BF5;
-            --topbar-bg: #ffffff;
-            --main-bg: #f4f7fc;
-            --card-bg: #ffffff;
-            --text-primary: #0f510e;
-            --text-secondary: #5a5c69;
-            --border-color: #e3e6f0;
-            --shadow-color: rgba(0, 0, 0, 0.05);
-        }
-
-        body.dark-mode {
-            /* Dark Mode */
-            --sidebar-bg: #1f2937;
-            --topbar-bg: #111827;
-            --main-bg: #0f172a;
-            --card-bg: #1f2937;
-            --text-primary: #e5e7eb;
-            --text-secondary: #d1d5db;
-            --border-color: #374151;
-            --shadow-color: rgba(0, 0, 0, 0.2);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--main-bg);
-        }
-
-        .dashboard-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100%;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-header {
-            padding: 22px 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-header h3 {
-            color: white;
-            font-size: 1.5rem;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 15px 0;
-        }
-
-        .sidebar-nav li a {
-            display: flex;
-            align-items: center;
-            color: var(--sidebar-text);
-            padding: 12px 25px;
-            text-decoration: none;
+        /* ── Report Type Cards ─── */
+        .report-type-card {
+            border: 2.5px solid #e3e6f0;
+            border-radius: 14px;
+            padding: 18px 16px;
+            cursor: pointer;
             transition: all 0.2s;
+            background: #fff;
+            text-align: center;
         }
+        .report-type-card:hover { border-color: #0d4f8c; box-shadow: 0 4px 18px rgba(13,79,140,0.10); transform: translateY(-2px); }
+        .report-type-card.selected { border-color: #0d4f8c; background: #e8f1fb; }
+        .report-type-card .icon { font-size: 2rem; margin-bottom: 8px; }
 
-        .sidebar-nav li a:hover,
-        .sidebar-nav li a.active {
-            background-color: var(--sidebar-active-bg);
-            color: var(--sidebar-text-active);
-            border-left: 4px solid var(--sidebar-active-border);
-            padding-left: 21px;
-        }
+        /* ── Filter Panel ─── */
+        .filters-row .form-label { font-weight: 600; font-size: 0.8rem; color: #5a5c69; text-transform: uppercase; letter-spacing: .04em; }
 
-        .main-content {
-            flex-grow: 1;
-            margin-left: 260px;
-            transition: all 0.3s ease;
-        }
+        /* ── Status Pills ─── */
+        .status-filter-btn { border-radius: 20px; font-weight: 600; font-size: 0.82rem; border: 2px solid; transition: all 0.15s; }
+        .status-filter-btn.active-filter { color: #fff !important; }
 
-        .top-navbar {
-            background-color: var(--topbar-bg);
-            color: var(--text-primary);
-            padding: 15px 30px;
-            box-shadow: 0 1px 5px var(--shadow-color);
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 1020;
-            gap: 8px;
-        }
+        /* ── Summary Cards ─── */
+        .summ-card { border-radius: 12px; border: 0; padding: 16px 20px; }
+        .summ-card .label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; opacity: 0.75; }
+        .summ-card .value { font-size: 1.8rem; font-weight: 700; }
 
-        .top-navbar > #sidebar-toggler { order: 1; }
-        .top-navbar > h4 { order: 2; margin-left: 0 !important; }
-        .top-navbar > .theme-toggle { order: 5; margin-left: auto; display: flex; align-items: center; }
+        /* ── Table ─── */
+        #report-table-wrapper { max-height: 420px; overflow-y: auto; border-radius: 10px; border: 1px solid #e3e6f0; }
+        #report-table thead th { position: sticky; top: 0; background: #0d4f8c; color: #fff; font-size: 0.78rem; z-index: 2; }
+        #report-table tbody tr:hover { background: #ecf3ff; }
 
-        @media (max-width: 992px) {
-            .top-navbar { padding: 10px 12px; gap: 6px; }
-            .top-navbar > h4 { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .top-navbar .theme-toggle-icon { font-size: 1.25rem; }
-        }
-
-        #sidebar-toggler {
-            display: none;
-        }
-
-        .content-area {
-            padding: 30px;
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                left: -260px;
-            }
-
-            .sidebar.toggled {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            #sidebar-toggler {
-                display: block;
-            }
-        }
-
-        .dark-mode .form-control,
-        .dark-mode .form-select {
-            background-color: #1f2937;
-            border-color: var(--border-color);
-            color: var(--text-primary);
-        }
-
-        /* [NEW] Report Generation Specific Styles */
-        .report-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-        }
-
-        .report-card .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        #report-output {
-            display: none;
-            /* Hidden by default */
-        }
-
-        .printable-area {
-            color: #333;
-            /* Use dark text for printing regardless of theme */
-        }
-
-        .printable-area .report-header h2 {
-            color: #0f510e;
-        }
+        /* ── Download Bar ─── */
+        .download-bar { background: linear-gradient(90deg, #0d4f8c 0%, #1a7fd4 100%); border-radius: 10px; padding: 14px 20px; }
 
         @media print {
+            .sidebar, .top-navbar, .filters-section, .download-bar, .report-type-selector, #generate-btn-row { display: none !important; }
+            #report-output-section { display: block !important; }
+            body { background: #fff !important; }
+        }
 
-            body,
-            .dashboard-wrapper,
-            .main-content {
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: white !important;
-            }
-
-            .sidebar,
-            .top-navbar,
-            .report-generator-card,
-            .btn {
-                display: none !important;
-            }
-
-            .content-area {
-                padding: 0 !important;
-            }
-
-            #report-output {
-                display: block !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
+        @media (max-width: 992px) {
+            .main-content { margin-left: 0 !important; }
+            .sidebar { left: -260px; }
+            .sidebar.toggled { left: 0; }
+            #sidebar-toggler { display: block !important; }
         }
     </style>
 </head>
-
 <body>
-    <div class="dashboard-wrapper">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h3><img src="/images/BEDRCOK LOGO.JPG" style="width: 60px; height: 60px; border-radius: 50px;" alt="">
-                    <span style="font-size: 20px;">Baidoa Bedrock ICT Campus</span>
-                </h3>
-            </div>
-                    <ul class="sidebar-nav">
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="/images/BEDRCOK LOGO.JPG" style="width:55px;height:55px;border-radius:50px;" alt="">
+                <span style="font-size:16px;line-height:1.2;">Baidoa Bedrock ICT Campus</span></h3>
+        </div>
+        <ul class="sidebar-nav">
             <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
             <li><a href="user.html"><i class="fas fa-users-cog"></i> <span>User Management</span></a></li>
             <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
@@ -249,217 +90,584 @@
             <li><a href="communications.html"><i class="fas fa-comments"></i> <span>Communication</span></a></li>
             <li><a href="library.html"><i class="fas fa-book-reader"></i> <span>Library Management</span></a></li>
             <li><a href="report.html" class="active"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
-            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security & Permissions</span></a></li>
+            <li><a href="seceurity.html"><i class="fas fa-shield-alt"></i> <span>Security &amp; Permissions</span></a></li>
             <li><a href="content.html"><i class="fas fa-edit"></i> <span>Content Management</span></a></li>
             <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
             <li><a href="recycle-bin.html"><i class="fas fa-trash-restore"></i> <span>Recycle Bin</span></a></li>
             <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
+    </nav>
+
+    <!-- Main -->
+    <div class="main-content" style="margin-left:260px;">
+        <nav class="top-navbar d-flex align-items-center" style="background:#fff;padding:14px 28px;box-shadow:0 1px 5px rgba(0,0,0,.06);position:sticky;top:0;z-index:1020;">
+            <button class="btn btn-primary me-2" id="sidebar-toggler" style="display:none;"><i class="fas fa-bars"></i></button>
+            <h4 class="mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Report Generation</h4>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;font-size:1.2rem;">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </div>
+            </div>
         </nav>
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Navbar -->
-            <nav class="top-navbar">
-                <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
-                <div class="theme-toggle me-3" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
-                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
-                </div>
-                <h4 class="mb-0 ms-3">Report Generation</h4>
-            </nav>
-            <!-- Content Area -->
-            <div class="content-area">
-                <!-- Report Generator Form Card -->
-                <div class="card report-card report-generator-card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Generate a New Report</h5>
-                    </div>
-                    <div class="card-body">
 
-                        <!-- Replace the old form in HTML/report.html with this one -->
-                        <form id="report-form">
-                            <div class="row align-items-end">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Report Type</label>
-                                    <select class="form-select" name="reportType" required>
-                                        <option value="" disabled selected>Select a report to generate...</option>
-                                        <option value="financial_overview">Financial Overview (Fee Status)</option>
-                                        <option value="student_enrollment">Student Enrollment by Grade</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="fas fa-cogs me-2"></i>Generate Report
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+        <div class="content-area p-4">
 
-
-                    </div>
-                </div>
-
-                <!-- Report Output Card -->
-                <div class="card report-card" id="report-output">
-                    <div class="card-body printable-area">
-                        <div class="report-header d-flex justify-content-between align-items-center mb-4">
-                            <div>
-                                <h2> Baidoa Bedrock ICT Campus</h2>
-                                <h4 id="report-title" class="text-muted">Report Title</h4>
-                            </div>
-                            <div>
-                                <p class="mb-0"><strong>Date Generated:</strong> <span id="generation-date"></span></p>
-                                <p class="mb-0"><strong>For:</strong> <span id="report-for"></span></p>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="report-content">
-                            <!-- Report summary text -->
-                            <div id="report-summary" class="mb-4"></div>
-                            <!-- Chart container -->
-                            <div class="chart-container" style="position: relative; height:40vh; width:100%;">
-                                <canvas id="reportChart"></canvas>
-                            </div>
+            <!-- ─── 1. REPORT TYPE SELECTOR ─────────────────────────────── -->
+            <div class="report-type-selector mb-4">
+                <h6 class="fw-bold text-muted mb-3"><i class="fas fa-layer-group me-2"></i>STEP 1 — Select Report Type</h6>
+                <div class="row g-3" id="report-type-cards">
+                    <div class="col-6 col-md-3">
+                        <div class="report-type-card selected" data-type="financial" onclick="selectReportType('financial', this)">
+                            <div class="icon">💳</div>
+                            <div class="fw-bold">Financial</div>
+                            <div class="text-muted small">Fee Payments & Status</div>
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent text-end">
-                        <button class="btn btn-secondary" onclick="window.print()"><i
-                                class="fas fa-print me-2"></i>Print Report</button>
+                    <div class="col-6 col-md-3">
+                        <div class="report-type-card" data-type="enrollment" onclick="selectReportType('enrollment', this)">
+                            <div class="icon">🎓</div>
+                            <div class="fw-bold">Enrollment</div>
+                            <div class="text-muted small">Student Registration</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="report-type-card" data-type="attendance" onclick="selectReportType('attendance', this)">
+                            <div class="icon">📋</div>
+                            <div class="fw-bold">Attendance</div>
+                            <div class="text-muted small">Daily Attendance Log</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="report-type-card" data-type="summary" onclick="selectReportType('summary', this)">
+                            <div class="icon">📊</div>
+                            <div class="fw-bold">Summary</div>
+                            <div class="text-muted small">Full School Overview</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- The script at the bottom of HTML/report.html -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Page Globals ---
-            const reportForm = document.getElementById('report-form');
-            const reportOutput = document.getElementById('report-output');
-            const API_URL = '/api/reports';
-            let chartInstance = null; // To hold the Chart.js object
+            <!-- ─── 2. FILTERS ─────────────────────────────────────────── -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4 filters-section">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-sliders-h me-2"></i>STEP 2 — Set Filters</h6>
+                    <div class="row g-3 filters-row align-items-end">
 
-            // --- Event Listener ---
-            reportForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const reportType = reportForm.elements.reportType.value;
-                if (!reportType) {
-                    alert('Please select a report type.');
-                    return;
-                }
+                        <!-- Year -->
+                        <div class="col-6 col-md-2">
+                            <label class="form-label">Year</label>
+                            <select id="filter-year" class="form-select form-select-sm">
+                                <option value="all">All Years</option>
+                            </select>
+                        </div>
 
-                try {
-                    // Fetch the report data from our new API
-                    const response = await fetch(`${API_URL}?type=${reportType}`);
-                    if (!response.ok) throw new Error('Failed to generate report');
-                    const reportData = await response.json();
+                        <!-- Month -->
+                        <div class="col-6 col-md-2">
+                            <label class="form-label">Month</label>
+                            <select id="filter-month" class="form-select form-select-sm">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
 
-                    // --- Prepare and Render the Report ---
-                    const reportTitles = {
-                        'financial_overview': 'Financial Overview',
-                        'student_enrollment': 'Student Enrollment by Grade'
-                    };
-                    document.getElementById('report-title').textContent = reportTitles[reportType];
-                    document.getElementById('generation-date').textContent = new Date().toLocaleDateString();
-                    document.getElementById('report-for').textContent = 'Entire School'; // Or dynamic if needed
+                        <!-- STATUS FILTERS — dynamic per report type -->
+                        <div class="col-12 col-md-5" id="status-filter-col">
+                            <label class="form-label">Filter by Status</label>
+                            <div class="d-flex flex-wrap gap-2" id="status-pills">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
 
-                    // You can add dynamic summary text here if you want
-                    document.getElementById('report-summary').innerHTML = `<p>This report was generated from the live database.</p>`;
+                        <!-- Generate button -->
+                        <div class="col-12 col-md-3" id="generate-btn-row">
+                            <button id="generate-btn" class="btn btn-primary w-100 fw-bold" onclick="generateReport()">
+                                <i class="fas fa-cogs me-2"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    reportOutput.style.display = 'block';
+            <!-- ─── LOADING STATE ─── -->
+            <div id="report-loading" class="text-center py-5" style="display:none;">
+                <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+                <p class="mt-3 text-muted fw-bold">Generating report from database...</p>
+            </div>
 
-                    // --- Render the Chart ---
-                    const ctx = document.getElementById('reportChart').getContext('2d');
-                    if (chartInstance) {
-                        chartInstance.destroy(); // Destroy previous chart to prevent conflicts
-                    }
+            <!-- ─── 3. REPORT OUTPUT ─────────────────────────────────────── -->
+            <div id="report-output-section" style="display:none;">
 
-                    const chartType = (reportType === 'financial_overview') ? 'pie' : 'bar';
-                    chartInstance = new Chart(ctx, {
-                        type: chartType,
-                        data: reportData,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'top' },
-                                title: { display: true, text: reportTitles[reportType] }
-                            }
-                        }
-                    });
+                <!-- Header bar -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+                    <div>
+                        <h5 class="mb-0 fw-bold" id="output-title">Report</h5>
+                        <small class="text-muted" id="output-subtitle"></small>
+                    </div>
+                    <!-- ── Download Bar ── -->
+                    <div class="download-bar d-flex gap-2 flex-wrap">
+                        <span class="text-white fw-bold align-self-center me-2"><i class="fas fa-download me-1"></i>Export:</span>
+                        <button class="btn btn-light btn-sm fw-bold" onclick="downloadReport('csv')">
+                            <i class="fas fa-file-csv text-success me-1"></i>Download CSV
+                        </button>
+                        <button class="btn btn-light btn-sm fw-bold" onclick="downloadReport('excel')">
+                            <i class="fas fa-file-excel text-success me-1"></i>Download Excel
+                        </button>
+                        <button class="btn btn-light btn-sm fw-bold" onclick="window.print()">
+                            <i class="fas fa-print text-primary me-1"></i>Print
+                        </button>
+                    </div>
+                </div>
 
-                } catch (error) {
-                    console.error('Error generating report:', error);
-                    alert('An error occurred while generating the report.');
-                }
-            });
-        });
+                <!-- Summary Cards Row -->
+                <div class="row g-3 mb-4" id="summary-cards-row"></div>
 
+                <!-- Chart + Table row -->
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-muted mb-3"><i class="fas fa-chart-pie me-2"></i>Visual Summary</h6>
+                                <canvas id="reportChart" style="max-height:280px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold mb-0"><i class="fas fa-table me-2 text-primary"></i>Detailed Records</h6>
+                                <span class="badge bg-primary rounded-pill" id="record-count-badge">0 records</span>
+                            </div>
+                            <div id="report-table-wrapper">
+                                <table class="table table-hover mb-0" id="report-table">
+                                    <thead><tr id="report-thead-row"></tr></thead>
+                                    <tbody id="report-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        // Add this code inside your main <script> tag at the bottom of each admin page
+                <!-- Footer info -->
+                <div class="text-muted small mt-3 text-end">
+                    Report generated: <span id="report-gen-date"></span> &nbsp;|&nbsp; Baidoa Bedrock ICT Campus &mdash; Admin Panel
+                </div>
+            </div>
 
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- START: COMMON CODE FOR ALL ADMIN PAGES ---
+        </div><!-- /content-area -->
+    </div><!-- /main-content -->
+</div>
 
-    // 1. Responsive Sidebar Toggler Functionality
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarToggler = document.getElementById('sidebar-toggler');
-    if (sidebarToggler) {
-        sidebarToggler.addEventListener('click', () => {
-            sidebar.classList.toggle('toggled');
-        });
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   REPORT GENERATION ENGINE
+   ══════════════════════════════════════════════════════════════════ */
+
+let currentReportType = 'financial';
+let currentReportData = null;
+let chartInstance = null;
+const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ── Report type configs ───────────────────────────────────────────
+const REPORT_CONFIG = {
+    financial: {
+        label: 'Financial Report (Fee Payments)',
+        statuses: [
+            { value: 'all',     label: '📊 All',       color: '#6c757d' },
+            { value: 'paid',    label: '✅ Paid',       color: '#198754' },
+            { value: 'unpaid',  label: '❌ Unpaid',     color: '#dc3545' },
+            { value: 'pending', label: '⏳ Pending',    color: '#fd7e14' },
+            { value: 'overdue', label: '🔴 Overdue',    color: '#c62828' },
+        ],
+        columns: ['student_id','student_name','grade','amount','status','duedate','paiddate'],
+        headers: ['Student ID','Student Name','Grade','Amount ($)','Status','Due Date','Paid Date'],
+        chartType: 'pie',
+        summaryFn: buildFinancialSummary,
+        chartFn: buildFinancialChart
+    },
+    enrollment: {
+        label: 'Student Enrollment Report',
+        statuses: [
+            { value: 'all',       label: '📊 All',        color: '#6c757d' },
+            { value: 'active',    label: '✅ Active',      color: '#198754' },
+            { value: 'inactive',  label: '⚫ Inactive',    color: '#6c757d' },
+            { value: 'graduated', label: '🎓 Graduated',   color: '#0d4f8c' },
+            { value: 'alumni',    label: '⭐ Alumni',      color: '#fd7e14' },
+        ],
+        columns: ['student_id','student_name','grade','status','academic_year','enrollmentdate','parent_name'],
+        headers: ['Student ID','Student Name','Grade','Status','Year','Enrollment Date','Parent Name'],
+        chartType: 'bar',
+        summaryFn: buildEnrollmentSummary,
+        chartFn: buildEnrollmentChart
+    },
+    attendance: {
+        label: 'Attendance Report',
+        statuses: [
+            { value: 'all',     label: '📊 All',      color: '#6c757d' },
+            { value: 'present', label: '✅ Present',   color: '#198754' },
+            { value: 'absent',  label: '❌ Absent',    color: '#dc3545' },
+            { value: 'late',    label: '⏰ Late',      color: '#fd7e14' },
+        ],
+        columns: ['student_id','student_name','grade','date','status'],
+        headers: ['Student ID','Student Name','Grade','Date','Status'],
+        chartType: 'doughnut',
+        summaryFn: buildAttendanceSummary,
+        chartFn: buildAttendanceChart
+    },
+    summary: {
+        label: 'Full School Overview',
+        statuses: [],
+        columns: [],
+        headers: [],
+        chartType: 'bar',
+        summaryFn: buildSummaryOverview,
+        chartFn: buildSummaryChart
+    }
+};
+
+let selectedStatus = 'all';
+
+function selectReportType(type, el) {
+    currentReportType = type;
+    document.querySelectorAll('.report-type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    renderStatusPills(type);
+    document.getElementById('report-output-section').style.display = 'none';
+    selectedStatus = 'all';
+}
+
+function renderStatusPills(type) {
+    const cfg = REPORT_CONFIG[type];
+    const container = document.getElementById('status-pills');
+    const col = document.getElementById('status-filter-col');
+    if (!cfg.statuses.length) { col.style.display = 'none'; return; }
+    col.style.display = '';
+    container.innerHTML = cfg.statuses.map(s => `
+        <button type="button" class="btn btn-sm status-filter-btn ${s.value === 'all' ? 'active-filter' : ''}"
+            style="border-color:${s.color};color:${s.value === 'all' ? '#fff' : s.color};${s.value === 'all' ? 'background:'+s.color+';' : 'background:transparent;'}"
+            onclick="setStatus('${s.value}', '${s.color}', this)"
+            data-val="${s.value}">${s.label}</button>
+    `).join('');
+}
+
+function setStatus(val, color, btn) {
+    selectedStatus = val;
+    document.querySelectorAll('.status-filter-btn').forEach(b => {
+        const bColor = b.getAttribute('data-val') === val ? color : b.style.borderColor;
+        if (b === btn) {
+            b.classList.add('active-filter');
+            b.style.background = color;
+            b.style.color = '#fff';
+        } else {
+            b.classList.remove('active-filter');
+            b.style.background = 'transparent';
+            b.style.color = b.style.borderColor;
+        }
+    });
+}
+
+async function generateReport() {
+    const year = document.getElementById('filter-year').value;
+    const month = document.getElementById('filter-month').value;
+    const type = currentReportType;
+    const params = new URLSearchParams({ type, year, month, status: selectedStatus });
+
+    document.getElementById('report-output-section').style.display = 'none';
+    document.getElementById('report-loading').style.display = 'block';
+
+    try {
+        const res = await fetch('/api/reports?' + params.toString());
+        if (!res.ok) throw new Error('Failed to generate report');
+        currentReportData = await res.json();
+
+        renderReport(type, currentReportData, year, month);
+        document.getElementById('report-output-section').style.display = 'block';
+    } catch(err) {
+        alert('Error: ' + err.message);
+    } finally {
+        document.getElementById('report-loading').style.display = 'none';
+    }
+}
+
+function renderReport(type, data, year, month) {
+    const cfg = REPORT_CONFIG[type];
+
+    // Title
+    const monthLabel = month !== 'all' ? MONTHS[parseInt(month)] : 'All Months';
+    const yearLabel  = year !== 'all' ? year : 'All Years';
+    document.getElementById('output-title').textContent = cfg.label;
+    document.getElementById('output-subtitle').textContent = `Period: ${monthLabel} / ${yearLabel}  •  Status: ${selectedStatus.toUpperCase()}`;
+    document.getElementById('report-gen-date').textContent = new Date().toLocaleString();
+
+    // Summary cards
+    cfg.summaryFn(data);
+
+    // Chart
+    cfg.chartFn(data);
+
+    // Table
+    if (type !== 'summary') {
+        const rows = data.rows || [];
+        document.getElementById('record-count-badge').textContent = rows.length + ' records';
+        renderTable(cfg.columns, cfg.headers, rows);
+    }
+}
+
+// ─── TABLE RENDERER ───────────────────────────────────────────────
+function renderTable(cols, headers, rows) {
+    const thead = document.getElementById('report-thead-row');
+    const tbody = document.getElementById('report-tbody');
+
+    thead.innerHTML = headers.map(h => `<th class="py-2 px-3">${h}</th>`).join('');
+
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="${cols.length}" class="text-center text-muted py-4">No records found for selected filters.</td></tr>`;
+        return;
     }
 
-    // 2. Security & Logout
+    const STATUS_COLORS = {
+        paid: 'success', active: 'success', present: 'success',
+        unpaid: 'danger',  absent: 'danger',  inactive: 'secondary',
+        pending: 'warning', late: 'warning', overdue: 'danger',
+        graduated: 'primary', alumni: 'info'
+    };
+
+    tbody.innerHTML = rows.map((r, i) => {
+        return '<tr>' + cols.map(c => {
+            let val = r[c];
+            if (val === null || val === undefined) val = '—';
+            // Format dates
+            if (typeof val === 'string' && val.includes('T')) val = val.split('T')[0];
+            // Status badge
+            if (c === 'status' && val !== '—') {
+                const color = STATUS_COLORS[(val+'').toLowerCase()] || 'secondary';
+                val = `<span class="badge bg-${color}">${val}</span>`;
+            }
+            // Amount formatting
+            if (c === 'amount' && !isNaN(val)) val = '$' + parseFloat(val).toLocaleString('en-US', {minimumFractionDigits:2});
+            return `<td class="px-3 py-2 small">${val}</td>`;
+        }).join('') + '</tr>';
+    }).join('');
+}
+
+// ─── SUMMARY BUILDERS ─────────────────────────────────────────────
+function buildFinancialSummary(data) {
+    const t = data.totals || {};
+    const total = Object.values(t).reduce((a,b) => a + parseFloat(b||0), 0);
+    const paid   = parseFloat(t.paid || 0);
+    const unpaid = parseFloat(t.unpaid || 0);
+    const pending= parseFloat(t.pending || 0);
+    document.getElementById('summary-cards-row').innerHTML = `
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;">
+            <div class="label">Total Collected</div><div class="value">$${paid.toLocaleString('en-US',{minimumFractionDigits:2})}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#dc3545,#ff6b81);color:#fff;">
+            <div class="label">Total Unpaid</div><div class="value">$${unpaid.toLocaleString('en-US',{minimumFractionDigits:2})}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#fd7e14,#ffc107);color:#fff;">
+            <div class="label">Pending</div><div class="value">$${pending.toLocaleString('en-US',{minimumFractionDigits:2})}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#0d4f8c,#1a7fd4);color:#fff;">
+            <div class="label">Total Records</div><div class="value">${data.count || 0}</div>
+        </div></div>`;
+}
+
+function buildEnrollmentSummary(data) {
+    const byGrade = data.byGrade || {};
+    const grades = Object.keys(byGrade);
+    const total = Object.values(byGrade).reduce((a,b) => a+b, 0);
+    let gradeHtml = grades.slice(0,3).map(g => `<div class="col-auto"><div class="summ-card bg-light border"><div class="label">${g}</div><div class="value" style="font-size:1.4rem;">${byGrade[g]}</div></div></div>`).join('');
+    document.getElementById('summary-cards-row').innerHTML = `
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#0d4f8c,#1a7fd4);color:#fff;">
+            <div class="label">Total Students</div><div class="value">${total}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;">
+            <div class="label">Grades / Classes</div><div class="value">${grades.length}</div>
+        </div></div>
+        ${gradeHtml}`;
+}
+
+function buildAttendanceSummary(data) {
+    const b = data.byStatus || {};
+    const total = Object.values(b).reduce((a,n) => a+n, 0);
+    const present = b.present || b.Present || 0;
+    const absent  = b.absent  || b.Absent  || 0;
+    const late    = b.late    || b.Late    || 0;
+    const rate = total > 0 ? Math.round((present/total)*100) : 0;
+    document.getElementById('summary-cards-row').innerHTML = `
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;">
+            <div class="label">Present</div><div class="value">${present}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#dc3545,#ff6b81);color:#fff;">
+            <div class="label">Absent</div><div class="value">${absent}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#fd7e14,#ffc107);color:#fff;">
+            <div class="label">Late</div><div class="value">${late}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#0d4f8c,#1a7fd4);color:#fff;">
+            <div class="label">Attendance Rate</div><div class="value">${rate}%</div>
+        </div></div>`;
+}
+
+function buildSummaryOverview(data) {
+    const fees = (data.fees || []);
+    const paid = fees.find(f => (f.status||'').toLowerCase() === 'paid');
+    const unpaid = fees.find(f => (f.status||'').toLowerCase() === 'unpaid');
+    document.getElementById('summary-cards-row').innerHTML = `
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#0d4f8c,#1a7fd4);color:#fff;">
+            <div class="label">Enrolled Students</div>
+            <div class="value">${(data.enrollment||[]).reduce((a,g)=>a+parseInt(g.cnt||0),0)}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;">
+            <div class="label">Fee Collected</div>
+            <div class="value">$${parseFloat(paid?.total||0).toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#dc3545,#ff6b81);color:#fff;">
+            <div class="label">Unpaid Fees</div>
+            <div class="value">$${parseFloat(unpaid?.total||0).toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+        </div></div>
+        <div class="col-6 col-md-3"><div class="summ-card" style="background:linear-gradient(135deg,#6f42c1,#9b59b6);color:#fff;">
+            <div class="label">Teachers</div><div class="value">${data.teacherCount || 0}</div>
+        </div></div>`;
+    // Table for summary: show enrollment by grade
+    const rows = (data.enrollment || []).map(g => ({ grade: g.grade, students: g.cnt }));
+    document.getElementById('record-count-badge').textContent = rows.length + ' grades';
+    renderTable(['grade','students'], ['Grade','Student Count'], rows);
+}
+
+// ─── CHART BUILDERS ───────────────────────────────────────────────
+function destroyChart() {
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+}
+
+function buildFinancialChart(data) {
+    destroyChart();
+    const t = data.totals || {};
+    const labels = Object.keys(t);
+    const values = labels.map(l => parseFloat(t[l]||0));
+    const colors = labels.map(l => ({paid:'#198754',unpaid:'#dc3545',pending:'#fd7e14',overdue:'#c62828'}[l.toLowerCase()]||'#6c757d'));
+    chartInstance = new Chart(document.getElementById('reportChart'), {
+        type: 'pie',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, hoverOffset: 8 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position:'bottom' } } }
+    });
+}
+
+function buildEnrollmentChart(data) {
+    destroyChart();
+    const bg = data.byGrade || {};
+    const labels = Object.keys(bg);
+    const values = labels.map(l => bg[l]);
+    chartInstance = new Chart(document.getElementById('reportChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Students', data: values,
+            backgroundColor: labels.map((_,i) => `hsl(${210+(i*22)},70%,55%)`),
+            borderRadius: 6 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true} } }
+    });
+}
+
+function buildAttendanceChart(data) {
+    destroyChart();
+    const b = data.byStatus || {};
+    const labels = Object.keys(b);
+    const values = labels.map(l => b[l]);
+    const colorMap = {present:'#198754',absent:'#dc3545',late:'#fd7e14'};
+    const colors = labels.map(l => colorMap[l.toLowerCase()] || '#6c757d');
+    chartInstance = new Chart(document.getElementById('reportChart'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, hoverOffset:8 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+    });
+}
+
+function buildSummaryChart(data) {
+    destroyChart();
+    const enrollment = data.enrollment || [];
+    chartInstance = new Chart(document.getElementById('reportChart'), {
+        type: 'bar',
+        data: {
+            labels: enrollment.map(g => g.grade || 'Unknown'),
+            datasets: [{
+                label: 'Students per Grade',
+                data: enrollment.map(g => parseInt(g.cnt||0)),
+                backgroundColor: enrollment.map((_,i) => `hsl(${200+(i*18)},68%,52%)`),
+                borderRadius: 6
+            }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true} } }
+    });
+}
+
+// ─── DOWNLOAD HANDLER ─────────────────────────────────────────────
+function downloadReport(fmt) {
+    if (!currentReportType) { alert('Please generate a report first.'); return; }
+    const year  = document.getElementById('filter-year').value;
+    const month = document.getElementById('filter-month').value;
+    const params = new URLSearchParams({
+        type: currentReportType, year, month,
+        status: selectedStatus, format: fmt
+    });
+    window.location.href = '/api/reports?' + params.toString();
+}
+
+// ─── POPULATE YEAR FILTER ─────────────────────────────────────────
+function populateYearFilter() {
+    const sel = document.getElementById('filter-year');
+    const currentYear = new Date().getFullYear();
+    sel.innerHTML = '<option value="all">All Years</option>';
+    for (let y = currentYear; y >= 2020; y--) {
+        sel.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    // Admin guard
     if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
         window.location.href = 'admin-login.html';
+        return;
     }
-    const logoutLinks = document.querySelectorAll('#logout-link, #logout-link-dropdown');
-    logoutLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            sessionStorage.removeItem('isAdminLoggedIn');
-            sessionStorage.removeItem('adminProfile');
-            window.location.href = 'admin-login.html';
-        });
-    });
 
-    // --- END: COMMON CODE FOR ALL ADMIN PAGES ---
+    // Sidebar toggler
+    const sidebar = document.querySelector('.sidebar');
+    document.getElementById('sidebar-toggler')?.addEventListener('click', () => sidebar.classList.toggle('toggled'));
 
+    populateYearFilter();
+    renderStatusPills('financial'); // default type
 
-    // --- PAGE-SPECIFIC LOGIC GOES BELOW ---
-    // For example, on student.html, your code to fetch students starts here.
-    // On teacher.html, your code to fetch teachers starts here.
-    // etc.
+    // Set current month as default
+    document.getElementById('filter-month').value = new Date().getMonth() + 1;
 
+    // Theme
+    const saved = localStorage.getItem('elif-theme') || 'light';
+    document.body.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 });
-    </script>
-    <script>
-// Theme Toggle
+
 function toggleTheme() {
     const body = document.body;
-    const current = body.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     body.setAttribute('data-theme', next);
     localStorage.setItem('elif-theme', next);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
-(function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
-    document.body.setAttribute('data-theme', saved);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-})();
-    </script>
+</script>
 
-
-
-
-    <script src="/HTML/js/admin.js"></script>
-    <script src="/JS/pwa.js"></script>
+<script src="/HTML/js/admin.js"></script>
+<script src="/JS/pwa.js"></script>
 </body>
-
 </html>
