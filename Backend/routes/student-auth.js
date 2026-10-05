@@ -36,6 +36,7 @@ async function findStudentByIdOrCode(input) {
     const raw = String(input).trim();
     const cleanNoDash = raw.toUpperCase().replace(/-/g, '');
     const legacyNumeric = parseBBId(raw);
+    const numericRaw = parseInt(raw) || -1;
 
     const { rows } = await query(`
         SELECT s.id, s.name, s.grade, s.department, s.period, s.image, s.gpa, s.classid,
@@ -48,10 +49,10 @@ async function findStudentByIdOrCode(input) {
             UPPER(s.student_id_code) = UPPER($1)
             OR UPPER(REPLACE(s.student_id_code, '-', '')) = $2
             OR s.id = $3
-            OR ($4::int IS NOT NULL AND s.id = $4)
+            OR s.id = $4
           )
         LIMIT 1
-    `, [raw, cleanNoDash, parseInt(raw) || -1, legacyNumeric || null]);
+    `, [raw, cleanNoDash, numericRaw, legacyNumeric || -1]);
 
     return rows[0] || null;
 }

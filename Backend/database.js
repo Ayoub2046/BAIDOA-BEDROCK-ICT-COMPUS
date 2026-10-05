@@ -9,10 +9,10 @@ const { Pool } = require('pg');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL,
     ssl: { rejectUnauthorized: false },
-    max: 2,                        // Very conservative: prevents EMAXCONNSESSION on Supabase session mode
+    max: 10,                       // Expanded pool size for Vercel serverless concurrency
     min: 0,                        // Don't hold idle connections
-    idleTimeoutMillis: 2000,       // Release idle connections quickly back to Supabase
-    connectionTimeoutMillis: 15000, // Wait up to 15s for a free slot before failing
+    idleTimeoutMillis: 3000,       // Release idle connections quickly back to Supabase
+    connectionTimeoutMillis: 4000, // Fail fast in 4s to prevent Vercel HTTP2 timeouts
     allowExitOnIdle: true
 });
 
@@ -32,7 +32,7 @@ pool.connect((err, client, release) => {
     }
 });
 
-// Robust query helper with automatic exponential backoff retry
+// Robust query helper with fast single retry for transient drops
 const query = async (text, params, retryCount = 0) => {
     try {
         return await pool.query(text, params);
@@ -46,11 +46,10 @@ const query = async (text, params, retryCount = 0) => {
                             msg.includes('max clients reached') ||
                             msg.includes('Connection') ||
                             msg.includes('connect');
-        if (isTransient && retryCount < 4) {
-            const delay = Math.pow(2, retryCount) * 500; // 500ms, 1s, 2s, 4s
-            console.warn(`DB retry [${retryCount + 1}/4] in ${delay}ms: ${msg.substring(0, 80)}`);
-            await new Promise(r => setTimeout(r, delay));
-            return await query(text, params, retryCount + 1);
+        if (isTransient && retryCount < 1) {
+            console.warn(`DB fast retry [1/1] in 300ms: ${msg.substring(0, 80)}`);
+            await new Promise(r => setTimeout(r, 300));
+            return await pool.query(text, params);
         }
         throw err;
     }

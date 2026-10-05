@@ -3514,6 +3514,10 @@
                 loginAlert.innerHTML = '';
                 showLoading();
 
+                // AbortController: auto-cancel after 10 seconds to prevent infinite spinner
+                var controller = new AbortController();
+                var timeoutId = setTimeout(function () { controller.abort(); }, 10000);
+
                 try {
                     // Authenticate via /api/student-auth/login (supports BB26-0001, BB260001, numeric ID, legacy)
                     var authRes = await fetch('/api/student-auth/login', {
@@ -3522,7 +3526,8 @@
                         body: JSON.stringify({
                             bbId: studentIdInput,
                             password: passwordInput
-                        })
+                        }),
+                        signal: controller.signal
                     });
 
                     var authResult = await authRes.json();
@@ -3534,7 +3539,8 @@
                     var displayCode = authResult.student.student_id_code || authResult.student.bbId || ('BB' + (260000 + realDbId));
 
                     // Fetch full student dashboard details
-                    var response = await fetch(API_BASE + '/' + realDbId);
+                    var response = await fetch(API_BASE + '/' + realDbId, { signal: controller.signal });
+                    clearTimeout(timeoutId);
                     if (!response.ok) {
                         throw new Error('NOT_FOUND');
                     }
@@ -3563,8 +3569,11 @@
                     }
 
                 } catch (err) {
+                    clearTimeout(timeoutId);
                     hideLoading();
-                    if (err.message === 'NOT_FOUND') {
+                    if (err.name === 'AbortError') {
+                        showAlert('Connection timed out. Please check your internet and try again.', 'danger');
+                    } else if (err.message === 'NOT_FOUND') {
                         showAlert('Student ID record not found in system.', 'danger');
                     } else if (err.message.includes('password') || err.message === 'WRONG_PASSWORD' || err.message.includes('Invalid')) {
                         showAlert('Invalid Student ID or password. Please check your credentials or contact school admin.', 'danger');

@@ -101,12 +101,19 @@
                 var password = document.getElementById('password').value.trim();
                 if (!email || !password) { showAlert('Please fill in all fields.', 'error'); return; }
                 setLoading(true);
+
+                // AbortController: auto-cancel after 10 seconds to prevent infinite spinner
+                var controller = new AbortController();
+                var timeoutId = setTimeout(function () { controller.abort(); }, 10000);
+
                 try {
                     var response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email, password: password })
+                        body: JSON.stringify({ email: email, password: password }),
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
                     var result = await response.json();
                     if (!response.ok) {
                         if (result.emailNotVerified) {
@@ -167,7 +174,12 @@
                     showAlert('Welcome, ' + user.name + '! Redirecting...', 'success');
                     setTimeout(function () { window.location.href = target; }, 600);
                 } catch (err) {
-                    showAlert(err.message, 'error');
+                    clearTimeout(timeoutId);
+                    if (err.name === 'AbortError') {
+                        showAlert('Connection timed out. Please check your internet connection and try again.', 'error');
+                    } else {
+                        showAlert(err.message, 'error');
+                    }
                     setLoading(false);
                 }
             });
