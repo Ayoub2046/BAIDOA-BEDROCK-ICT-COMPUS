@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { query, pool } = require('../database.js');
 
 const os = require('os');

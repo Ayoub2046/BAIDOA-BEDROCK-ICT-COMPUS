@@ -5,7 +5,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { query } = require('../database.js');
 const backupService = require('../services/backupService.js');
 

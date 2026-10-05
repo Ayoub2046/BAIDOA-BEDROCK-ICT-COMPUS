@@ -1,7 +1,7 @@
 // Backend/routes/users.js
 
 const express = require('express');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { query } = require('../database.js');
 const router = express.Router();
 
