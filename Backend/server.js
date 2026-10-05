@@ -10,6 +10,7 @@ const db = require('./database');
 
 const app = express();
 const PORT = 3000;
+const IS_LOCAL = !process.env.VERCEL;
 
 // --- 1. Middleware ---
 app.use(cors());
