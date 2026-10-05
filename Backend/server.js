@@ -157,9 +157,10 @@ app.use('/api/certificates', require('./routes/certificates.js'));
 app.use('/api/exam-attendance', require('./routes/exam-attendance.js'));
 app.use('/api/expenses', require('./routes/expenses.js'));
 
-// --- Auto-create class_students junction table if it doesn't exist ---
-// --- Auto-create activation columns if they don't exist ---
+// --- Database setup & scheduled jobs (LOCAL only; Vercel serverless skips this) ---
+const IS_LOCAL = !process.env.VERCEL;
 const { query } = require('./database');
+if (IS_LOCAL) {
 (async () => {
     try {
         await query(`
@@ -565,6 +566,7 @@ const { query } = require('./database');
         console.error('Error creating tables:', err.message);
     }
 })();
+} // end IS_LOCAL
 
 // --- DIAGNOSTIC ROUTE: shows real column names from Supabase tables ---
 app.get('/api/diagnose', async (req, res) => {
@@ -604,8 +606,8 @@ app.get('/api/tables', async (req, res) => {
 
 // --- 3. Static File Serving ---
 
-// --- 4. Auto-Release Scheduler: checks every 60s for held results whose release time has passed ---
-setInterval(async () => {
+// --- 4. Auto-Release Scheduler (LOCAL only — setInterval is unsupported in Vercel serverless) ---
+if (IS_LOCAL) setInterval(async () => {
     try {
         const { rows } = await query(`
             UPDATE results
