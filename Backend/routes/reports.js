@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
     try {
         // ── 1. FINANCIAL REPORT ──────────────────────────────────────────────
         if (type === 'financial') {
-            let where = `WHERE 1=1`;
+            let where = `WHERE f.deleted_at IS NULL`;
             const params = [];
             let idx = 1;
 
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
                     f.amount,
                     f.status,
                     f.duedate,
-                    f.paiddate
+                    COALESCE(f.duedate, f.created_at) AS paiddate
                 FROM fees f
                 JOIN students s ON s.id = f.studentid
                 ${where}
