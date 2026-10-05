@@ -31,6 +31,13 @@
             border: 1px solid #cbd5e1;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
         }
+        .month-badge {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
     </style>
 </head>
 
@@ -79,7 +86,7 @@
                     <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
                 </div>
                 <div class="ms-auto d-flex align-items-center">
-                    <button class="btn btn-primary btn-sm" id="btn-add-fee"><i class="fas fa-plus me-1"></i> Add Fee Record</button>
+                    <button class="btn btn-primary btn-sm fw-bold" id="btn-add-fee"><i class="fas fa-plus me-1"></i> Record Fee for Month</button>
                 </div>
             </nav>
             <!-- Content Area -->
@@ -90,8 +97,8 @@
                         <div class="summary-card border-success">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Total Revenue (Paid)</h6>
-                                    <div class="amount" id="total-revenue">$0</div>
+                                    <h6 id="revenue-card-title">Total Revenue (Paid)</h6>
+                                    <div class="amount text-success" id="total-revenue">$0.00</div>
                                 </div>
                                 <div class="icon text-success"><i class="fas fa-check-circle"></i></div>
                             </div>
@@ -101,8 +108,8 @@
                         <div class="summary-card border-warning">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Pending Fees</h6>
-                                    <div class="amount text-warning" id="total-pending">$0</div>
+                                    <h6 id="pending-card-title">Pending Fees</h6>
+                                    <div class="amount text-warning" id="total-pending">$0.00</div>
                                 </div>
                                 <div class="icon text-warning"><i class="fas fa-hourglass-half"></i></div>
                             </div>
@@ -112,8 +119,8 @@
                         <div class="summary-card border-danger">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6>Overdue Fees</h6>
-                                    <div class="amount text-danger" id="total-overdue">$0</div>
+                                    <h6 id="overdue-card-title">Overdue Fees</h6>
+                                    <div class="amount text-danger" id="total-overdue">$0.00</div>
                                 </div>
                                 <div class="icon text-danger"><i class="fas fa-exclamation-circle"></i></div>
                             </div>
@@ -124,19 +131,57 @@
                 <!-- Fee Records Table -->
                 <div class="card main-table-card">
                     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <h6 class="mb-0">All Fee Records</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-1"></i> Monthly Fee Records</h6>
+                            <span class="month-badge text-sm" id="active-month-label">October 2026</span>
+                        </div>
                         <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                            <!-- Table Search Input -->
-                            <div class="input-group input-group-sm" style="width: 260px;">
-                                <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                                <input type="text" id="fee-table-search" class="form-control" placeholder="Search ID, student, grade...">
+                            
+                            <!-- MONTH FILTER DROPDOWN -->
+                            <div class="d-flex align-items-center me-1">
+                                <label class="me-1 small text-muted fw-bold">Month:</label>
+                                <select class="form-select form-select-sm fw-bold border-primary" id="fee-month-filter" style="width: auto;">
+                                    <option value="all">All Months</option>
+                                    <option value="01">01 - January</option>
+                                    <option value="02">02 - February</option>
+                                    <option value="03">03 - March</option>
+                                    <option value="04">04 - April</option>
+                                    <option value="05">05 - May</option>
+                                    <option value="06">06 - June</option>
+                                    <option value="07">07 - July</option>
+                                    <option value="08">08 - August</option>
+                                    <option value="09">09 - September</option>
+                                    <option value="10">10 - October</option>
+                                    <option value="11">11 - November</option>
+                                    <option value="12">12 - December</option>
+                                </select>
                             </div>
-                            <select class="form-select form-select-sm" id="fee-status-filter" style="width: auto;">
+
+                            <!-- YEAR FILTER DROPDOWN -->
+                            <div class="d-flex align-items-center me-1">
+                                <label class="me-1 small text-muted fw-bold">Year:</label>
+                                <select class="form-select form-select-sm fw-bold border-primary" id="fee-year-filter" style="width: auto;">
+                                    <option value="all">All Years</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                </select>
+                            </div>
+
+                            <!-- STATUS FILTER DROPDOWN -->
+                            <select class="form-select form-select-sm fw-bold" id="fee-status-filter" style="width: auto;">
                                 <option value="all" selected>All Statuses</option>
-                                <option value="Paid">Paid</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Overdue">Overdue</option>
+                                <option value="Paid">Paid Only</option>
+                                <option value="Pending">Pending Only</option>
+                                <option value="Overdue">Overdue Only</option>
                             </select>
+
+                            <!-- SEARCH INPUT -->
+                            <div class="input-group input-group-sm" style="width: 220px;">
+                                <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="fee-table-search" class="form-control" placeholder="Search student or ID...">
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -149,7 +194,7 @@
                                         <th>Grade</th>
                                         <th>Amount</th>
                                         <th>Status</th>
-                                        <th>Due Date</th>
+                                        <th>Fee Month / Due Date</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -169,12 +214,21 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form id="feeForm">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="feeModalTitle">Fee Information</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="feeModalTitle"><i class="fas fa-file-invoice-dollar me-2"></i>Record Fee Information</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         
+                        <!-- Selected Recording Month Banner -->
+                        <div class="alert alert-info py-2 px-3 d-flex align-items-center mb-3">
+                            <i class="fas fa-calendar-check text-primary me-2 fa-lg"></i>
+                            <div>
+                                <small class="text-muted d-block line-height-1">Recording Fee For Period:</small>
+                                <strong id="modal-recording-period">October 2026</strong>
+                            </div>
+                        </div>
+
                         <!-- ─── SEARCHABLE STUDENT SELECTOR ─── -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select Student <span class="text-danger">*</span></label>
@@ -213,21 +267,21 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Due Date <span class="text-danger">*</span></label>
-                                <input type="date" name="dueDate" class="form-control" required>
+                                <input type="date" name="dueDate" id="modal-dueDate-input" class="form-control" required>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
                             <select class="form-select" name="status" required>
-                                <option value="Pending">Pending</option>
                                 <option value="Paid">Paid</option>
+                                <option value="Pending" selected>Pending</option>
                                 <option value="Overdue">Overdue</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary fw-bold"><i class="fas fa-save me-1"></i> Save Changes</button>
+                        <button type="submit" class="btn btn-primary fw-bold"><i class="fas fa-save me-1"></i> Save Fee Record</button>
                     </div>
                 </form>
             </div>
@@ -242,18 +296,33 @@
         let students = [];
         let feeModal = null;
 
+        const MONTH_NAMES = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
             feeModal = new bootstrap.Modal(document.getElementById('feeModal'));
             const feeForm = document.getElementById('feeForm');
+            const monthFilter = document.getElementById('fee-month-filter');
+            const yearFilter = document.getElementById('fee-year-filter');
             const statusFilter = document.getElementById('fee-status-filter');
             const tableSearchInput = document.getElementById('fee-table-search');
             const FEES_API_URL = '/api/fees';
             const STUDENTS_API_URL = '/api/students';
 
+            // Set current month and year defaults
+            const now = new Date();
+            const currMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+            const currYearStr = String(now.getFullYear());
+            
+            if (monthFilter) monthFilter.value = currMonthStr;
+            if (yearFilter) yearFilter.value = currYearStr;
+
             // --- Core Functions ---
             async function loadPageData() {
                 const tbody = document.getElementById('fee-table-body');
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading fee data...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success" role="status"></div> Loading fee records...</td></tr>`;
                 try {
                     const [feesRes, studentsRes] = await Promise.all([
                         fetch(FEES_API_URL),
@@ -266,8 +335,7 @@
                     if (!studentsRes.ok) throw new Error(`Students API error: ${studentsRes.status}`);
                     students = await studentsRes.json();
 
-                    updateSummaryCards();
-                    renderFeeTable();
+                    renderPage();
 
                 } catch (error) {
                     console.error('Error:', error);
@@ -275,12 +343,61 @@
                 }
             }
 
+            function getFilteredFees(includeSearch = true) {
+                const selectedMonth = monthFilter.value;
+                const selectedYear = yearFilter.value;
+                const selectedStatus = statusFilter.value;
+                const search = includeSearch ? (tableSearchInput.value || '').trim().toLowerCase() : '';
+
+                return fees.filter(f => {
+                    if (!f) return false;
+
+                    // Parse Date
+                    const dt = f.duedate ? new Date(f.duedate) : null;
+                    if (dt && !isNaN(dt.getTime())) {
+                        const mStr = String(dt.getMonth() + 1).padStart(2, '0');
+                        const yStr = String(dt.getFullYear());
+                        
+                        if (selectedMonth !== 'all' && mStr !== selectedMonth) return false;
+                        if (selectedYear !== 'all' && yStr !== selectedYear) return false;
+                    }
+
+                    // Status filter
+                    if (selectedStatus !== 'all' && f.status !== selectedStatus) return false;
+
+                    // Search Query
+                    if (search) {
+                        const invId = `inv-${String(f.id).padStart(5, '0')}`;
+                        const name = (f.studentName || '').toLowerCase();
+                        const code = (f.studentCode || `elp${f.studentid}`).toLowerCase();
+                        const grade = (f.grade || '').toLowerCase();
+                        return invId.includes(search) || name.includes(search) || code.includes(search) || grade.includes(search);
+                    }
+
+                    return true;
+                });
+            }
+
+            function updateActiveMonthLabel() {
+                const mVal = monthFilter.value;
+                const yVal = yearFilter.value;
+                let text = '';
+                if (mVal === 'all' && yVal === 'all') text = 'All Time Records';
+                else if (mVal === 'all') text = `All Months (${yVal})`;
+                else if (yVal === 'all') text = `${MONTH_NAMES[parseInt(mVal)-1]} (All Years)`;
+                else text = `${MONTH_NAMES[parseInt(mVal)-1]} ${yVal}`;
+
+                document.getElementById('active-month-label').textContent = text;
+                document.getElementById('modal-recording-period').textContent = text;
+            }
+
             function updateSummaryCards() {
-                // Filter out invalid/deleted records
-                const validFees = fees.filter(f => f && f.status);
-                const totalRevenue = validFees.filter(f => f.status === 'Paid').reduce((sum, f) => sum + Number(f.amount || 0), 0);
-                const totalPending = validFees.filter(f => f.status === 'Pending').reduce((sum, f) => sum + Number(f.amount || 0), 0);
-                const totalOverdue = validFees.filter(f => f.status === 'Overdue').reduce((sum, f) => sum + Number(f.amount || 0), 0);
+                // Get monthly-filtered fees for summary metrics (without search filter so cards reflect total month metrics)
+                const monthlyFees = getFilteredFees(false);
+
+                const totalRevenue = monthlyFees.filter(f => f.status === 'Paid').reduce((sum, f) => sum + Number(f.amount || 0), 0);
+                const totalPending = monthlyFees.filter(f => f.status === 'Pending').reduce((sum, f) => sum + Number(f.amount || 0), 0);
+                const totalOverdue = monthlyFees.filter(f => f.status === 'Overdue').reduce((sum, f) => sum + Number(f.amount || 0), 0);
 
                 document.getElementById('total-revenue').textContent = `$${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 document.getElementById('total-pending').textContent = `$${totalPending.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -289,45 +406,30 @@
 
             function renderFeeTable() {
                 const tbody = document.getElementById('fee-table-body');
-                const filter = statusFilter.value;
-                const search = (tableSearchInput.value || '').trim().toLowerCase();
-
-                let filteredFees = fees.filter(f => {
-                    // Status filter
-                    if (filter !== 'all' && f.status !== filter) return false;
-                    // Search query
-                    if (search) {
-                        const invId = `inv-${String(f.id).padStart(5, '0')}`;
-                        const name = (f.studentName || '').toLowerCase();
-                        const code = (f.studentCode || `elp${f.studentid}`).toLowerCase();
-                        const grade = (f.grade || '').toLowerCase();
-                        return invId.includes(search) || name.includes(search) || code.includes(search) || grade.includes(search);
-                    }
-                    return true;
-                });
+                const filteredFees = getFilteredFees(true);
 
                 const statusColors = { 'Paid': 'bg-success', 'Pending': 'bg-warning text-dark', 'Overdue': 'bg-danger' };
 
                 if (filteredFees.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No fee records found matching your filters.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-info-circle me-1"></i>No fee records found for the selected month and filters.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = filteredFees.map(f => {
-                    const dueDate = f.duedate ? new Date(f.duedate).toLocaleDateString() : 'N/A';
+                    const dueDate = f.duedate ? new Date(f.duedate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
                     const invCode = `INV-${String(f.id).padStart(5, '0')}`;
                     const displayCode = f.studentCode || ('ELP' + f.studentid);
                     return `
                 <tr>
                     <td><span class="badge bg-light text-dark border font-monospace px-2 py-1">${invCode}</span></td>
                     <td>
-                        <div class="fw-bold">${f.studentName}</div>
+                        <div class="fw-bold text-dark">${f.studentName}</div>
                         <small class="text-muted">${displayCode}</small>
                     </td>
                     <td>${f.grade || '—'}</td>
-                    <td class="fw-bold">$${Number(f.amount).toFixed(2)}</td>
+                    <td class="fw-bold text-primary">$${Number(f.amount).toFixed(2)}</td>
                     <td><span class="badge ${statusColors[f.status] || 'bg-secondary'} px-2 py-1">${f.status}</span></td>
-                    <td>${dueDate}</td>
+                    <td><i class="far fa-calendar-alt text-muted me-1"></i>${dueDate}</td>
                     <td class="action-buttons">
                         ${f.status === 'Paid' ? `<button class="btn btn-sm btn-success btn-clearance" data-studentid="${f.studentid || ''}" data-studentname="${f.studentName}" title="Release Clearance"><i class="fas fa-id-card"></i></button>` : ''}
                         <button class="btn btn-sm btn-edit" data-id="${f.id}"><i class="fas fa-edit"></i></button>
@@ -337,6 +439,12 @@
                 }).join('');
             }
 
+            function renderPage() {
+                updateActiveMonthLabel();
+                updateSummaryCards();
+                renderFeeTable();
+            }
+
             // ─── SEARCHABLE STUDENT SELECTOR LOGIC ───
             const studentSearchInput = document.getElementById('student-search-input');
             const studentSearchResults = document.getElementById('student-search-results');
@@ -344,7 +452,6 @@
             studentSearchInput.addEventListener('focus', () => renderStudentSearchResults(''));
             studentSearchInput.addEventListener('input', (e) => renderStudentSearchResults(e.target.value));
 
-            // Hide search results when clicking outside
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-student-dropdown')) {
                     studentSearchResults.style.display = 'none';
@@ -402,11 +509,17 @@
 
             // ─── MODAL CONTROLS ───
             document.getElementById('btn-add-fee').addEventListener('click', () => {
-                document.getElementById('feeModalTitle').textContent = 'Add Fee Record';
+                document.getElementById('feeModalTitle').innerHTML = '<i class="fas fa-plus-circle me-2"></i>Record Fee for Selected Month';
                 feeForm.reset();
                 feeForm.dataset.mode = 'add';
                 delete feeForm.dataset.id;
                 clearSelectedStudent();
+
+                // Set default due date to 1st of selected filter month/year
+                const mVal = monthFilter.value === 'all' ? currMonthStr : monthFilter.value;
+                const yVal = yearFilter.value === 'all' ? currYearStr : yearFilter.value;
+                document.getElementById('modal-dueDate-input').value = `${yVal}-${mVal}-01`;
+
                 feeModal.show();
             });
 
@@ -437,7 +550,7 @@
                         showToast(`Error: ${err.message}`, 'error');
                     }
                 } else if (button.classList.contains('btn-edit')) {
-                    document.getElementById('feeModalTitle').textContent = 'Edit Fee Record';
+                    document.getElementById('feeModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Fee Record';
                     feeForm.dataset.mode = 'edit';
                     feeForm.dataset.id = id;
                     
@@ -470,10 +583,8 @@
                         try {
                             const res = await fetch(`${FEES_API_URL}/${id}`, { method: 'DELETE' });
                             if (!res.ok) throw new Error('Deletion failed');
-                            // Optimistically remove from local array & recalculate summary instantly
                             fees = fees.filter(f => f.id !== id);
-                            updateSummaryCards();
-                            renderFeeTable();
+                            renderPage();
                             showToast(`Invoice ${invCode} deleted and pending money cleared!`, 'success');
                         } catch(err) {
                             BedrockDialog.alert({ title: 'Error', message: err.message, type: 'danger' });
@@ -517,7 +628,9 @@
                 }
             });
 
-            statusFilter.addEventListener('change', renderFeeTable);
+            monthFilter.addEventListener('change', renderPage);
+            yearFilter.addEventListener('change', renderPage);
+            statusFilter.addEventListener('change', renderPage);
             tableSearchInput.addEventListener('input', renderFeeTable);
 
             // --- Initial Load ---

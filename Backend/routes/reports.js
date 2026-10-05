@@ -170,25 +170,99 @@ function sendCSV(res, rows, filename) {
     res.send('\uFEFF' + csvLines.join('\r\n')); // BOM for Excel UTF-8 compatibility
 }
 
-// ─── Excel (TSV as .xls) Export Helper ───────────────────────────────────────
+// ─── Excel (.xls XML/HTML Table) Export Helper ───────────────────────────────
 function sendExcel(res, rows, filename) {
     if (!rows || rows.length === 0) {
         res.setHeader('Content-Type', 'application/vnd.ms-excel');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.xls"`);
         return res.send('No data found for selected filters.');
     }
-    const headers = Object.keys(rows[0]);
-    const escape = (v) => {
+
+    const rawHeaders = Object.keys(rows[0]);
+    // Format headers nicely (e.g. student_name -> Student Name)
+    const headerLabels = rawHeaders.map(h => {
+        return h.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    });
+
+    const formatVal = (v) => {
         if (v === null || v === undefined) return '';
-        return String(v).replace(/\t/g, ' ');
+        if (v instanceof Date) return v.toISOString().split('T')[0];
+        const s = String(v);
+        // If ISO date string
+        if (s.match(/^\d{4}-\d{2}-\d{2}/)) return s.split('T')[0];
+        return s;
     };
-    const lines = [
-        headers.join('\t'),
-        ...rows.map(r => headers.map(h => escape(r[h])).join('\t'))
-    ];
+
+    const tableRowsHtml = rows.map(r => {
+        const cells = rawHeaders.map(h => {
+            const val = formatVal(r[h]);
+            const isAmount = h.toLowerCase().includes('amount');
+            const isStatus = h.toLowerCase().includes('status');
+
+            if (isAmount) {
+                const num = parseFloat(val) || 0;
+                return `<td style="text-align:right; font-weight:bold;">$${num.toFixed(2)}</td>`;
+            }
+            if (isStatus) {
+                const st = val.toLowerCase();
+                let style = 'padding:4px 8px; font-weight:bold; text-align:center; border-radius:4px;';
+                if (st === 'paid') style += ' background-color:#d1fae5; color:#065f46;';
+                else if (st === 'pending') style += ' background-color:#fef3c7; color:#92400e;';
+                else if (st === 'overdue' || st === 'unpaid') style += ' background-color:#fee2e2; color:#991b1b;';
+                else style += ' background-color:#f1f5f9; color:#334155;';
+                return `<td style="text-align:center;"><span style="${style}">${val}</span></td>`;
+            }
+            return `<td style="mso-number-format:'\\@';">${val}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+    }).join('\n');
+
+    const htmlContent = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>Report Data</x:Name>
+    <x:WorksheetOptions>
+     <x:DisplayGridlines/>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
+<style>
+  body { font-family: Arial, sans-serif; }
+  table { border-collapse: collapse; width: 100%; }
+  th { background-color: #0d4f8c; color: #ffffff; font-weight: bold; font-size: 13px; text-align: left; padding: 10px; border: 1px solid #083661; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; font-size: 12px; vertical-align: middle; }
+  tr:nth-child(even) { background-color: #f8fafc; }
+</style>
+</head>
+<body>
+  <h2>Baidoa Bedrock ICT Campus - ${filename.replace(/_/g, ' ').toUpperCase()}</h2>
+  <p>Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+  <table>
+    <thead>
+      <tr>
+        ${headerLabels.map(h => `<th>${h}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRowsHtml}
+    </tbody>
+  </table>
+</body>
+</html>
+`;
+
     res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}_${new Date().toISOString().split('T')[0]}.xls"`);
-    res.send('\uFEFF' + lines.join('\r\n'));
+    res.send('\uFEFF' + htmlContent);
 }
 
 module.exports = router;
