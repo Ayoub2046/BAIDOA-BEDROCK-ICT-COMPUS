@@ -11,8 +11,8 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false },
     max: 10,                       // Expanded pool size for Vercel serverless concurrency
     min: 0,                        // Don't hold idle connections
-    idleTimeoutMillis: 3000,       // Release idle connections quickly back to Supabase
-    connectionTimeoutMillis: 4000, // Fail fast in 4s to prevent Vercel HTTP2 timeouts
+    idleTimeoutMillis: 5000,       // Release idle connections back to pool
+    connectionTimeoutMillis: 10000, // 10s connection timeout for Supabase TLS handshake
     allowExitOnIdle: true
 });
 
@@ -23,16 +23,7 @@ pool.on('error', (err) => {
     }
 });
 
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('Error connecting to Supabase:', err.message);
-    } else {
-        console.log('Connected to Supabase PostgreSQL.');
-        release();
-    }
-});
-
-// Robust query helper with fast single retry for transient drops
+// Robust query helper with fast retry for transient drops
 const query = async (text, params, retryCount = 0) => {
     try {
         return await pool.query(text, params);
@@ -46,9 +37,9 @@ const query = async (text, params, retryCount = 0) => {
                             msg.includes('max clients reached') ||
                             msg.includes('Connection') ||
                             msg.includes('connect');
-        if (isTransient && retryCount < 1) {
-            console.warn(`DB fast retry [1/1] in 300ms: ${msg.substring(0, 80)}`);
-            await new Promise(r => setTimeout(r, 300));
+        if (isTransient && retryCount < 2) {
+            console.warn(`DB retry [${retryCount + 1}/2] in 400ms: ${msg.substring(0, 80)}`);
+            await new Promise(r => setTimeout(r, 400));
             return await pool.query(text, params);
         }
         throw err;
