@@ -625,7 +625,19 @@ if (IS_LOCAL) setInterval(async () => {
     }
 }, 60000);
 
-// --- 5. Graceful Navigation Fallback ---
+// --- 5. Global Error Handling Middleware ---
+app.use((err, req, res, next) => {
+    console.error('[Express Global Error]', err.stack || err.message || err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: String(err.message || err)
+    });
+});
+
+// --- 6. Graceful Navigation Fallback ---
 app.use((req, res) => {
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'Endpoint not found' });
