@@ -9,9 +9,9 @@ const { Pool } = require('pg');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL,
     ssl: { rejectUnauthorized: false },
-    max: 10,                       // Expanded pool size for Vercel serverless concurrency
-    min: 0,                        // Don't hold idle connections
-    idleTimeoutMillis: 5000,       // Release idle connections back to pool
+    max: 10,                        // Expanded pool size for Vercel serverless concurrency
+    min: 1,                         // Keep at least 1 warm connection so first query is instant
+    idleTimeoutMillis: 30000,       // Release idle connections after 30s
     connectionTimeoutMillis: 10000, // 10s connection timeout for Supabase TLS handshake
     allowExitOnIdle: true
 });
@@ -21,6 +21,14 @@ pool.on('error', (err) => {
     if (!err.message.includes('terminated') && !err.message.includes('timeout')) {
         console.warn('Supabase pool error:', err.message);
     }
+});
+
+// Eager warm-up: fire a simple SELECT at startup so the TCP/TLS handshake
+// completes BEFORE the first real user request arrives — eliminates 30-45s cold start
+pool.query('SELECT 1').then(() => {
+    console.log('[DB] Connection pool warmed up successfully.');
+}).catch(err => {
+    console.warn('[DB] Warm-up ping failed (will retry on first request):', err.message);
 });
 
 // Robust query helper with fast retry for transient drops
@@ -46,4 +54,4 @@ const query = async (text, params, retryCount = 0) => {
     }
 };
 
-module.exports = { query, pool };
+module.exports = { query, pool };
