@@ -33,29 +33,37 @@ function parseBBId(bbId) {
 // Helper: find student by any ID format (e.g. BB26-0001, BB260001, numeric ID, or legacy)
 // ---------------------------------------------------------------
 async function findStudentByIdOrCode(input) {
-    const raw = String(input).trim();
-    const cleanNoDash = raw.toUpperCase().replace(/-/g, '');
+    const raw = String(input).trim().toUpperCase().replace(/-/g, '');
     const legacyNumeric = parseBBId(raw);
     const numericRaw = parseInt(raw) || -1;
 
-    const { rows } = await query(`
+    const BASE_SELECT = `
         SELECT s.id, s.name, s.grade, s.department, s.period, s.image, s.gpa, s.classid,
                s.student_id_code, s.status, s.academic_year,
                sa.password_hash, sa.must_change
         FROM students s
         JOIN student_auth sa ON sa.student_id = s.id
-        WHERE s.deleted_at IS NULL
-          AND (
-            UPPER(s.student_id_code) = UPPER($1)
-            OR UPPER(REPLACE(s.student_id_code, '-', '')) = $2
-            OR s.id = $3
-            OR s.id = $4
-          )
-        LIMIT 1
-    `, [raw, cleanNoDash, numericRaw, legacyNumeric || -1]);
+        WHERE s.deleted_at IS NULL`;
 
-    return rows[0] || null;
+    // 1) Try exact student_id_code match (most common case: "BB260001")
+    let res = await query(BASE_SELECT + ` AND UPPER(REPLACE(s.student_id_code, '-', '')) = $1 LIMIT 1`, [raw]);
+    if (res.rows[0]) return res.rows[0];
+
+    // 2) Try decoded BB numeric ID (BB260001 → id=1)
+    if (legacyNumeric && legacyNumeric > 0) {
+        res = await query(BASE_SELECT + ` AND s.id = $1 LIMIT 1`, [legacyNumeric]);
+        if (res.rows[0]) return res.rows[0];
+    }
+
+    // 3) Try raw numeric ID
+    if (numericRaw > 0) {
+        res = await query(BASE_SELECT + ` AND s.id = $1 LIMIT 1`, [numericRaw]);
+        if (res.rows[0]) return res.rows[0];
+    }
+
+    return null;
 }
+
 
 // ---------------------------------------------------------------
 // POST /api/student-auth/login
