@@ -1,5 +1,5 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-campus-v4';
+const CACHE_NAME = 'bedrock-campus-v5';
 const STATIC_ASSETS = [
   '/HTML/index.html',
   '/HTML/portal_login.html',

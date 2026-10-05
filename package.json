@@ -1,6 +1,6 @@
 {
   "name": "bedrock-ict-campus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Baidoa Bedrock ICT Campus Management Portal",
   "main": "api/index.js",
   "scripts": {
