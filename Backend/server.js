@@ -53,7 +53,7 @@ app.get('/api/', (req, res) => {
     res.redirect('/HTML/index.html');
 });
 app.get('/favicon.ico', (req, res) => {
-    res.redirect('/images/BEDRCOK LOGO.JPG');
+    res.redirect('/images/icons/icon-192.png');
 });
 
 // Explicit PWA Manifest & Service Worker Routes (guaranteed JSON/JS serving)

@@ -1,7 +1,6 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-campus-v2';
+const CACHE_NAME = 'bedrock-campus-v3';
 const STATIC_ASSETS = [
-  '/',
   '/HTML/index.html',
   '/HTML/portal_login.html',
   '/HTML/Student Results.html',
@@ -70,7 +69,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
         fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
             caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
           }
         }).catch(() => {});
@@ -78,7 +77,7 @@ self.addEventListener('fetch', (event) => {
       }
 
       return fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
+        if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
           const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
