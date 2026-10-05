@@ -177,10 +177,11 @@ app.use('/api/certificates', require('./routes/certificates.js'));
 app.use('/api/exam-attendance', require('./routes/exam-attendance.js'));
 app.use('/api/expenses', require('./routes/expenses.js'));
 
-// --- Database setup & scheduled jobs (LOCAL only; Vercel serverless skips this) ---
-const IS_LOCAL = !process.env.VERCEL;
 const { query } = require('./database');
-if (IS_LOCAL) {
+
+// --- Database setup & scheduled jobs (runs only if explicitly enabled via RUN_MIGRATIONS=true) ---
+const SHOULD_RUN_MIGRATIONS = process.env.RUN_MIGRATIONS === 'true';
+if (SHOULD_RUN_MIGRATIONS) {
 (async () => {
     try {
         await query(`
