@@ -49,9 +49,13 @@ async function autoUpdateClearance(studentId) {
 router.get('/', async (req, res) => {
     try {
         const { rows } = await query(`
-            SELECT f.id, f.studentid, f.amount, f.status, f.duedate, s.name AS "studentName"
+            SELECT f.id, f.studentid, f.amount, f.status, f.duedate, s.name AS "studentName",
+                   COALESCE(s.student_id_code, 'BB' || (260000 + s.id)) AS "studentCode",
+                   s.grade
             FROM fees f
             JOIN students s ON f.studentid = s.id
+            WHERE f.deleted_at IS NULL AND s.deleted_at IS NULL
+            ORDER BY f.id DESC
         `);
         res.json(rows);
     } catch (err) {

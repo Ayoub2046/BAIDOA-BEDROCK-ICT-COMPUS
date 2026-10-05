@@ -376,8 +376,11 @@ router.put('/:id/password', async (req, res) => {
 // DELETE soft-delete student to recycle bin
 router.delete('/:id', async (req, res) => {
     try {
-        await query(`UPDATE students SET deleted_at = NOW() WHERE id = $1`, [req.params.id]);
-        res.json({ message: 'Student moved to Recycle Bin (records preserved).' });
+        const studentId = parseInt(req.params.id);
+        await query(`UPDATE students SET deleted_at = NOW() WHERE id = $1`, [studentId]);
+        // Auto soft-delete all fee records associated with this student so pending fees are cleared
+        await query(`UPDATE fees SET deleted_at = NOW() WHERE studentid = $1 AND deleted_at IS NULL`, [studentId]);
+        res.json({ message: 'Student moved to Recycle Bin (fee records cleared).' });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
