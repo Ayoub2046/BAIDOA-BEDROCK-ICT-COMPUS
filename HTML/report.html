@@ -50,10 +50,116 @@
         /* ── Download Bar ─── */
         .download-bar { background: linear-gradient(90deg, #0d4f8c 0%, #1a7fd4 100%); border-radius: 10px; padding: 14px 20px; }
 
+        /* ── Print Header & Footer (Hidden on screen) ─── */
+        .print-header-section, .print-footer-section { display: none; }
+
+        /* ── Comprehensive Print Stylesheet ─── */
         @media print {
-            .sidebar, .top-navbar, .filters-section, .download-bar, .report-type-selector, #generate-btn-row { display: none !important; }
-            #report-output-section { display: block !important; }
-            body { background: #fff !important; }
+            /* Hide web interface controls */
+            .sidebar, 
+            .top-navbar, 
+            .filters-section, 
+            .report-type-selector, 
+            #generate-btn-row, 
+            .download-bar, 
+            .theme-toggle, 
+            #sidebar-toggler,
+            .btn,
+            .card-header span.badge,
+            .text-muted.small.mt-3.text-end { 
+                display: none !important; 
+            }
+
+            body { 
+                background: #ffffff !important; 
+                color: #000000 !important;
+                font-size: 11pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            .content-area {
+                padding: 0 !important;
+            }
+
+            #report-output-section { 
+                display: block !important; 
+                width: 100% !important;
+            }
+
+            /* Show Print Header & Footer */
+            .print-header-section, .print-footer-section {
+                display: block !important;
+            }
+
+            /* Make layout 100% full width */
+            .row {
+                display: block !important;
+                margin: 0 !important;
+            }
+
+            .col-lg-5, .col-lg-7, .col-md-6, .col-12 {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 100% !important;
+                margin-bottom: 20px !important;
+                padding: 0 !important;
+            }
+
+            .card {
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                margin-bottom: 20px !important;
+            }
+
+            /* CRITICAL: Remove table scrollbars so ALL rows print */
+            #report-table-wrapper { 
+                max-height: none !important; 
+                overflow: visible !important; 
+                height: auto !important; 
+                border: none !important;
+            }
+
+            #report-table { 
+                width: 100% !important; 
+                border-collapse: collapse !important;
+                font-size: 10pt !important;
+            }
+
+            #report-table th, #report-table td {
+                border: 1px solid #94a3b8 !important;
+                padding: 8px 10px !important;
+                color: #000000 !important;
+            }
+
+            #report-table thead th {
+                background-color: #0d4f8c !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                display: table-header-group !important;
+            }
+
+            #report-table tbody tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            #reportChart {
+                max-height: 200px !important;
+                width: 100% !important;
+            }
+
+            @page {
+                size: portrait;
+                margin: 1.5cm;
+            }
         }
 
         @media (max-width: 992px) {
@@ -208,7 +314,21 @@
             <!-- ─── 3. REPORT OUTPUT ─────────────────────────────────────── -->
             <div id="report-output-section" style="display:none;">
 
-                <!-- Header bar -->
+                <!-- ─── OFFICIAL PRINT HEADER (Only visible when printing) ─── -->
+                <div class="print-header-section text-center mb-4">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <img src="/images/BEDRCOK LOGO.JPG" style="width: 70px; height: 70px; border-radius: 50%; margin-right: 15px; border: 2px solid #0d4f8c;" alt="Logo">
+                        <div class="text-start">
+                            <h2 style="margin: 0; color: #0d4f8c; font-weight: 800; font-size: 24px; letter-spacing: 0.5px;">BAIDOA BEDROCK ICT CAMPUS</h2>
+                            <p style="margin: 0; color: #475569; font-weight: 600; font-size: 13px;">Official Academic &amp; Financial Reporting System</p>
+                        </div>
+                    </div>
+                    <div style="border-bottom: 2px solid #0d4f8c; margin: 10px 0 15px 0;"></div>
+                    <h3 id="print-doc-title" style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">REPORT</h3>
+                    <p id="print-doc-subtitle" style="color: #475569; font-size: 13px; margin: 0; font-weight: 500;"></p>
+                </div>
+
+                <!-- Header bar (Web view) -->
                 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
                     <div>
                         <h5 class="mb-0 fw-bold" id="output-title">Report</h5>
@@ -224,7 +344,7 @@
                             <i class="fas fa-file-excel text-success me-1"></i>Download Excel
                         </button>
                         <button class="btn btn-light btn-sm fw-bold" onclick="window.print()">
-                            <i class="fas fa-print text-primary me-1"></i>Print
+                            <i class="fas fa-print text-primary me-1"></i>Print / Save PDF
                         </button>
                     </div>
                 </div>
@@ -258,9 +378,33 @@
                     </div>
                 </div>
 
-                <!-- Footer info -->
+                <!-- Footer info (Web view) -->
                 <div class="text-muted small mt-3 text-end">
                     Report generated: <span id="report-gen-date"></span> &nbsp;|&nbsp; Baidoa Bedrock ICT Campus &mdash; Admin Panel
+                </div>
+
+                <!-- ─── OFFICIAL PRINT FOOTER & SIGNATURE (Only visible when printing) ─── -->
+                <div class="print-footer-section mt-5 pt-4">
+                    <div class="d-flex justify-content-between text-center" style="margin-top: 50px;">
+                        <div style="width: 30%;">
+                            <div style="border-top: 1.5px dashed #475569; padding-top: 6px; font-weight: 700; font-size: 12px; color: #1e293b;">
+                                Prepared By (Admin)
+                            </div>
+                        </div>
+                        <div style="width: 30%;">
+                            <div style="border-top: 1.5px dashed #475569; padding-top: 6px; font-weight: 700; font-size: 12px; color: #1e293b;">
+                                Verified By (Finance Officer)
+                            </div>
+                        </div>
+                        <div style="width: 30%;">
+                            <div style="border-top: 1.5px dashed #475569; padding-top: 6px; font-weight: 700; font-size: 12px; color: #1e293b;">
+                                Official Stamp &amp; Signature
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4" style="font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                        Report Generated: <span id="print-footer-date"></span> | Baidoa Bedrock ICT Campus — Confidential Official Record
+                    </div>
                 </div>
             </div>
 
@@ -406,9 +550,20 @@ function renderReport(type, data, year, month) {
     // Title
     const monthLabel = month !== 'all' ? MONTHS[parseInt(month)] : 'All Months';
     const yearLabel  = year !== 'all' ? year : 'All Years';
+    const subtitleText = `Period: ${monthLabel} / ${yearLabel}  •  Filter Status: ${selectedStatus.toUpperCase()}`;
+    const nowStr = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
+
     document.getElementById('output-title').textContent = cfg.label;
-    document.getElementById('output-subtitle').textContent = `Period: ${monthLabel} / ${yearLabel}  •  Status: ${selectedStatus.toUpperCase()}`;
-    document.getElementById('report-gen-date').textContent = new Date().toLocaleString();
+    document.getElementById('output-subtitle').textContent = subtitleText;
+    document.getElementById('report-gen-date').textContent = nowStr;
+
+    // Sync Print Header & Footer
+    const printDocTitle = document.getElementById('print-doc-title');
+    const printDocSubtitle = document.getElementById('print-doc-subtitle');
+    const printFooterDate = document.getElementById('print-footer-date');
+    if (printDocTitle) printDocTitle.textContent = cfg.label.toUpperCase();
+    if (printDocSubtitle) printDocSubtitle.textContent = subtitleText;
+    if (printFooterDate) printFooterDate.textContent = nowStr;
 
     // Summary cards
     cfg.summaryFn(data);
