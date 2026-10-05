@@ -1,5 +1,5 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-campus-v3';
+const CACHE_NAME = 'bedrock-campus-v4';
 const STATIC_ASSETS = [
   '/HTML/index.html',
   '/HTML/portal_login.html',
@@ -53,6 +53,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
+
+  // Always Network-First for HTML navigation to prevent Service Worker ERR_FAILED
+  if (request.mode === 'navigate' || (request.headers.get('accept') && request.headers.get('accept').includes('text/html'))) {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return caches.match(request);
+      })
+    );
+    return;
+  }
 
   // Network first for APIs
   if (request.url.includes('/api/')) {
