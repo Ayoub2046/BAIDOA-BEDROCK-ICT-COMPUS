@@ -120,6 +120,26 @@ app.get('/service-worker.js', (req, res) => {
     res.status(404).send('// Service worker not found');
 });
 // --- 2. API Routes ---
+app.get('/api/health', async (req, res) => {
+    const health = {
+        status: 'ok',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+        hasDbUrl: !!(process.env.DATABASE_URL || process.env.SUPABASE_DB_URL),
+        dbStatus: 'unknown'
+    };
+    try {
+        const { rows } = await db.query('SELECT NOW() as now');
+        health.dbStatus = 'connected';
+        health.dbTime = rows[0].now;
+        res.json(health);
+    } catch (e) {
+        health.dbStatus = 'error';
+        health.dbError = e.message;
+        res.status(500).json(health);
+    }
+});
+
 app.use('/api/students', require('./routes/students.js'));
 app.use('/api/auth', require('./routes/auth.js'));
 app.use('/api/teachers', require('./routes/teachers.js'));
