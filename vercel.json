@@ -2,6 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
+      "runtime": "nodejs20.x",
       "includeFiles": "manifest.json,service-worker.js",
       "maxDuration": 30
     }
