@@ -3514,9 +3514,9 @@
                 loginAlert.innerHTML = '';
                 showLoading();
 
-                // AbortController: auto-cancel after 30 seconds to prevent infinite spinner
+                // AbortController: auto-cancel after 55 seconds to allow for DB connection warm-up
                 var controller = new AbortController();
-                var timeoutId = setTimeout(function () { controller.abort(); }, 30000);
+                var timeoutId = setTimeout(function () { controller.abort(); }, 55000);
 
                 try {
                     // Authenticate via /api/student-auth/login (supports BB26-0001, BB260001, numeric ID, legacy)

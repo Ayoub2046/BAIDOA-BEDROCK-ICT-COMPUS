@@ -177,7 +177,7 @@ router.get('/view-password/:studentId', async (req, res) => {
     try {
         const { rows } = await query(
             `SELECT sa.plain_password, sa.last_changed, sa.must_change,
-                    s.name, s.id, bb_student_id(s.id) AS bb_id
+                    s.name, s.id, ('BB' || LPAD((260000 + s.id)::TEXT, 6, '0')) AS bb_id
              FROM student_auth sa
              JOIN students s ON s.id = sa.student_id
              WHERE sa.student_id = $1 AND s.deleted_at IS NULL`,
@@ -240,7 +240,7 @@ router.get('/lookup/:bbId', async (req, res) => {
 
     try {
         const { rows } = await query(
-            `SELECT s.id, s.name, s.image, s.grade, bb_student_id(s.id) AS bb_id
+            `SELECT s.id, s.name, s.image, s.grade, ('BB' || LPAD((260000 + s.id)::TEXT, 6, '0')) AS bb_id
              FROM students s WHERE s.id = $1 AND s.deleted_at IS NULL`,
             [id]
         );

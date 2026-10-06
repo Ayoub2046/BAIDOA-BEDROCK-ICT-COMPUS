@@ -3,7 +3,7 @@
   "functions": {
     "api/index.js": {
       "includeFiles": "manifest.json,service-worker.js",
-      "maxDuration": 30
+      "maxDuration": 60
     }
   },
   "headers": [

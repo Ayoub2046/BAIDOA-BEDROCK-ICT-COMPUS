@@ -9,11 +9,14 @@ const { Pool } = require('pg');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL,
     ssl: { rejectUnauthorized: false },
-    max: 10,                        // Expanded pool size for Vercel serverless concurrency
-    min: 1,                         // Keep at least 1 warm connection so first query is instant
-    idleTimeoutMillis: 30000,       // Release idle connections after 30s
-    connectionTimeoutMillis: 10000, // 10s connection timeout for Supabase TLS handshake
-    allowExitOnIdle: true
+    max: 10,                         // Pool size for Vercel serverless concurrency
+    min: 2,                          // Keep 2 warm connections to reduce cold-start latency
+    idleTimeoutMillis: 60000,        // Release idle connections after 60s
+    connectionTimeoutMillis: 20000,  // 20s for Supabase TLS handshake (up from 10s)
+    statement_timeout: 25000,        // Kill queries that run >25s (prevents infinite hangs)
+    allowExitOnIdle: true,
+    keepAlive: true,                 // TCP keep-alive to prevent Supabase from closing idle sockets
+    keepAliveInitialDelayMillis: 10000
 });
 
 pool.on('error', (err) => {
