@@ -5086,20 +5086,36 @@
                     };
                 }
                 var container = document.getElementById('qrcode-container');
-                container.innerHTML = '';
-                var verifyUrl = window.location.origin + '/HTML/verify-id.html?id=' + studentId + '&code=' + bbId;
+                if (container) {
+                    container.innerHTML = '';
+                    var verifyUrl = window.location.origin + '/HTML/verify-id.html?id=' + studentId + '&code=' + bbId;
+                    
+                    var qrImg = document.createElement('img');
+                    qrImg.style.width = '90px';
+                    qrImg.style.height = '90px';
+                    qrImg.style.display = 'block';
+                    qrImg.style.borderRadius = '4px';
+                    qrImg.alt = 'Student QR Verification Code';
+                    qrImg.crossOrigin = 'anonymous';
+                    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(verifyUrl);
+                    
+                    container.appendChild(qrImg);
 
-                try {
-                    new QRCode(container, {
-                        text: verifyUrl,
-                        width: 90,
-                        height: 90,
-                        colorDark: '#000000',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.L
-                    });
-                } catch (err) {
-                    container.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(verifyUrl) + '" style="width:90px;height:90px;display:block;">';
+                    qrImg.onerror = function() {
+                        try {
+                            container.innerHTML = '';
+                            if (typeof QRCode !== 'undefined') {
+                                new QRCode(container, {
+                                    text: verifyUrl,
+                                    width: 90,
+                                    height: 90,
+                                    colorDark: '#000000',
+                                    colorLight: '#ffffff',
+                                    correctLevel: QRCode.CorrectLevel.L
+                                });
+                            }
+                        } catch (err) {}
+                    };
                 }
                 new bootstrap.Modal(document.getElementById('digitalIdModal')).show();
             };
@@ -5108,7 +5124,7 @@
                 var cardEl = document.getElementById('real-id-card');
                 if (!cardEl) return;
                 if (typeof html2canvas !== 'undefined') {
-                    html2canvas(cardEl, { scale: 3, useCORS: true }).then(function(canvas) {
+                    html2canvas(cardEl, { scale: 3, useCORS: true, allowTaint: true }).then(function(canvas) {
                         var link = document.createElement('a');
                         link.download = 'Student_ID_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Card') + '.png';
                         link.href = canvas.toDataURL('image/png');
