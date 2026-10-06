@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "manifest.json,service-worker.js",
+      "includeFiles": "HTML/**,css/**,JS/**,images/**,manifest.json,service-worker.js,Backend/**",
       "maxDuration": 60
     }
   },
