@@ -5092,28 +5092,26 @@
 
                     try {
                         if (typeof QRCode !== 'undefined') {
-                            new QRCode(container, {
+                            // Initialize QRCode at exact 90x90 size without CSS scale flushing
+                            var qrObj = new QRCode(container, {
                                 text: verifyUrl,
-                                width: 180,
-                                height: 180,
+                                width: 90,
+                                height: 90,
                                 colorDark: '#000000',
                                 colorLight: '#ffffff',
                                 correctLevel: QRCode.CorrectLevel.H
                             });
 
-                            setTimeout(function() {
-                                var cvs = container.querySelector('canvas');
-                                var img = container.querySelector('img');
-                                if (cvs) {
-                                    cvs.style.width = '90px';
-                                    cvs.style.height = '90px';
-                                    cvs.style.display = 'block';
-                                    cvs.style.borderRadius = '4px';
-                                }
-                                if (img) {
-                                    img.style.display = 'none';
-                                }
-                            }, 30);
+                            // Synchronously extract Base64 PNG data URL and lock as permanent img tag
+                            var cvs = container.querySelector('canvas');
+                            if (cvs) {
+                                try {
+                                    var dataUrl = cvs.toDataURL('image/png');
+                                    if (dataUrl && dataUrl.length > 100) {
+                                        container.innerHTML = '<img src="' + dataUrl + '" style="width:90px;height:90px;display:block;border-radius:4px;" alt="QR Code">';
+                                    }
+                                } catch (err) {}
+                            }
                         }
                     } catch (e) {
                         console.warn('QRCode render error:', e);
@@ -5131,19 +5129,7 @@
                         scale: 3,
                         useCORS: true,
                         allowTaint: false,
-                        logging: false,
-                        onclone: function(clonedDoc) {
-                            var realCvs = document.querySelector('#qrcode-container canvas');
-                            var cloneContainer = clonedDoc.querySelector('#qrcode-container');
-                            if (realCvs && cloneContainer) {
-                                try {
-                                    var dataUrl = realCvs.toDataURL('image/png');
-                                    cloneContainer.innerHTML = '<img src="' + dataUrl + '" style="width:90px;height:90px;display:block;border-radius:4px;" alt="QR Code">';
-                                } catch (err) {
-                                    console.warn('onclone canvas conversion error:', err);
-                                }
-                            }
-                        }
+                        logging: false
                     }).then(function(canvas) {
                         var link = document.createElement('a');
                         link.download = 'Student_ID_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Card') + '.png';
