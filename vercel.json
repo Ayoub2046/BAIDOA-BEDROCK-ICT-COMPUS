@@ -38,6 +38,18 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/HTML/index.html"
+    },
+    {
+      "source": "/index.html",
+      "destination": "/HTML/index.html"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/images/icons/icon-192.png"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
     }
