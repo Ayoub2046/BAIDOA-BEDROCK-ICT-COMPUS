@@ -4836,8 +4836,17 @@
                                     colorLight: '#ffffff',
                                     correctLevel: QRCode.CorrectLevel.L
                                 });
+                                var cvs = qrBox.querySelector('canvas');
+                                var img = qrBox.querySelector('img');
+                                if (cvs) {
+                                    cvs.style.display = 'block';
+                                    cvs.style.width = '90px';
+                                    cvs.style.height = '90px';
+                                    cvs.style.margin = '0 auto';
+                                }
+                                if (img) img.style.display = 'none';
                             } catch (e) {
-                                qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(verifyUrl) + '" style="width:90px;height:90px;display:block;">';
+                                qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=' + encodeURIComponent(verifyUrl) + '" style="width:90px;height:90px;display:block;margin:0 auto;">';
                             }
                         }
                     }, 100);
@@ -4856,7 +4865,40 @@
                 var cardEl = document.getElementById('officialClearanceCard');
                 if (!cardEl) return;
                 if (typeof html2canvas !== 'undefined') {
-                    html2canvas(cardEl, { scale: 3, useCORS: true, backgroundColor: null }).then(function(canvas) {
+                    html2canvas(cardEl, {
+                        scale: 3,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: null,
+                        onclone: function(clonedDoc) {
+                            var clonedBox = clonedDoc.getElementById('clearance-qrcode-box');
+                            var liveCanvas = document.querySelector('#clearance-qrcode-box canvas');
+                            var liveImg = document.querySelector('#clearance-qrcode-box img');
+                            if (clonedBox) {
+                                clonedBox.innerHTML = '';
+                                if (liveCanvas && liveCanvas.width > 0) {
+                                    var newCanvas = clonedDoc.createElement('canvas');
+                                    newCanvas.width = liveCanvas.width;
+                                    newCanvas.height = liveCanvas.height;
+                                    newCanvas.style.width = '90px';
+                                    newCanvas.style.height = '90px';
+                                    newCanvas.style.display = 'block';
+                                    newCanvas.style.margin = '0 auto';
+                                    var ctx = newCanvas.getContext('2d');
+                                    ctx.drawImage(liveCanvas, 0, 0);
+                                    clonedBox.appendChild(newCanvas);
+                                } else if (liveImg && liveImg.src) {
+                                    var newImg = clonedDoc.createElement('img');
+                                    newImg.src = liveImg.src;
+                                    newImg.style.width = '90px';
+                                    newImg.style.height = '90px';
+                                    newImg.style.display = 'block';
+                                    newImg.style.margin = '0 auto';
+                                    clonedBox.appendChild(newImg);
+                                }
+                            }
+                        }
+                    }).then(function(canvas) {
                         var link = document.createElement('a');
                         link.download = 'Official_Exam_Clearance_Pass_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Pass') + '.png';
                         link.href = canvas.toDataURL('image/png');
@@ -5092,7 +5134,6 @@
 
                     try {
                         if (typeof QRCode !== 'undefined') {
-                            // Initialize QRCode at exact 90x90 size without CSS scale flushing
                             var qrObj = new QRCode(container, {
                                 text: verifyUrl,
                                 width: 90,
@@ -5102,15 +5143,16 @@
                                 correctLevel: QRCode.CorrectLevel.H
                             });
 
-                            // Synchronously extract Base64 PNG data URL and lock as permanent img tag
                             var cvs = container.querySelector('canvas');
+                            var img = container.querySelector('img');
                             if (cvs) {
-                                try {
-                                    var dataUrl = cvs.toDataURL('image/png');
-                                    if (dataUrl && dataUrl.length > 100) {
-                                        container.innerHTML = '<img src="' + dataUrl + '" style="width:90px;height:90px;display:block;border-radius:4px;" alt="QR Code">';
-                                    }
-                                } catch (err) {}
+                                cvs.style.display = 'block';
+                                cvs.style.width = '90px';
+                                cvs.style.height = '90px';
+                                cvs.style.borderRadius = '4px';
+                            }
+                            if (img) {
+                                img.style.display = 'none';
                             }
                         }
                     } catch (e) {
@@ -5128,8 +5170,37 @@
                     html2canvas(cardEl, {
                         scale: 3,
                         useCORS: true,
-                        allowTaint: false,
-                        logging: false
+                        allowTaint: true,
+                        logging: false,
+                        onclone: function(clonedDoc) {
+                            var clonedContainer = clonedDoc.getElementById('qrcode-container');
+                            var liveCanvas = document.querySelector('#qrcode-container canvas');
+                            var liveImg = document.querySelector('#qrcode-container img');
+
+                            if (clonedContainer) {
+                                clonedContainer.innerHTML = '';
+                                if (liveCanvas && liveCanvas.width > 0) {
+                                    var newCanvas = clonedDoc.createElement('canvas');
+                                    newCanvas.width = liveCanvas.width;
+                                    newCanvas.height = liveCanvas.height;
+                                    newCanvas.style.width = '90px';
+                                    newCanvas.style.height = '90px';
+                                    newCanvas.style.display = 'block';
+                                    newCanvas.style.borderRadius = '4px';
+                                    var ctx = newCanvas.getContext('2d');
+                                    ctx.drawImage(liveCanvas, 0, 0);
+                                    clonedContainer.appendChild(newCanvas);
+                                } else if (liveImg && liveImg.src) {
+                                    var newImg = clonedDoc.createElement('img');
+                                    newImg.src = liveImg.src;
+                                    newImg.style.width = '90px';
+                                    newImg.style.height = '90px';
+                                    newImg.style.display = 'block';
+                                    newImg.style.borderRadius = '4px';
+                                    clonedContainer.appendChild(newImg);
+                                }
+                            }
+                        }
                     }).then(function(canvas) {
                         var link = document.createElement('a');
                         link.download = 'Student_ID_' + (dashboardData ? dashboardData.student.name.replace(/\s+/g, '_') : 'Card') + '.png';

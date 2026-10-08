@@ -313,8 +313,17 @@
                         colorLight: '#ffffff',
                         correctLevel: QRCode.CorrectLevel.L
                     });
+                    const cvs = qrBox.querySelector('canvas');
+                    const img = qrBox.querySelector('img');
+                    if (cvs) {
+                        cvs.style.display = 'block';
+                        cvs.style.width = '80px';
+                        cvs.style.height = '80px';
+                        cvs.style.margin = '0 auto';
+                    }
+                    if (img) img.style.display = 'none';
                 } catch(e) {
-                    qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(verifyUrl) + '" style="width:80px;height:80px;display:block;">';
+                    qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(verifyUrl) + '" style="width:80px;height:80px;display:block;margin:0 auto;">';
                 }
             }
         }
@@ -322,7 +331,41 @@
         function downloadCardPng() {
             const cardEl = document.getElementById('digitalIdCard');
             if (typeof html2canvas !== 'undefined') {
-                html2canvas(cardEl, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
+                html2canvas(cardEl, {
+                    scale: 3,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null,
+                    onclone: function(clonedDoc) {
+                        const clonedContainer = clonedDoc.getElementById('verify-qr-container');
+                        const liveCanvas = document.querySelector('#verify-qr-container canvas');
+                        const liveImg = document.querySelector('#verify-qr-container img');
+
+                        if (clonedContainer) {
+                            clonedContainer.innerHTML = '';
+                            if (liveCanvas && liveCanvas.width > 0) {
+                                const newCanvas = clonedDoc.createElement('canvas');
+                                newCanvas.width = liveCanvas.width;
+                                newCanvas.height = liveCanvas.height;
+                                newCanvas.style.width = '80px';
+                                newCanvas.style.height = '80px';
+                                newCanvas.style.display = 'block';
+                                newCanvas.style.margin = '0 auto';
+                                const ctx = newCanvas.getContext('2d');
+                                ctx.drawImage(liveCanvas, 0, 0);
+                                clonedContainer.appendChild(newCanvas);
+                            } else if (liveImg && liveImg.src) {
+                                const newImg = clonedDoc.createElement('img');
+                                newImg.src = liveImg.src;
+                                newImg.style.width = '80px';
+                                newImg.style.height = '80px';
+                                newImg.style.display = 'block';
+                                newImg.style.margin = '0 auto';
+                                clonedContainer.appendChild(newImg);
+                            }
+                        }
+                    }
+                }).then(canvas => {
                     const link = document.createElement('a');
                     const studentName = document.getElementById('vid-name').textContent.replace(/\s+/g, '_');
                     link.download = 'Student_ID_Card_' + studentName + '.png';
