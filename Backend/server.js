@@ -673,7 +673,7 @@ app.use((req, res) => {
 });
 
 // --- 6. Start the Server (local only, not on Vercel) ---
-if (!process.env.VERCEL) {
+if (require.main === module && !process.env.VERCEL) {
     app.get('/', (req, res) => {
         res.redirect('/HTML/index.html');
     });

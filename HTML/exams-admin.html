@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Exams | Admin Panel</title>
+    <title>Exam Management & Monthly Cycles | Admin Panel</title>
     <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -18,13 +18,76 @@
     <link rel="stylesheet" href="/css/edupulse-theme.css">
     <script src="/JS/bedrock-dialog.js"></script>
     <style>
-        .exam-def-row { display: flex; align-items: center; gap: 0.6rem; }
-        .assign-check { width: 22px; height: 22px; accent-color: #0d4f8c; }
-        .badge-assigned { background: #e8eef7; color: #0d4f8c; border: 1px solid #c3d1e6; }
-        .badge-notassigned { background: #f0f2f5; color: #888; }
-        body[data-theme="dark"] .badge-assigned { background: #1a2c4e; color: #d4af37; }
-        body[data-theme="dark"] .badge-notassigned { background: #2a3a2a; color: #aaa; }
-        .max-score-input { max-width: 100px; }
+        .month-badge {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+        .component-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin: 2px;
+            font-weight: 600;
+        }
+        .component-pill .comp-score {
+            color: #0d4f8c;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+        .status-badge-open { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .status-badge-locked { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .status-badge-closed { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .status-badge-draft { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        
+        .sum-validator-badge {
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sum-valid { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .sum-invalid { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .preset-btn {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid #0d4f8c;
+            transition: transform 0.15s ease;
+        }
+        .summary-card:hover { transform: translateY(-2px); }
+        .summary-card .amount { font-size: 1.75rem; font-weight: 700; }
+        .summary-card .icon { font-size: 2rem; opacity: 0.85; }
+
+        body[data-theme="dark"] .summary-card {
+            background: #1e293b;
+            color: #f8fafc;
+            border-left-color: #38bdf8;
+        }
+        body[data-theme="dark"] .component-pill {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+        body[data-theme="dark"] .component-pill .comp-score { color: #38bdf8; }
+        body[data-theme="dark"] .month-badge { background: #0369a1; color: #e0f2fe; }
     </style>
 </head>
 
@@ -63,49 +126,156 @@
                 <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
+
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Top Navbar -->
             <nav class="top-navbar">
                 <button class="btn btn-primary" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
-                <h4 class="mb-0 ms-3">Manage Exams</h4>
+                <h4 class="mb-0 ms-3">Exam Management & Monthly Cycles</h4>
                 <div class="theme-toggle me-3 ms-auto" onclick="toggleTheme()" title="Toggle Dark Mode" style="cursor:pointer;">
                     <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
                 </div>
-                <button class="btn btn-primary btn-sm" id="btn-add-exam"><i class="fas fa-plus me-1"></i> Add Exam</button>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-primary btn-sm fw-bold" id="btn-open-cumulative">
+                        <i class="fas fa-calculator me-1"></i> Cumulative Results
+                    </button>
+                    <button class="btn btn-primary btn-sm fw-bold" id="btn-add-exam">
+                        <i class="fas fa-plus me-1"></i> Create New Exam
+                    </button>
+                </div>
             </nav>
+
             <div class="content-area">
                 <div id="save-alert" class="position-fixed top-0 end-0 p-3" style="z-index: 1056;"></div>
 
-                <!-- Manage Exam Definitions -->
-                <div class="card main-table-card mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0">Exam Definitions (shown to teachers & students)</h6>
+                <!-- 1. Summary Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="summary-card" style="border-left-color: #0d4f8c;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small fw-bold mb-1">Total Exams</h6>
+                                    <div class="amount text-primary" id="stat-total-exams">0</div>
+                                </div>
+                                <div class="icon text-primary"><i class="fas fa-graduation-cap"></i></div>
+                            </div>
+                        </div>
                     </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="summary-card" style="border-left-color: #10b981;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small fw-bold mb-1">Open for Scoring</h6>
+                                    <div class="amount text-success" id="stat-open-exams">0</div>
+                                </div>
+                                <div class="icon text-success"><i class="fas fa-door-open"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="summary-card" style="border-left-color: #ef4444;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small fw-bold mb-1">Locked (Tamper-Proof)</h6>
+                                    <div class="amount text-danger" id="stat-locked-exams">0</div>
+                                </div>
+                                <div class="icon text-danger"><i class="fas fa-lock"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="summary-card" style="border-left-color: #f59e0b;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small fw-bold mb-1">Closed / Drafts</h6>
+                                    <div class="amount text-warning" id="stat-closed-exams">0</div>
+                                </div>
+                                <div class="icon text-warning"><i class="fas fa-archive"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Exam Management Section (Matching Fee Management UX) -->
+                <div class="card main-table-card mb-4">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-1"></i> Exam Cycles & Assessment Parts</h6>
+                            <span class="month-badge text-sm" id="active-month-label">All Cycles</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                            <!-- MONTH FILTER -->
+                            <div class="d-flex align-items-center me-1">
+                                <label class="me-1 small text-muted fw-bold">Month:</label>
+                                <select class="form-select form-select-sm fw-bold border-primary" id="exam-month-filter" style="width: auto;">
+                                    <option value="all">All Months</option>
+                                    <option value="1">01 - January</option>
+                                    <option value="2">02 - February</option>
+                                    <option value="3">03 - March</option>
+                                    <option value="4">04 - April</option>
+                                    <option value="5">05 - May</option>
+                                    <option value="6">06 - June</option>
+                                    <option value="7">07 - July</option>
+                                    <option value="8">08 - August</option>
+                                    <option value="9">09 - September</option>
+                                    <option value="10">10 - October</option>
+                                    <option value="11">11 - November</option>
+                                    <option value="12">12 - December</option>
+                                </select>
+                            </div>
+
+                            <!-- YEAR FILTER -->
+                            <div class="d-flex align-items-center me-1">
+                                <label class="me-1 small text-muted fw-bold">Year:</label>
+                                <select class="form-select form-select-sm fw-bold border-primary" id="exam-year-filter" style="width: auto;">
+                                    <option value="all">All Years</option>
+                                    <option value="2026" selected>2026</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2027">2027</option>
+                                </select>
+                            </div>
+
+                            <!-- STATUS FILTER -->
+                            <div class="d-flex align-items-center me-1">
+                                <label class="me-1 small text-muted fw-bold">Status:</label>
+                                <select class="form-select form-select-sm fw-bold" id="exam-status-filter" style="width: auto;">
+                                    <option value="all">All Statuses</option>
+                                    <option value="open">Open (Accepting Scores)</option>
+                                    <option value="locked">Locked</option>
+                                    <option value="closed">Closed</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+
+                            <input type="text" class="form-control form-control-sm" id="exam-search-input" placeholder="Search exams..." style="width: 160px;">
+                        </div>
+                    </div>
+
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover align-middle">
                                 <thead>
                                     <tr>
-                                        <th>Order</th>
-                                        <th>Exam Name</th>
-                                        <th>Key</th>
-                                        <th>Max Score</th>
+                                        <th>Exam Name & Code</th>
+                                        <th>Month / Period</th>
+                                        <th>Assessment Components (Sum = 100)</th>
+                                        <th>Assigned Classes</th>
                                         <th>Status</th>
-                                        <th>Lock Status</th>
-                                        <th>Actions</th>
+                                        <th class="text-end">Lifecycle Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="exams-tbody"></tbody>
                             </table>
                         </div>
-                        <div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle me-1"></i>These are the exams teachers record results for (e.g. Quiz 1, Semester 1, Quiz 2...). You can add, edit or remove them anytime.</small></div>
                     </div>
                 </div>
 
-                <!-- Assign Exams to Classes -->
+                <!-- 3. Assign Classes to Exam Quick Section -->
                 <div class="card main-table-card">
-                    <div class="card-header">
-                        <h6 class="m-0">Assign Exams to Classes</h6>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold"><i class="fas fa-chalkboard me-1 text-primary"></i> Class Enrollment & Subject Scope</h6>
+                        <span class="small text-muted">Verify which classes have access to each exam</span>
                     </div>
                     <div class="card-body">
                         <div class="row g-3 mb-3">
@@ -117,7 +287,7 @@
                             </div>
                         </div>
                         <div id="assign-container">
-                            <div class="text-center text-muted py-4"><i class="fas fa-chalkboard me-2"></i>Select a class to manage its exams.</div>
+                            <div class="text-center text-muted py-4"><i class="fas fa-chalkboard me-2"></i>Select a class to review assigned exam cycles.</div>
                         </div>
                     </div>
                 </div>
@@ -125,42 +295,273 @@
         </div>
     </div>
 
-    <!-- Exam Modal -->
-    <div class="modal fade" id="examModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Create / Edit Exam Modal with Component Designer -->
+    <div class="modal fade" id="examModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="examForm">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="examModalTitle">Add Exam</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <h5 class="modal-title fw-bold" id="examModalTitle">Create New Exam Cycle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="exam-id">
-                        <div class="mb-3">
-                            <label class="form-label">Exam Name</label>
-                            <input type="text" id="exam-name" class="form-control" required placeholder="e.g. Quiz 1">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Academic Year <span class="text-danger">*</span></label>
+                                <input type="text" id="modal-exam-year" class="form-control" value="2026" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Exam Month <span class="text-danger">*</span></label>
+                                <select id="modal-exam-month" class="form-select" required>
+                                    <option value="1">01 - January</option>
+                                    <option value="2">02 - February</option>
+                                    <option value="3">03 - March</option>
+                                    <option value="4">04 - April</option>
+                                    <option value="5">05 - May</option>
+                                    <option value="6">06 - June</option>
+                                    <option value="7">07 - July</option>
+                                    <option value="8">08 - August</option>
+                                    <option value="9">09 - September</option>
+                                    <option value="10" selected>10 - October</option>
+                                    <option value="11">11 - November</option>
+                                    <option value="12">12 - December</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Exam Key</label>
-                            <input type="text" id="exam-key" class="form-control" placeholder="e.g. quiz1 (auto-filled if empty)">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Exam Type <span class="text-danger">*</span></label>
+                                <select id="modal-exam-type" class="form-select">
+                                    <option value="monthly" selected>Monthly Exam</option>
+                                    <option value="midterm">Midterm Exam</option>
+                                    <option value="term">Term Exam</option>
+                                    <option value="final">Final Exam</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Exam Name <span class="text-danger">*</span></label>
+                                <input type="text" id="modal-exam-name" class="form-control" required placeholder="e.g. October Monthly Exam 2026">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Max Score</label>
-                            <input type="number" id="exam-max" class="form-control" min="1" required value="100">
+
+                        <!-- Assessment Component Designer -->
+                        <div class="card p-3 mb-3 bg-light border">
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sliders-h me-1 text-primary"></i> Assessment Components (Strictly Sums to 100)</h6>
+                                    <small class="text-muted">Choose 3 or 4 components. Admin defines names and maximum marks for each.</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="small fw-bold">Parts:</span>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <input type="radio" class="btn-check" name="comp-count" id="count-3" value="3" checked>
+                                        <label class="btn btn-outline-primary" for="count-3">3 Parts</label>
+                                        <input type="radio" class="btn-check" name="comp-count" id="count-4" value="4">
+                                        <label class="btn btn-outline-primary" for="count-4">4 Parts</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preset Buttons -->
+                            <div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+                                <span class="small text-muted fw-bold">Presets:</span>
+                                <div id="presets-container" class="d-flex gap-1 flex-wrap"></div>
+                            </div>
+
+                            <!-- Dynamic Component Rows -->
+                            <div id="components-container" class="mb-3"></div>
+
+                            <!-- Live Sum Validator -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div id="sum-validator" class="sum-validator-badge sum-invalid">
+                                    <i class="fas fa-exclamation-triangle"></i> Current Sum: <span id="current-sum-val">0</span> / 100
+                                </div>
+                                <small class="text-muted">Exam total marks must equal exactly 100.</small>
+                            </div>
                         </div>
+
+                        <!-- Class Multi-Select -->
                         <div class="mb-3">
-                            <label class="form-label">Order</label>
-                            <input type="number" id="exam-order" class="form-control" min="0" value="0">
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="exam-active" checked>
-                            <label class="form-check-label" for="exam-active">Active</label>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Assign to Classes</label>
+                                <div>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="btn-select-all-classes">Select All</button>
+                                    <span class="text-muted mx-1">|</span>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="btn-deselect-all-classes">Clear</button>
+                                </div>
+                            </div>
+                            <div id="modal-classes-list" class="row g-2 p-2 border rounded" style="max-height: 140px; overflow-y: auto; background: #fff;"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Exam</button>
+                        <button type="submit" class="btn btn-primary fw-bold" id="btn-save-exam" disabled>Save Exam</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reopen Exam Modal (Requires Reason & Logged) -->
+    <div class="modal fade" id="reopenModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="reopenForm">
+                    <div class="modal-header bg-warning-subtle">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-unlock me-1"></i> Reopen Exam Authorization</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="reopen-exam-id">
+                        <div class="alert alert-warning py-2 mb-3 small">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Reopening an exam permits teachers to modify grades again. Every reopen action is securely recorded in the official audit trail.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Reason for Reopening <span class="text-danger">*</span></label>
+                            <textarea id="reopen-reason" class="form-control" rows="3" required placeholder="e.g. Authorized correction for Class 2 practical scores requested by department head..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning fw-bold text-dark"><i class="fas fa-key me-1"></i> Authorize & Reopen</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit History Modal -->
+    <div class="modal fade" id="auditModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="auditModalTitle"><i class="fas fa-history me-1 text-primary"></i> Exam Lifecycle Audit Trail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Status Transition</th>
+                                    <th>Authorized By</th>
+                                    <th>Reason / Note</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Submission Tracker Modal -->
+    <div class="modal fade" id="trackerModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="trackerModalTitle"><i class="fas fa-tasks me-1 text-primary"></i> Teacher Submission Tracker</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="small text-muted" id="tracker-subtext">Tracking submissions for selected exam</span>
+                        <span class="badge bg-primary" id="tracker-exam-badge">Exam</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Submitted Records</th>
+                                    <th>Approval Status</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tracker-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cumulative Results Calculator Modal -->
+    <div class="modal fade" id="cumulativeModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-calculator me-1 text-primary"></i> Cumulative / Final Aggregate Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Aggregate Title</label>
+                            <input type="text" id="agg-title" class="form-control" value="Term 1 Cumulative Results">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Class</label>
+                            <select id="agg-class" class="form-select">
+                                <option value="">-- Choose Class --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Calculation Method</label>
+                            <select id="agg-method" class="form-select">
+                                <option value="equal">Equal Average (Mean of all exams)</option>
+                                <option value="weighted">Weighted Percentage Formula</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card p-3 mb-3 bg-light">
+                        <h6 class="fw-bold mb-2">Select Exam Cycles to Include</h6>
+                        <div id="agg-exams-list" class="row g-2"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <button type="button" class="btn btn-primary fw-bold" id="btn-run-aggregate">
+                            <i class="fas fa-play me-1"></i> Calculate Cumulative Grades
+                        </button>
+                    </div>
+
+                    <div id="agg-results-container" class="d-none">
+                        <h6 class="fw-bold mb-2 text-success"><i class="fas fa-check-circle me-1"></i> Calculated Student Grades</h6>
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-bordered table-hover align-middle mb-0" id="agg-results-table">
+                                <thead class="table-dark">
+                                    <tr id="agg-thead-row">
+                                        <th>Student</th>
+                                        <th>ID</th>
+                                        <!-- Subjects dynamically inserted -->
+                                        <th>Overall %</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agg-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -168,100 +569,407 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
             const examModal = new bootstrap.Modal(document.getElementById('examModal'));
-            const examForm = document.getElementById('examForm');
-            const examsTbody = document.getElementById('exams-tbody');
-            const classSelector = document.getElementById('class-selector');
-            const assignContainer = document.getElementById('assign-container');
+            const reopenModal = new bootstrap.Modal(document.getElementById('reopenModal'));
+            const auditModal = new bootstrap.Modal(document.getElementById('auditModal'));
+            const trackerModal = new bootstrap.Modal(document.getElementById('trackerModal'));
+            const cumulativeModal = new bootstrap.Modal(document.getElementById('cumulativeModal'));
 
-            let exams = [];
-            let classes = [];
+            let allExams = [];
+            let allClasses = [];
+
+            // Preset templates
+            const PRESETS_3 = [
+                { label: '30 / 30 / 40', values: [30, 30, 40], names: ['Assessment 1', 'Assessment 2', 'Final Exam'] },
+                { label: '25 / 25 / 50', values: [25, 25, 50], names: ['Quiz / Practical', 'Mid-Month', 'Final Exam'] },
+                { label: '20 / 30 / 50', values: [20, 30, 50], names: ['Assignment', 'Oral Exam', 'Written Exam'] }
+            ];
+            const PRESETS_4 = [
+                { label: '20 / 20 / 20 / 40', values: [20, 20, 20, 40], names: ['Assignment 1', 'Assignment 2', 'Practical Work', 'Monthly Final'] },
+                { label: '25 / 25 / 25 / 25', values: [25, 25, 25, 25], names: ['Part 1', 'Part 2', 'Part 3', 'Part 4'] },
+                { label: '15 / 15 / 30 / 40', values: [15, 15, 30, 40], names: ['Homework', 'Quiz', 'Midterm', 'Final Exam'] }
+            ];
+
+            // Load Initial Data
+            async function init() {
+                await loadClasses();
+                await loadExams();
+            }
+
+            async function loadClasses() {
+                try {
+                    const res = await fetch('/api/classes');
+                    if (res.ok) {
+                        allClasses = await res.json();
+                        const selector = document.getElementById('class-selector');
+                        const aggClass = document.getElementById('agg-class');
+                        selector.innerHTML = '<option value="" disabled selected>Choose a class...</option>';
+                        aggClass.innerHTML = '<option value="">-- Choose Class --</option>';
+                        allClasses.forEach(c => {
+                            selector.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                            aggClass.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                        });
+                        renderModalClasses();
+                    }
+                } catch(e) { console.error('Failed to load classes', e); }
+            }
 
             async function loadExams() {
+                const year = document.getElementById('exam-year-filter').value;
+                const month = document.getElementById('exam-month-filter').value;
+                const status = document.getElementById('exam-status-filter').value;
+
+                let url = '/api/exams?';
+                const p = new URLSearchParams();
+                if (year !== 'all') p.set('academic_year', year);
+                if (month !== 'all') p.set('month', month);
+                if (status !== 'all') p.set('status', status);
+
                 try {
-                    const res = await fetch('/api/exams');
+                    const res = await fetch(url + p.toString());
                     if (!res.ok) throw new Error('Failed to load exams');
-                    exams = await res.json();
+                    allExams = await res.json();
                     renderExamsTable();
-                    if (classSelector.value) renderAssignments();
-                } catch (err) {
-                    examsTbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
+                    updateSummaryCards();
+                    updateActiveMonthLabel();
+                } catch(e) {
+                    document.getElementById('exams-tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${e.message}</td></tr>`;
+                }
+            }
+
+            function updateSummaryCards() {
+                const total = allExams.length;
+                const openCount = allExams.filter(e => e.status === 'open').length;
+                const lockedCount = allExams.filter(e => e.status === 'locked').length;
+                const closedCount = allExams.filter(e => e.status === 'closed' || e.status === 'draft').length;
+
+                document.getElementById('stat-total-exams').textContent = total;
+                document.getElementById('stat-open-exams').textContent = openCount;
+                document.getElementById('stat-locked-exams').textContent = lockedCount;
+                document.getElementById('stat-closed-exams').textContent = closedCount;
+            }
+
+            function updateActiveMonthLabel() {
+                const mVal = document.getElementById('exam-month-filter').value;
+                const yVal = document.getElementById('exam-year-filter').value;
+                const lbl = document.getElementById('active-month-label');
+                if (mVal !== 'all') {
+                    lbl.textContent = `${MONTHS[parseInt(mVal)-1]} ${yVal !== 'all' ? yVal : 'All Years'}`;
+                } else {
+                    lbl.textContent = yVal !== 'all' ? `All Months (${yVal})` : 'All Cycles';
                 }
             }
 
             function renderExamsTable() {
-                if (exams.length === 0) {
-                    examsTbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No exams defined yet.</td></tr>`;
+                const search = document.getElementById('exam-search-input').value.toLowerCase().trim();
+                const filtered = allExams.filter(e => {
+                    if (!search) return true;
+                    return (e.name && e.name.toLowerCase().includes(search)) ||
+                           (e.exam_code && e.exam_code.toLowerCase().includes(search));
+                });
+
+                const tbody = document.getElementById('exams-tbody');
+                if (filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>No exams found matching selected filters.</td></tr>`;
                     return;
                 }
-                examsTbody.innerHTML = exams.map(e => `
-                    <tr>
-                        <td>${e.sort_order}</td>
-                        <td class="fw-bold">${e.name}</td>
-                        <td><code>${e.exam_key}</code></td>
-                        <td>${e.max_score}</td>
-                        <td>${e.active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'}</td>
-                        <td>
-                            <button class="btn btn-sm ${e.is_locked ? 'btn-danger' : 'btn-outline-success'} btn-toggle-lock" data-id="${e.id}" data-locked="${e.is_locked ? 'true' : 'false'}" style="font-size:0.75rem;padding:3px 10px;border-radius:20px;" title="${e.is_locked ? 'Click to Unlock' : 'Click to Lock'}">
-                                <i class="fas fa-${e.is_locked ? 'lock' : 'lock-open'} me-1"></i>${e.is_locked ? 'Locked' : 'Unlocked'}
-                            </button>
-                        </td>
-                        <td class="action-buttons">
-                            <button class="btn btn-sm btn-edit" data-id="${e.id}"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-delete" data-id="${e.id}"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>`).join('');
+
+                tbody.innerHTML = filtered.map(e => {
+                    const mName = e.month ? MONTHS[e.month - 1] : 'Full Term';
+                    const compPills = (e.components || []).map(c => 
+                        `<span class="component-pill">${c.name} <span class="comp-score">(${c.max_marks})</span></span>`
+                    ).join('');
+
+                    const badgeClass = `status-badge-${e.status || 'open'}`;
+                    const statusText = (e.status || 'open').toUpperCase();
+
+                    return `
+                        <tr>
+                            <td>
+                                <div class="fw-bold">${e.name}</div>
+                                <code class="small text-muted">${e.exam_code || 'EXAM-' + e.id}</code>
+                            </td>
+                            <td>
+                                <div><span class="badge bg-secondary-subtle text-dark">${mName}</span></div>
+                                <small class="text-muted">AY: ${e.academic_year || 2026}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap align-items-center">${compPills}</div>
+                                <small class="text-success fw-bold">Total: ${e.total_marks || 100} Marks</small>
+                            </td>
+                            <td>
+                                <small class="text-muted"><i class="fas fa-users me-1"></i>All Enrolled</small>
+                            </td>
+                            <td>
+                                <span class="badge ${badgeClass} px-2 py-1">${statusText}</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    ${renderActionButtons(e)}
+                                    <button class="btn btn-outline-info btn-tracker" data-id="${e.id}" title="Teacher Submission Tracker">
+                                        <i class="fas fa-tasks"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-audit" data-id="${e.id}" title="View Audit Logs">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-delete" data-id="${e.id}" title="Delete Exam">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
-            // --- Add / Edit / Delete / Lock ---
+            function renderActionButtons(e) {
+                if (e.status === 'locked') {
+                    return `<button class="btn btn-warning btn-reopen" data-id="${e.id}" title="Reopen Exam (Audit Logged)"><i class="fas fa-lock-open me-1"></i>Reopen</button>`;
+                } else if (e.status === 'closed') {
+                    return `
+                        <button class="btn btn-success btn-status" data-id="${e.id}" data-status="open" title="Open for submissions"><i class="fas fa-play"></i> Open</button>
+                        <button class="btn btn-danger btn-status" data-id="${e.id}" data-status="locked" title="Lock"><i class="fas fa-lock"></i> Lock</button>
+                    `;
+                } else {
+                    // Open
+                    return `
+                        <button class="btn btn-outline-secondary btn-status" data-id="${e.id}" data-status="closed" title="Close submissions"><i class="fas fa-pause"></i> Close</button>
+                        <button class="btn btn-danger btn-status" data-id="${e.id}" data-status="locked" title="Lock exam"><i class="fas fa-lock"></i> Lock</button>
+                    `;
+                }
+            }
+
+            // ====================== COMPONENT DESIGNER ======================
+            function renderComponentDesigner(count = 3, preset = null) {
+                const container = document.getElementById('components-container');
+                const presetsBox = document.getElementById('presets-container');
+                const list = count === 3 ? PRESETS_3 : PRESETS_4;
+
+                // Render presets
+                presetsBox.innerHTML = list.map((p, idx) => `
+                    <button type="button" class="btn btn-outline-secondary preset-btn" data-idx="${idx}">${p.label}</button>
+                `).join('');
+
+                presetsBox.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.dataset.idx);
+                        applyPreset(list[idx], count);
+                    });
+                });
+
+                if (preset) {
+                    applyPreset(preset, count);
+                } else {
+                    applyPreset(list[0], count);
+                }
+            }
+
+            function applyPreset(preset, count) {
+                const container = document.getElementById('components-container');
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const name = preset.names[i] || `Component ${i + 1}`;
+                    const val = preset.values[i] || (count === 3 ? (i < 2 ? 30 : 40) : 25);
+                    container.innerHTML += `
+                        <div class="row g-2 align-items-center mb-2 comp-row">
+                            <div class="col-md-7 col-7">
+                                <input type="text" class="form-control form-control-sm comp-name" value="${name}" placeholder="Component Name (e.g. Assessment ${i+1})" required>
+                            </div>
+                            <div class="col-md-5 col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Max</span>
+                                    <input type="number" class="form-control comp-max" value="${val}" min="1" max="100" required>
+                                    <span class="input-group-text">Marks</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                attachSumListeners();
+                recalculateSum();
+            }
+
+            function attachSumListeners() {
+                document.querySelectorAll('.comp-max').forEach(input => {
+                    input.addEventListener('input', recalculateSum);
+                });
+            }
+
+            function recalculateSum() {
+                const maxInputs = document.querySelectorAll('.comp-max');
+                let sum = 0;
+                maxInputs.forEach(inp => sum += parseFloat(inp.value) || 0);
+
+                const badge = document.getElementById('sum-validator');
+                const valSpan = document.getElementById('current-sum-val');
+                const saveBtn = document.getElementById('btn-save-exam');
+
+                valSpan.textContent = sum;
+                if (sum === 100) {
+                    badge.className = 'sum-validator-badge sum-valid';
+                    badge.innerHTML = `<i class="fas fa-check-circle"></i> Perfect: ${sum} / 100 Marks`;
+                    saveBtn.disabled = false;
+                } else {
+                    badge.className = 'sum-validator-badge sum-invalid';
+                    badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Must equal 100 Marks (Current: ${sum})`;
+                    saveBtn.disabled = true;
+                }
+            }
+
+            // Radio toggle for 3 vs 4 parts
+            document.querySelectorAll('input[name="comp-count"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    renderComponentDesigner(parseInt(e.target.value));
+                });
+            });
+
+            // Modal Class Checkboxes
+            function renderModalClasses() {
+                const container = document.getElementById('modal-classes-list');
+                container.innerHTML = allClasses.map(c => `
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input modal-cls-cb" type="checkbox" value="${c.id}" id="cls-cb-${c.id}" checked>
+                            <label class="form-check-label small" for="cls-cb-${c.id}">${c.name}</label>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('btn-select-all-classes').addEventListener('click', () => {
+                document.querySelectorAll('.modal-cls-cb').forEach(cb => cb.checked = true);
+            });
+            document.getElementById('btn-deselect-all-classes').addEventListener('click', () => {
+                document.querySelectorAll('.modal-cls-cb').forEach(cb => cb.checked = false);
+            });
+
+            // Auto-suggest name as month changes
+            function updateSuggestedName() {
+                const m = parseInt(document.getElementById('modal-exam-month').value);
+                const y = document.getElementById('modal-exam-year').value.trim() || '2026';
+                const type = document.getElementById('modal-exam-type').value;
+                const typeLabel = type === 'monthly' ? 'Monthly Exam' : (type === 'midterm' ? 'Midterm Exam' : (type === 'final' ? 'Final Exam' : 'Term Exam'));
+                document.getElementById('modal-exam-name').value = `${MONTHS[m - 1]} ${typeLabel} ${y}`;
+            }
+
+            document.getElementById('modal-exam-month').addEventListener('change', updateSuggestedName);
+            document.getElementById('modal-exam-type').addEventListener('change', updateSuggestedName);
+            document.getElementById('modal-exam-year').addEventListener('input', updateSuggestedName);
+
+            // ====================== ACTION HANDLERS ======================
             document.getElementById('btn-add-exam').addEventListener('click', () => {
-                examForm.reset();
                 document.getElementById('exam-id').value = '';
-                document.getElementById('examModalTitle').textContent = 'Add Exam';
-                document.getElementById('exam-active').checked = true;
+                document.getElementById('examModalTitle').textContent = 'Create New Exam Cycle';
+                document.getElementById('count-3').checked = true;
+                updateSuggestedName();
+                renderComponentDesigner(3);
+                renderModalClasses();
                 examModal.show();
             });
 
-            examsTbody.addEventListener('click', async (e) => {
+            document.getElementById('exams-tbody').addEventListener('click', async (e) => {
                 const btn = e.target.closest('button');
                 if (!btn) return;
                 const id = parseInt(btn.dataset.id);
-                if (btn.classList.contains('btn-toggle-lock')) {
-                    const currentlyLocked = btn.dataset.locked === 'true';
-                    btn.disabled = true;
+
+                // 1. Status transition (Open / Close / Lock)
+                if (btn.classList.contains('btn-status')) {
+                    const newStatus = btn.dataset.status;
+                    if (newStatus === 'locked') {
+                        const ok = await BedrockDialog.confirm({
+                            title: 'Lock Exam Cycle',
+                            message: `Locking this exam makes all student marks tamper-proof. Teachers cannot alter submitted results once locked.<br><br>Proceed with locking?`,
+                            confirmText: 'Lock Exam',
+                            type: 'danger',
+                            icon: 'fas fa-lock'
+                        });
+                        if (!ok) return;
+                    }
                     try {
-                        const res = await fetch(`/api/exams/${id}/lock`, {
+                        const res = await fetch(`/api/exams/${id}/status`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ locked: !currentlyLocked })
+                            body: JSON.stringify({ status: newStatus, changedBy: 'Admin' })
                         });
-                        if (!res.ok) throw new Error('Failed to change lock state');
                         const data = await res.json();
-                        showAlert(data.message || 'Lock status updated.', 'success');
+                        if (!res.ok) throw new Error(data.error || 'Failed');
+                        showAlert(data.message, 'success');
                         await loadExams();
                     } catch(err) {
                         showAlert(err.message, 'danger');
-                    } finally {
-                        btn.disabled = false;
                     }
-                    return;
                 }
-                if (btn.classList.contains('btn-edit')) {
-                    const exam = exams.find(x => x.id === id);
-                    if (!exam) return;
-                    document.getElementById('exam-id').value = exam.id;
-                    document.getElementById('exam-name').value = exam.name;
-                    document.getElementById('exam-key').value = exam.exam_key;
-                    document.getElementById('exam-max').value = exam.max_score;
-                    document.getElementById('exam-order').value = exam.sort_order;
-                    document.getElementById('exam-active').checked = exam.active;
-                    document.getElementById('examModalTitle').textContent = 'Edit Exam';
-                    examModal.show();
-                } else if (btn.classList.contains('btn-delete')) {
-                    const examName = exams.find(x => x.id === id)?.name;
+
+                // 2. Reopen Modal
+                if (btn.classList.contains('btn-reopen')) {
+                    document.getElementById('reopen-exam-id').value = id;
+                    document.getElementById('reopen-reason').value = '';
+                    reopenModal.show();
+                }
+
+                // 3. Audit Logs
+                if (btn.classList.contains('btn-audit')) {
+                    try {
+                        const res = await fetch(`/api/exams/${id}/audit-logs`);
+                        const logs = await res.json();
+                        const tbody = document.getElementById('audit-table-body');
+                        if (logs.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No audit records found.</td></tr>`;
+                        } else {
+                            tbody.innerHTML = logs.map(l => `
+                                <tr>
+                                    <td><small>${new Date(l.created_at).toLocaleString()}</small></td>
+                                    <td><span class="badge bg-primary-subtle text-dark">${l.action}</span></td>
+                                    <td><code>${l.old_status || '—'}</code> &rarr; <code>${l.new_status || '—'}</code></td>
+                                    <td><strong>${l.changed_by}</strong></td>
+                                    <td><small>${l.reason || '—'}</small></td>
+                                </tr>
+                            `).join('');
+                        }
+                        auditModal.show();
+                    } catch(err) {
+                        showAlert('Failed to load audit logs: ' + err.message, 'danger');
+                    }
+                }
+
+                // 4. Tracker
+                if (btn.classList.contains('btn-tracker')) {
+                    try {
+                        const res = await fetch(`/api/exams/${id}/tracker`);
+                        const data = await res.json();
+                        document.getElementById('trackerModalTitle').textContent = `Teacher Tracker: ${data.exam.name}`;
+                        document.getElementById('tracker-exam-badge').textContent = data.exam.exam_code;
+                        const tbody = document.getElementById('tracker-table-body');
+                        if (data.submissions.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No submissions yet for this exam period.</td></tr>`;
+                        } else {
+                            tbody.innerHTML = data.submissions.map(s => `
+                                <tr>
+                                    <td><strong>${s.class_name}</strong></td>
+                                    <td>${s.subject}</td>
+                                    <td><i class="fas fa-chalkboard-teacher me-1 text-muted"></i>${s.submitted_by || 'Teacher'}</td>
+                                    <td><span class="badge bg-light text-dark border">${s.total_records} Records</span></td>
+                                    <td>
+                                        ${s.approved_count > 0 ? `<span class="badge bg-success-subtle text-success me-1">${s.approved_count} Approved</span>` : ''}
+                                        ${s.pending_count > 0 ? `<span class="badge bg-warning-subtle text-warning">${s.pending_count} Pending</span>` : ''}
+                                    </td>
+                                    <td><small class="text-muted">${new Date(s.last_submission).toLocaleDateString()}</small></td>
+                                </tr>
+                            `).join('');
+                        }
+                        trackerModal.show();
+                    } catch(err) {
+                        showAlert('Tracker failed: ' + err.message, 'danger');
+                    }
+                }
+
+                // 5. Delete Exam (Safe deletion check)
+                if (btn.classList.contains('btn-delete')) {
+                    const exam = allExams.find(x => x.id === id);
                     const ok = await BedrockDialog.confirm({
                         title: 'Delete Exam',
-                        message: `Delete exam <strong>"${examName}"</strong>? This action cannot be undone.`,
+                        message: `Delete exam <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-danger">Exams with recorded student marks cannot be deleted to prevent data loss.</small>`,
                         confirmText: 'Delete Exam',
                         type: 'danger',
                         icon: 'fas fa-trash-alt'
@@ -269,160 +977,211 @@
                     if (!ok) return;
                     try {
                         const res = await fetch(`/api/exams/${id}`, { method: 'DELETE' });
-                        if (!res.ok) throw new Error('Delete failed');
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Delete failed');
+                        showAlert(data.message || 'Exam deleted successfully.', 'success');
                         await loadExams();
-                        showAlert('Exam deleted.', 'success');
-                    } catch (err) {
+                    } catch(err) {
                         showAlert(err.message, 'danger');
                     }
                 }
             });
 
-            examForm.addEventListener('submit', async (e) => {
+            // Reopen Form Submit
+            document.getElementById('reopenForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const id = document.getElementById('exam-id').value;
-                const data = {
-                    name: document.getElementById('exam-name').value.trim(),
-                    examKey: document.getElementById('exam-key').value.trim(),
-                    maxScore: parseFloat(document.getElementById('exam-max').value),
-                    sortOrder: parseInt(document.getElementById('exam-order').value) || 0,
-                    active: document.getElementById('exam-active').checked
-                };
+                const id = document.getElementById('reopen-exam-id').value;
+                const reason = document.getElementById('reopen-reason').value.trim();
                 try {
-                    const url = id ? `/api/exams/${id}` : '/api/exams';
-                    const method = id ? 'PUT' : 'POST';
-                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                    if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
-                    examModal.hide();
+                    const res = await fetch(`/api/exams/${id}/reopen`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason, changedBy: 'Admin' })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed');
+                    reopenModal.hide();
+                    showAlert('Exam reopened successfully and logged to audit trail.', 'success');
                     await loadExams();
-                    showAlert('Exam saved.', 'success');
-                } catch (err) {
+                } catch(err) {
                     showAlert(err.message, 'danger');
                 }
             });
 
-            // --- Class assignment ---
-            async function loadClasses() {
-                try {
-                    const res = await fetch('/api/classes');
-                    if (!res.ok) throw new Error('Failed to load classes');
-                    classes = await res.json();
-                    classSelector.innerHTML = '<option value="" disabled selected>Choose a class...</option>';
-                    classes.forEach(c => classSelector.innerHTML += `<option value="${c.id}">${c.name}</option>`);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
+            // Save Exam Form Submit
+            document.getElementById('examForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('exam-id').value;
+                const compRows = document.querySelectorAll('.comp-row');
+                const components = [];
 
-            async function renderAssignments() {
-                const classId = parseInt(classSelector.value);
-                if (!classId) return;
+                compRows.forEach((row, i) => {
+                    const name = row.querySelector('.comp-name').value.trim();
+                    const max = parseFloat(row.querySelector('.comp-max').value);
+                    components.push({
+                        name,
+                        max_marks: max,
+                        order_num: i + 1
+                    });
+                });
+
+                const classIds = Array.from(document.querySelectorAll('.modal-cls-cb:checked')).map(cb => parseInt(cb.value));
+
+                const payload = {
+                    name: document.getElementById('modal-exam-name').value.trim(),
+                    academicYear: document.getElementById('modal-exam-year').value.trim(),
+                    month: parseInt(document.getElementById('modal-exam-month').value),
+                    examType: document.getElementById('modal-exam-type').value,
+                    totalMarks: 100,
+                    components,
+                    classIds,
+                    createdBy: 'Admin'
+                };
+
                 try {
-                    const res = await fetch(`/api/exams/class/${classId}`);
-                    if (!res.ok) throw new Error('Failed');
-                    const classExams = await res.json();
-                    assignContainer.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-bold">Exams for ${classSelector.options[classSelector.selectedIndex].text}</span>
-                            <button class="btn btn-primary btn-sm" id="save-assign-btn" style="background:#0d4f8c;border-color:#0d4f8c;"><i class="fas fa-save me-1"></i> Save Assignment</button>
+                    const url = id ? `/api/exams/${id}` : '/api/exams';
+                    const method = id ? 'PUT' : 'POST';
+                    const res = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Save failed');
+                    examModal.hide();
+                    showAlert('Exam cycle saved successfully with 100-mark assessment components.', 'success');
+                    await loadExams();
+                } catch(err) {
+                    showAlert(err.message, 'danger');
+                }
+            });
+
+            // Filters listeners
+            document.getElementById('exam-month-filter').addEventListener('change', loadExams);
+            document.getElementById('exam-year-filter').addEventListener('change', loadExams);
+            document.getElementById('exam-status-filter').addEventListener('change', loadExams);
+            document.getElementById('exam-search-input').addEventListener('input', renderExamsTable);
+
+            // ====================== CUMULATIVE AGGREGATOR ======================
+            document.getElementById('btn-open-cumulative').addEventListener('click', () => {
+                const list = document.getElementById('agg-exams-list');
+                list.innerHTML = allExams.map(e => `
+                    <div class="col-md-6">
+                        <div class="border rounded p-2 d-flex align-items-center justify-content-between bg-white">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input agg-exam-check" type="checkbox" value="${e.id}" id="agg-ex-${e.id}">
+                                <label class="form-check-label fw-bold small" for="agg-ex-${e.id}">${e.name}</label>
+                            </div>
+                            <div class="d-flex align-items-center gap-1">
+                                <input type="number" class="form-control form-control-sm agg-weight-input" data-exam-id="${e.id}" value="50" min="1" max="100" style="width: 65px;">
+                                <span class="small text-muted">%</span>
+                            </div>
                         </div>
-                        <div class="row g-2">${classExams.map(e => `
-                            <div class="col-md-6 col-lg-4">
-                                <div class="border rounded p-2 d-flex align-items-center gap-2 ${e.assigned ? 'bg-light' : ''}">
-                                    <input type="checkbox" class="assign-check form-check-input mt-0" data-exam-id="${e.id}" ${e.assigned ? 'checked' : ''}>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold" style="font-size:0.85rem;">${e.name}</div>
-                                        <small class="text-muted">Max ${e.max_score}</small>
-                                    </div>
-                                    <span class="badge ${e.assigned ? 'badge-assigned' : 'badge-notassigned'}">${e.assigned ? 'Assigned' : 'Not assigned'}</span>
-                                    ${e.assigned ? `
-                                    <button type="button" class="btn btn-sm ${e.is_locked ? 'btn-danger' : 'btn-outline-secondary'} btn-class-lock ms-1"
-                                        data-exam-id="${e.id}" data-locked="${e.is_locked ? 'true' : 'false'}"
-                                        title="${e.is_locked ? 'Click to unlock for this class' : 'Click to lock for this class'}"
-                                        style="font-size:0.7rem;padding:2px 7px;border-radius:14px;">
-                                        <i class="fas fa-${e.is_locked ? 'lock' : 'lock-open'} me-1"></i>${e.is_locked ? 'Locked' : 'Open'}
-                                    </button>` : ''}
-                                </div>
-                            </div>`).join('')}
-                        </div>`;
+                    </div>
+                `).join('');
+                document.getElementById('agg-results-container').classList.add('d-none');
+                cumulativeModal.show();
+            });
 
-                    // Wire per-class lock toggle buttons
-                    assignContainer.querySelectorAll('.btn-class-lock').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            e.stopPropagation();
-                            const examId = parseInt(btn.dataset.examId);
-                            const currentlyLocked = btn.dataset.locked === 'true';
-                            btn.disabled = true;
-                            try {
-                                const r = await fetch(`/api/exams/class/${classId}/exam/${examId}/lock`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ locked: !currentlyLocked })
-                                });
-                                if (!r.ok) throw new Error('Lock update failed');
-                                const resData = await r.json();
-                                showAlert(resData.message || 'Updated lock status.', 'success');
-                                await renderAssignments();
-                            } catch(err) {
-                                showAlert(err.message, 'danger');
-                            } finally {
-                                btn.disabled = false;
-                            }
-                        });
-                    });
-
-                    document.getElementById('save-assign-btn').addEventListener('click', async () => {
-                        const examIds = Array.from(document.querySelectorAll('.assign-check:checked')).map(cb => parseInt(cb.dataset.examId));
-                        try {
-                            const r = await fetch(`/api/exams/class/${classId}/assign`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ examIds })
-                            });
-                            if (!r.ok) throw new Error('Save failed');
-                            await renderAssignments();
-                            showAlert('Exams assigned to class.', 'success');
-                        } catch (err) {
-                            showAlert(err.message, 'danger');
-                        }
-                    });
-                } catch (err) {
-                    assignContainer.innerHTML = `<div class="text-center text-danger">${err.message}</div>`;
+            document.getElementById('btn-run-aggregate').addEventListener('click', async () => {
+                const checkedExams = Array.from(document.querySelectorAll('.agg-exam-check:checked')).map(cb => parseInt(cb.value));
+                if (checkedExams.length === 0) {
+                    showAlert('Please select at least one exam to calculate cumulative results.', 'warning');
+                    return;
                 }
+
+                const weights = {};
+                checkedExams.forEach(id => {
+                    const inp = document.querySelector(`.agg-weight-input[data-exam-id="${id}"]`);
+                    weights[id] = inp ? parseFloat(inp.value) || 0 : 0;
+                });
+
+                const payload = {
+                    name: document.getElementById('agg-title').value.trim() || 'Cumulative Result',
+                    academicYear: document.getElementById('exam-year-filter').value !== 'all' ? document.getElementById('exam-year-filter').value : '2026',
+                    classId: document.getElementById('agg-class').value ? parseInt(document.getElementById('agg-class').value) : null,
+                    calculationMethod: document.getElementById('agg-method').value,
+                    weights
+                };
+
+                try {
+                    const res = await fetch('/api/exams/aggregate/calculate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Calculation failed');
+
+                    renderAggregateTable(data.results);
+                } catch(err) {
+                    showAlert(err.message, 'danger');
+                }
+            });
+
+            function renderAggregateTable(results) {
+                const theadRow = document.getElementById('agg-thead-row');
+                const tbody = document.getElementById('agg-tbody');
+                const container = document.getElementById('agg-results-container');
+
+                if (!results || results.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No student marks available for selected exams.</td></tr>`;
+                    container.classList.remove('d-none');
+                    return;
+                }
+
+                // Collect unique subjects
+                const subjects = new Set();
+                results.forEach(r => Object.keys(r.subjects || {}).forEach(s => subjects.add(s)));
+                const subjList = Array.from(subjects);
+
+                theadRow.innerHTML = `
+                    <th>Student</th>
+                    <th>ID Code</th>
+                    ${subjList.map(s => `<th class="text-center">${s}</th>`).join('')}
+                    <th class="text-center">Overall %</th>
+                    <th class="text-center">Grade</th>
+                `;
+
+                tbody.innerHTML = results.map(r => `
+                    <tr>
+                        <td class="fw-bold">${r.studentName}</td>
+                        <td><code>${r.studentCode}</code></td>
+                        ${subjList.map(s => `<td class="text-center">${r.subjects[s] !== undefined ? r.subjects[s] + '%' : '—'}</td>`).join('')}
+                        <td class="text-center fw-bold text-primary">${r.overallPercentage}%</td>
+                        <td class="text-center"><span class="badge bg-success-subtle text-success fs-6">${r.grade}</span></td>
+                    </tr>
+                `).join('');
+
+                container.classList.remove('d-none');
             }
 
-            classSelector.addEventListener('change', renderAssignments);
-
-            function showAlert(message, type) {
+            // Alerts
+            function showAlert(message, type = 'info') {
                 const alertDiv = document.getElementById('save-alert');
-                alertDiv.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-                setTimeout(() => { const a = alertDiv.querySelector('.alert'); if (a) bootstrap.Alert.getOrCreateInstance(a).close(); }, 3000);
+                alertDiv.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show shadow">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                setTimeout(() => { const a = alertDiv.querySelector('.alert'); if (a) bootstrap.Alert.getOrCreateInstance(a).close(); }, 4000);
             }
 
-            loadClasses();
-            loadExams();
+            init();
         });
-    </script>
-    <script>
-// Theme Toggle
-function toggleTheme() {
-    const body = document.body;
-    const current = body.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    body.setAttribute('data-theme', next);
-    localStorage.setItem('elif-theme', next);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-}
-(function() {
-    const saved = localStorage.getItem('elif-theme') || 'light';
-    document.body.setAttribute('data-theme', saved);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-})();
-    </script>
-    <script src="/HTML/js/admin.js"></script>
-    <script src="/JS/pwa.js"></script>
-</body>
 
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('elif-theme', next);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        (function() {
+            const saved = localStorage.getItem('elif-theme') || 'light';
+            document.body.setAttribute('data-theme', saved);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        })();
+    </script>
+</body>
 </html>

@@ -134,20 +134,42 @@ router.get('/class-leaders/:classId', async (req, res) => {
 });
 
 // GET results for a class and subject (to populate existing scores & lock status for teacher)
+// Scoped by periodId / examId to prevent marks leaking across different exams
 router.get('/class/:classId/subject/:subject', async (req, res) => {
     const { classId, subject } = req.params;
+    const periodId = req.query.periodId ? parseInt(req.query.periodId) : (req.query.examId ? parseInt(req.query.examId) : null);
     try {
+        let isExamLocked = false;
+        let examStatus = 'open';
+        if (periodId) {
+            const { rows: examRows } = await query(
+                `SELECT status, is_locked FROM exam_periods WHERE id = $1 AND deleted_at IS NULL LIMIT 1`,
+                [periodId]
+            );
+            if (examRows[0]) {
+                examStatus = examRows[0].status || (examRows[0].is_locked ? 'locked' : 'open');
+                isExamLocked = examRows[0].is_locked === true || examStatus === 'locked' || examStatus === 'closed';
+            }
+        }
+
         const { rows } = await query(`
             SELECT r.id, r.student_id, r.subject, r.score, r.exam_type, r.max_score, r.remarks,
-                   r.approval_status, r.edit_allowed, r.submitted_at
+                   r.approval_status, r.edit_allowed, r.submitted_at, r.period_id,
+                   r.component_id, r.component_name
             FROM results r
             JOIN students s ON r.student_id = s.id
             WHERE (s.classid = $1 OR s.id IN (SELECT student_id FROM class_students WHERE class_id = $1))
               AND LOWER(r.subject) = LOWER($2)
+              AND ($3::INTEGER IS NULL OR r.period_id = $3)
               AND r.deleted_at IS NULL
             ORDER BY r.student_id ASC, r.id ASC
-        `, [classId, subject]);
-        res.json(rows);
+        `, [classId, subject, periodId]);
+
+        res.json(rows.map(r => ({
+            ...r,
+            exam_locked: isExamLocked,
+            exam_status: examStatus
+        })));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -538,18 +560,20 @@ router.post('/batch', async (req, res) => {
             if (!studentId || !subject || !examType) continue;
             const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
 
-            // 1. Check if the exam itself is locked globally by admin
-            const { rows: examLock } = await query(
-                `SELECT e.name, COALESCE(e.is_locked, false) AS exam_locked
-                 FROM exams e WHERE e.exam_key = $1 AND e.deleted_at IS NULL LIMIT 1`,
-                [examType]
-            );
-            if (examLock[0] && examLock[0].exam_locked) {
-                return res.status(403).json({
-                    error: `The exam "${examLock[0].name}" is currently locked by the administrator. Scores cannot be submitted or changed.`,
-                    locked: true,
-                    examType
-                });
+            // 1. Check if the exam itself is locked or closed globally by admin in exam_periods
+            if (recPeriodId) {
+                const { rows: examLock } = await query(
+                    `SELECT ep.name, ep.status, COALESCE(ep.is_locked, false) AS exam_locked
+                     FROM exam_periods ep WHERE ep.id = $1 AND ep.deleted_at IS NULL LIMIT 1`,
+                    [recPeriodId]
+                );
+                if (examLock[0] && (examLock[0].exam_locked || examLock[0].status === 'locked' || examLock[0].status === 'closed')) {
+                    return res.status(403).json({
+                        error: `The exam "${examLock[0].name}" is currently ${examLock[0].status || 'locked'} by the administrator. Scores cannot be submitted or changed.`,
+                        locked: true,
+                        examId: recPeriodId
+                    });
+                }
             }
 
             // 2. Check if previous submission is locked
@@ -578,13 +602,49 @@ router.post('/batch', async (req, res) => {
                 throw new Error('studentId, subject and examType are required for every record.');
             }
             const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
-            const { rows: examRows } = await client.query(
-                `SELECT id, max_score FROM exams WHERE exam_key = $1 AND deleted_at IS NULL LIMIT 1`,
-                [examType]
-            );
-            const def = EXAM_TYPES[examType];
-            const maxScore = examRows[0] ? parseFloat(examRows[0].max_score) : (def ? def.maxScore : 100);
-            const parsedScore = Math.min(parseFloat(score) || 0, maxScore);
+
+            // Lookup component in exam_components for this exam
+            let maxScore = 100;
+            let componentId = rec.componentId || rec.component_id ? parseInt(rec.componentId || rec.component_id) : null;
+            let componentName = examType;
+
+            if (recPeriodId) {
+                let compSql = `
+                    SELECT id, name, max_marks FROM exam_components 
+                    WHERE exam_id = $1 AND deleted_at IS NULL AND (
+                        ($2::int IS NOT NULL AND id = $2) OR
+                        component_key = $3 OR 
+                        LOWER(name) = LOWER($3)
+                `;
+                const compNumMatch = String(examType).match(/^comp_?(\d+)$/i);
+                if (compNumMatch) {
+                    compSql += ` OR order_num = ${parseInt(compNumMatch[1])}`;
+                }
+                compSql += `) ORDER BY id ASC LIMIT 1`;
+
+                const { rows: compRows } = await client.query(compSql, [recPeriodId, componentId, String(examType)]);
+                if (compRows[0]) {
+                    maxScore = parseFloat(compRows[0].max_marks);
+                    componentId = compRows[0].id;
+                    componentName = compRows[0].name;
+                }
+            }
+
+            if (componentId === null) {
+                const { rows: examRows } = await client.query(
+                    `SELECT id, max_score, name FROM exams WHERE exam_key = $1 AND deleted_at IS NULL LIMIT 1`,
+                    [examType]
+                );
+                const def = EXAM_TYPES[examType];
+                maxScore = examRows[0] ? parseFloat(examRows[0].max_score) : (def ? def.maxScore : 100);
+                if (examRows[0]) componentName = examRows[0].name;
+            }
+
+            const rawScore = parseFloat(score) || 0;
+            if (rawScore > maxScore) {
+                throw new Error(`Score ${rawScore} exceeds maximum allowed limit (${maxScore}) for component "${componentName}".`);
+            }
+            const parsedScore = Math.max(0, Math.min(rawScore, maxScore));
 
             // Delete existing (only reachable if unlocked or rejected, due to pre-check above)
             await client.query(
@@ -592,9 +652,9 @@ router.post('/batch', async (req, res) => {
                 [studentId, subject, examType, tName, recPeriodId]
             );
             await client.query(
-                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed, period_id)
-                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8)`,
-                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId]
+                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed, period_id, component_id, component_name, attendance_status)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8, $9, $10, 'attended')`,
+                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId, componentId, componentName]
             );
 
             // Synchronize exam_attendance as 'attended'

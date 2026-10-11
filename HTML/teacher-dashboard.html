@@ -603,13 +603,27 @@
                             <!-- Setup Bar -->
                             <div class="setup-bar">
                                 <div class="row g-2 align-items-end">
-                                    <div class="col-md-4 col-6">
+                                    <div class="col-md-2 col-6">
+                                        <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-calendar me-1" style="color:#0d2b4e;"></i>Year</label>
+                                        <select id="results-academic-year" class="form-select form-select-sm">
+                                            <option value="2026" selected>2026</option>
+                                            <option value="2025">2025</option>
+                                            <option value="2027">2027</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-6">
+                                        <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-calendar-check text-primary me-1"></i>Exam Cycle / Month</label>
+                                        <select id="results-exam-period-select" class="form-select form-select-sm fw-bold border-primary">
+                                            <option value="">-- Choose Exam / Month --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-6">
                                         <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-chalkboard me-1" style="color:#0d2b4e;"></i>Class</label>
                                         <select id="results-class-select" class="form-select form-select-sm">
                                             <option value="">-- Select Class --</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-4 col-6">
+                                    <div class="col-md-2 col-6">
                                         <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-book text-warning me-1"></i>Subject</label>
                                         <input type="text" id="results-subject" class="form-control form-control-sm" placeholder="e.g. Mathematics" list="subject-suggestions" autocomplete="off">
                                         <datalist id="subject-suggestions">
@@ -619,7 +633,7 @@
                                             <option value="Islamic Studies"><option value="Arabic"><option value="Economics">
                                         </datalist>
                                     </div>
-                                    <div class="col-md-4 col-6">
+                                    <div class="col-md-2 col-6">
                                         <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;"><i class="fas fa-calendar-day text-danger me-1"></i>Date</label>
                                         <input type="date" id="results-date" class="form-control form-control-sm">
                                     </div>
@@ -1097,6 +1111,7 @@
                 $('load-results-students-btn').disabled = false;
             }
             loadExams(teacherClasses.length > 0 ? teacherClasses[0].id : null);
+            loadTeacherExamPeriods();
 
             // Load all students for directory
             const allStudentPromises = data.classes.map(c => fetch(`/api/classes/${c.id}/students`).then(r => r.json()));
@@ -1430,11 +1445,65 @@
         $('results-class-select').addEventListener('change', () => {
             const cid = $('results-class-select').value;
             $('load-results-students-btn').disabled = !cid;
-            if (cid && typeof loadExams === 'function') {
-                loadExams(cid);
-            }
         });
         $('results-subject').addEventListener('input', renderSubmissionStatus);
+
+        if ($('results-exam-period-select')) {
+            $('results-exam-period-select').addEventListener('change', async () => {
+                const epId = $('results-exam-period-select').value;
+                if (!epId) return;
+                try {
+                    const r = await fetch(`/api/exams/${epId}`);
+                    if (r.ok) {
+                        const ex = await r.json();
+                        updateExamContextBadge(ex);
+                    }
+                } catch(e) {}
+                if ($('results-class-select').value && $('results-subject').value) {
+                    loadResultsStudents();
+                }
+            });
+        }
+        if ($('results-academic-year')) {
+            $('results-academic-year').addEventListener('change', loadTeacherExamPeriods);
+        }
+
+        async function loadTeacherExamPeriods() {
+            const yr = $('results-academic-year') ? $('results-academic-year').value : '2026';
+            const epSelect = $('results-exam-period-select');
+            if (!epSelect) return;
+            try {
+                const res = await fetch(`/api/exams?academic_year=${yr}`);
+                if (!res.ok) return;
+                const list = await res.json();
+                epSelect.innerHTML = '<option value="">-- Choose Exam / Month --</option>' +
+                    list.map(e => `<option value="${e.id}" data-status="${e.status}" data-locked="${e.is_locked ? 'true' : 'false'}">${e.name} (${(e.status || 'open').toUpperCase()})</option>`).join('');
+                if (list.length > 0) {
+                    const openEx = list.find(e => e.status === 'open') || list[0];
+                    if (openEx) {
+                        epSelect.value = openEx.id;
+                        updateExamContextBadge(openEx);
+                    }
+                }
+            } catch(e) {
+                console.warn('Failed loading exam periods', e);
+            }
+        }
+
+        function updateExamContextBadge(exam) {
+            const partsLabel = $('results-exam-parts-badge');
+            const partsSubtext = $('results-exam-parts-subtext');
+            if (!exam) return;
+            const isLocked = exam.status === 'locked' || exam.is_locked;
+            const statusTxt = isLocked ? '🔒 LOCKED' : (exam.status === 'closed' ? '📁 CLOSED' : '✅ OPEN FOR SCORING');
+            if (partsLabel) {
+                partsLabel.innerHTML = `<span class="badge ${isLocked ? 'bg-danger' : 'bg-success'} me-1">${statusTxt}</span> ${exam.name}`;
+            }
+            if (partsSubtext) {
+                const compStr = (exam.components || []).map(c => `${c.name} (${c.max_marks})`).join(' + ');
+                partsSubtext.textContent = compStr ? `Components: ${compStr} = 100 Marks` : 'Configuring assessment components...';
+            }
+        }
 
         const AVATAR_GRADIENTS = ['linear-gradient(135deg,#0d2b4e,#1a3f6f)','linear-gradient(135deg,#0d6efd,#6610f2)','linear-gradient(135deg,#dc3545,#e83e8c)','linear-gradient(135deg,#fd7e14,#ffc107)','linear-gradient(135deg,#6f42c1,#d63384)','linear-gradient(135deg,#0dcaf0,#0d6efd)','linear-gradient(135deg,#198754,#20c997)'];
 
@@ -1475,6 +1544,12 @@
         async function loadResultsStudents() {
             const classId = $('results-class-select').value;
             const subject = ($('results-subject').value || '').trim();
+            const periodId = $('results-exam-period-select') ? $('results-exam-period-select').value : null;
+
+            if (!periodId) {
+                $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please select an Exam Cycle / Month first.</div>';
+                return;
+            }
             if (!classId) {
                 $('results-alert').innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please select a class first.</div>';
                 return;
@@ -1487,53 +1562,42 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
             try {
-                // 1. Load exam definitions dynamically from Admin settings
-                let examsData = [];
+                // 1. Load exact exam definition & configured components for this period
+                let currentExam = null;
                 try {
-                    const examRes = await fetch(`/api/exams/class/${classId}`);
-                    if (examRes.ok) examsData = await examRes.json();
+                    const examRes = await fetch(`/api/exams/${periodId}`);
+                    if (examRes.ok) currentExam = await examRes.json();
                 } catch(e) {}
-                // Fallback to global exams if class-specific returns empty
-                if (!Array.isArray(examsData) || examsData.length === 0) {
-                    try {
-                        const fallbackRes = await fetch('/api/exams');
-                        if (fallbackRes.ok) examsData = await fallbackRes.json();
-                    } catch(e) {}
-                }
-                // Build examParts dynamically from admin-defined exams
-                if (Array.isArray(examsData) && examsData.length > 0) {
-                    examParts = examsData
-                        .filter(e => e.active !== false && !e.deleted_at)
-                        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id)
-                        .map(e => ({
-                            key: e.exam_key,
-                            label: e.name,
-                            max: parseFloat(e.max_score) || 0,
-                            locked: e.is_locked === true,
-                            id: e.id
-                        }));
-                }
-                // Final fallback: if still empty use a 100-point default
-                if (examParts.length === 0) {
-                    examParts = [{ key: 'score', label: 'Score', max: 100, locked: false }];
+
+                const isExamLocked = currentExam && (currentExam.status === 'locked' || currentExam.is_locked);
+                const isExamClosed = currentExam && currentExam.status === 'closed';
+
+                if (currentExam && Array.isArray(currentExam.components) && currentExam.components.length > 0) {
+                    examParts = currentExam.components.map(c => ({
+                        key: c.component_key,
+                        label: c.name,
+                        max: parseFloat(c.max_marks) || 0,
+                        locked: isExamLocked || isExamClosed,
+                        id: c.id
+                    }));
+                } else {
+                    examParts = [
+                        { key: 'score', label: 'Score', max: 100, locked: isExamLocked || isExamClosed }
+                    ];
                 }
 
-                // Update badge in the card header
-                const partsLabel = $('results-exam-parts-badge');
-                const partsSubtext = $('results-exam-parts-subtext');
-                if (partsLabel) partsLabel.textContent = examParts.map(p => p.label).join(' · ');
-                if (partsSubtext) partsSubtext.textContent = `Enter all ${examParts.length} part${examParts.length > 1 ? 's' : ''} at once. 🔒 = locked by Admin.`;
+                updateExamContextBadge(currentExam);
 
-                // 2. Load previous submissions for this class + subject to inspect lock status & existing marks
+                // 2. Load previous submissions for this class + subject + periodId
                 let existingResults = [];
                 let existingAttendance = [];
                 try {
-                    const prevRes = await fetch(`/api/results/class/${classId}/subject/${encodeURIComponent(subject)}`);
+                    const prevRes = await fetch(`/api/results/class/${classId}/subject/${encodeURIComponent(subject)}?periodId=${periodId}`);
                     if (prevRes.ok) existingResults = await prevRes.json();
                 } catch (e) {}
 
                 try {
-                    const attRes = await fetch(`/api/exam-attendance?classId=${classId}&subject=${encodeURIComponent(subject)}`);
+                    const attRes = await fetch(`/api/exam-attendance?classId=${classId}&subject=${encodeURIComponent(subject)}&periodId=${periodId}`);
                     if (attRes.ok) existingAttendance = await attRes.json();
                 } catch (e) {}
 
@@ -1890,18 +1954,20 @@
                 const attSelect = row.querySelector('.att-status-select');
                 const attStatus = attSelect ? attSelect.value : 'attended';
 
-                if (attStatus === 'attended') {
+                const periodIdVal = $('results-exam-period-select') ? parseInt($('results-exam-period-select').value) : null;
+            if (attStatus === 'attended') {
                     examParts.forEach(p => {
                         if (p.locked) return; // skip locked parts
                         const inp = row.querySelector(`.si-part[data-part="${p.key}"]`);
                         const score = inp && inp.value !== '' ? (parseFloat(inp.value) || 0) : 0;
-                        records.push({ studentId: parseInt(sid), subject, examType: p.key, score, remarks, date });
+                        records.push({ studentId: parseInt(sid), subject, examType: p.key, componentId: p.id, score, remarks, date, periodId: periodIdVal });
                     });
                 } else {
                     attendanceRecords.push({
                         studentId: parseInt(sid),
                         subject,
                         status: attStatus,
+                        periodId: periodIdVal,
                         notes: remarks || `Marked ${attStatus}`
                     });
                 }
@@ -1921,6 +1987,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        periodId: periodIdVal,
                         records,
                         attendanceRecords,
                         teacherId: activeUser.id,

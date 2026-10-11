@@ -60,36 +60,100 @@ router.get('/:studentId', async (req, res) => {
             }
         } catch (e) { /* column may not exist yet */ }
 
+        let monthlyExamResults = {};
         try {
             const { rows: resultRows } = await query(
-                `SELECT r.subject, r.score, r.exam_type, r.max_score, ep.name as period_name, ep.month, ep.year
+                `SELECT r.id, r.subject, r.score, r.exam_type, r.max_score, r.remarks, r.period_id,
+                        r.component_id, r.component_name,
+                        ep.id as exam_id, ep.name as period_name, ep.month, ep.year, ep.exam_code, ep.total_marks
                  FROM results r
                  LEFT JOIN exam_periods ep ON r.period_id = ep.id
-                 WHERE r.student_id = $1 AND r.approval_status = 'approved'`,
+                 WHERE r.student_id = $1 AND r.approval_status = 'approved' AND r.deleted_at IS NULL
+                 ORDER BY ep.year DESC, ep.month DESC NULLS LAST, r.subject ASC, r.id ASC`,
                 [studentId]
             );
-            // Group by subject and period, then by exam_type
+
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
             resultRows.forEach(r => {
+                const exId = r.period_id || 0;
+                const exName = r.period_name || 'General Assessment';
+                const exCode = r.exam_code || `EXAM-${exId}`;
+                const exMonth = r.month;
+                const exYear = r.year;
+
+                if (!monthlyExamResults[exId]) {
+                    monthlyExamResults[exId] = {
+                        examId: exId,
+                        examName: exName,
+                        month: exMonth,
+                        year: exYear,
+                        examCode: exCode,
+                        totalMarks: parseFloat(r.total_marks) || 100,
+                        subjects: {},
+                        overallPercentage: 0,
+                        overallGrade: 'N/A'
+                    };
+                }
+
+                if (!monthlyExamResults[exId].subjects[r.subject]) {
+                    monthlyExamResults[exId].subjects[r.subject] = {
+                        subject: r.subject,
+                        scores: {},
+                        components: [],
+                        total: 0,
+                        maxTotal: 0,
+                        remarks: r.remarks || ''
+                    };
+                }
+
+                const score = parseFloat(r.score) || 0;
+                const maxScore = parseFloat(r.max_score) || 100;
+                const compKey = r.exam_type || 'score';
+                const compName = r.component_name || r.exam_type || 'Score';
+
+                monthlyExamResults[exId].subjects[r.subject].scores[compKey] = score;
+                monthlyExamResults[exId].subjects[r.subject].components.push({
+                    name: compName,
+                    key: compKey,
+                    score,
+                    maxScore
+                });
+                monthlyExamResults[exId].subjects[r.subject].total += score;
+                monthlyExamResults[exId].subjects[r.subject].maxTotal += maxScore;
+
+                // Legacy grouped subject mapping
                 let displaySubject = r.subject || 'Unknown Subject';
                 if (r.period_name) {
                     displaySubject += ` (${r.period_name})`;
                 } else if (r.month && r.year) {
-                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
                     displaySubject += ` (${months[r.month-1]} ${r.year})`;
                 }
-
                 if (!results[displaySubject]) {
                     results[displaySubject] = { scores: {}, total: 0, maxTotal: 0 };
                 }
-                const examType = r.exam_type || 'score';
-                const score = parseFloat(r.score) || 0;
-                const maxScore = parseFloat(r.max_score) || 100;
-                results[displaySubject].scores[examType] = score;
+                results[displaySubject].scores[compKey] = score;
                 results[displaySubject].maxScores = results[displaySubject].maxScores || {};
-                results[displaySubject].maxScores[examType] = maxScore;
+                results[displaySubject].maxScores[compKey] = maxScore;
                 results[displaySubject].total += score;
                 results[displaySubject].maxTotal += maxScore;
             });
+
+            // Calculate overall percentage and grade for each monthly exam
+            for (const exId of Object.keys(monthlyExamResults)) {
+                const ex = monthlyExamResults[exId];
+                const subjs = Object.values(ex.subjects);
+                let totScore = 0;
+                let totMax = 0;
+                subjs.forEach(s => {
+                    s.percentage = s.maxTotal > 0 ? Math.round((s.total / s.maxTotal) * 100) : 0;
+                    s.grade = s.percentage >= 90 ? 'A+' : (s.percentage >= 80 ? 'A' : (s.percentage >= 70 ? 'B' : (s.percentage >= 60 ? 'C' : (s.percentage >= 50 ? 'D' : 'F'))));
+                    totScore += s.total;
+                    totMax += s.maxTotal;
+                });
+                ex.overallPercentage = totMax > 0 ? Math.round((totScore / totMax) * 100) : 0;
+                ex.overallGrade = ex.overallPercentage >= 90 ? 'A+' : (ex.overallPercentage >= 80 ? 'A' : (ex.overallPercentage >= 70 ? 'B' : (ex.overallPercentage >= 60 ? 'C' : (ex.overallPercentage >= 50 ? 'D' : 'F'))));
+            }
         } catch (e) { /* results table may not exist */ }
 
         // 3. Attendance stats
@@ -382,6 +446,7 @@ router.get('/:studentId', async (req, res) => {
                 remarks: student.remarks
             },
             results,
+            monthlyExamResults,
             resultsOnHold,
             releaseAt,
             exams,
@@ -468,7 +533,7 @@ router.get('/:studentId/results-filter', async (req, res) => {
     }
 });
 
-// GET student results filtered by exam period (legacy compat)
+// GET student results filtered by exam period (returns scoped monthly report)
 router.get('/:studentId/period/:periodId', async (req, res) => {
     const studentId = parseInt(req.params.studentId);
     const periodId = parseInt(req.params.periodId);
@@ -476,23 +541,33 @@ router.get('/:studentId/period/:periodId', async (req, res) => {
     try {
         const { rows } = await query(`
             SELECT r.id, r.subject, r.exam_type, r.score, r.max_score, r.remarks, r.approval_status,
-                   e.name AS exam_name, r.submitted_at
+                   COALESCE(ec.name, e.name, r.component_name, r.exam_type) AS exam_name,
+                   COALESCE(ec.max_marks, r.max_score, 100) AS component_max,
+                   r.submitted_at
             FROM results r
+            LEFT JOIN exam_components ec ON ec.id = r.component_id
             LEFT JOIN exams e ON e.exam_key = r.exam_type AND e.deleted_at IS NULL
             WHERE r.period_id = $1 AND r.student_id = $2 AND r.deleted_at IS NULL AND r.approval_status = 'approved'
             ORDER BY r.subject, r.submitted_at
         `, [periodId, studentId]);
+
+        const { rows: comps } = await query(`
+            SELECT id, name, component_key, max_marks, order_num
+            FROM exam_components WHERE exam_id = $1 AND deleted_at IS NULL
+            ORDER BY order_num ASC
+        `, [periodId]);
+
         const grouped = {};
         rows.forEach(r => {
             if (!grouped[r.subject]) grouped[r.subject] = { scores: {}, maxScores: {}, total: 0, maxTotal: 0 };
             const score = parseFloat(r.score) || 0;
-            const maxScore = parseFloat(r.max_score) || 0;
+            const maxScore = parseFloat(r.component_max) || parseFloat(r.max_score) || 0;
             grouped[r.subject].scores[r.exam_type] = score;
             grouped[r.subject].maxScores[r.exam_type] = maxScore;
             grouped[r.subject].total += score;
             grouped[r.subject].maxTotal += maxScore;
         });
-        res.json({ results: grouped, rows });
+        res.json({ results: grouped, rows, components: comps });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

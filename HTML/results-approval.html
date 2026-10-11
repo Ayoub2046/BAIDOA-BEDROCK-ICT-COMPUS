@@ -817,8 +817,29 @@
             }
 
             // Filter Event Listeners
-            ['filter-academic-year', 'filter-class', 'filter-period', 'filter-subject'].forEach(id => {
+            ['filter-academic-year', 'filter-class', 'filter-subject'].forEach(id => {
                 document.getElementById(id).addEventListener('change', () => loadApprovalData());
+            });
+
+            document.getElementById('filter-period').addEventListener('change', async () => {
+                const pid = document.getElementById('filter-period').value;
+                if (pid && pid !== 'all') {
+                    try {
+                        const r = await fetch(`/api/exams/${pid}`);
+                        if (r.ok) {
+                            const ex = await r.json();
+                            if (Array.isArray(ex.components) && ex.components.length > 0) {
+                                approvalExams = ex.components.map(c => ({
+                                    exam_key: c.component_key,
+                                    name: c.name,
+                                    max_score: c.max_marks
+                                }));
+                                renderHeader();
+                            }
+                        }
+                    } catch(e) {}
+                }
+                loadApprovalData();
             });
 
             document.getElementById('status-filter').addEventListener('change', () => renderResultsTable());
