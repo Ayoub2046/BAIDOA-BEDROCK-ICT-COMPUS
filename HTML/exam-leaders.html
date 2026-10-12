@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d2b4e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Baidoa Bedrock ICT Campus">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Leaders & Top Performers | Baidoa Bedrock ICT Campus</title>
+    <link rel="icon" type="image/png" href="/images/BEDRCOK LOGO.JPG">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Project Stylesheets -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/edupulse-theme.css">
+
+    <style>
+        :root {
+            --navy-primary: #0d2b4e;
+            --navy-dark: #07192e;
+            --gold-primary: #f1c40f;
+            --gold-dark: #d4ac0d;
+            --gold-light: #fef9c3;
+            --silver-primary: #94a3b8;
+            --silver-dark: #64748b;
+            --silver-light: #f1f5f9;
+            --bronze-primary: #d97706;
+            --bronze-dark: #b45309;
+            --bronze-light: #ffedd5;
+            --bg-body-soft: #f8fafc;
+            --card-shadow: 0 4px 20px rgba(13, 43, 78, 0.06);
+            --card-hover: 0 10px 30px rgba(13, 43, 78, 0.12);
+        }
+
+        body {
+            background-color: var(--bg-body-soft);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        /* Page Banner */
+        .awards-hero-banner {
+            background: linear-gradient(135deg, #0d2b4e 0%, #173f6c 100%);
+            border-radius: 16px;
+            padding: 1.6rem 1.8rem;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 6px 25px rgba(13, 43, 78, 0.18);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .awards-hero-banner::after {
+            content: "\f091";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 20px;
+            bottom: -25px;
+            font-size: 8rem;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        /* Filter Controls Card */
+        .filter-panel-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 1.2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Stat Metrics Cards */
+        .stat-award-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 1rem 1.2rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .stat-award-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover);
+        }
+
+        .stat-award-val {
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--navy-primary);
+        }
+
+        .stat-award-lbl {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+
+        .stat-award-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        /* Podium Layout (Matching Reference Design exactly) */
+        .podium-honor-roll-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .podium-honor-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .podium-honor-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--navy-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .podium-honor-subtitle {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .podium-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
+            padding: 2.2rem 1.5rem 1.8rem;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        /* Individual Podium Card */
+        .podium-col {
+            flex: 1;
+            max-width: 320px;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .podium-box {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            padding: 1.6rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .podium-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 1st Place Champion Center Styling */
+        .podium-box.rank-1 {
+            border-color: #f1c40f;
+            background: linear-gradient(180deg, #fffdf2 0%, #ffffff 100%);
+            box-shadow: 0 8px 30px rgba(241, 196, 15, 0.22);
+            padding-top: 2rem;
+            transform: translateY(-10px);
+        }
+
+        .podium-box.rank-1:hover {
+            transform: translateY(-14px);
+        }
+
+        .podium-box.rank-2 {
+            border-color: #cbd5e1;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .podium-box.rank-3 {
+            border-color: #fed7aa;
+            background: linear-gradient(180deg, #fffaf5 0%, #ffffff 100%);
+        }
+
+        /* Avatar with Medal Ring */
+        .podium-avatar-frame {
+            position: relative;
+            margin-bottom: 0.8rem;
+        }
+
+        .podium-avatar-img {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #ffffff;
+            border: 3px solid #cbd5e1;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            display: block;
+        }
+
+        .podium-box.rank-1 .podium-avatar-img {
+            width: 88px;
+            height: 88px;
+            border-color: #f1c40f;
+            box-shadow: 0 6px 20px rgba(241, 196, 15, 0.35);
+        }
+
+        .podium-box.rank-3 .podium-avatar-img {
+            border-color: #d97706;
+        }
+
+        .podium-medal-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .crown-overlay {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.6rem;
+            color: #f39c12;
+            animation: crownBob 3s ease-in-out infinite;
+        }
+
+        @keyframes crownBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .podium-name {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 2px;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .podium-box.rank-1 .podium-name {
+            font-size: 1.1rem;
+            color: var(--navy-dark);
+        }
+
+        .podium-id {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-bottom: 0.6rem;
+            display: inline-block;
+        }
+
+        .podium-class-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #3b82f6;
+            background: #eff6ff;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+
+        .podium-score-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .podium-box.rank-1 .podium-score-pill {
+            background: #fef9c3;
+            color: #854d0e;
+            font-size: 0.92rem;
+        }
+
+        .podium-box.rank-2 .podium-score-pill {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .podium-box.rank-3 .podium-score-pill {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        /* Large Podium Base Banner matching reference 1st / 2nd / 3rd */
+        .podium-base-pedestal {
+            width: 100%;
+            border-radius: 10px 10px 8px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .podium-box.rank-1 .podium-base-pedestal {
+            height: 52px;
+            background: linear-gradient(180deg, #f1c40f, #d4ac0d);
+            font-size: 1.35rem;
+            box-shadow: 0 4px 12px rgba(241, 196, 15, 0.4);
+        }
+
+        .podium-box.rank-2 .podium-base-pedestal {
+            height: 42px;
+            background: linear-gradient(180deg, #94a3b8, #64748b);
+            font-size: 1.15rem;
+        }
+
+        .podium-box.rank-3 .podium-base-pedestal {
+            height: 34px;
+            background: linear-gradient(180deg, #d97706, #b45309);
+            font-size: 1.05rem;
+        }
+
+        /* Class Champions Grid */
+        .champion-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #fef08a;
+            padding: 1.1rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .champion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(241, 196, 15, 0.18);
+        }
+
+        .champion-badge-ribbon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: linear-gradient(135deg, #f1c40f, #d4ac0d);
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 12px;
+            border-radius: 0 0 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .champion-avatar {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f1c40f;
+            box-shadow: 0 3px 10px rgba(241, 196, 15, 0.3);
+            flex-shrink: 0;
+        }
+
+        /* Print styles */
+        @media print {
+            .sidebar, .top-navbar, .filter-panel-card, .btn-print-hide {
+                display: none !important;
+            }
+            .content-area, .main-content {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .podium-box {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+
+        /* Responsive Mobile Podium */
+        @media (max-width: 768px) {
+            .podium-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            .podium-col {
+                width: 100%;
+                max-width: 100%;
+            }
+            .podium-box.rank-1 {
+                order: -1;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <img src="/images/BEDRCOK LOGO.JPG" style="width: 52px; height: 52px; border-radius: 50px;" alt="Logo">
+                    <span style="font-size: 18px; font-weight:800;">Baidoa Bedrock ICT</span>
+                </h3>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="exam-leaders.html" class="active"><i class="fas fa-trophy text-warning"></i> <span>Exam Leaders</span></a></li>
+                <li><a href="results-approval.html"><i class="fas fa-check-double"></i> <span>Results Approval</span></a></li>
+                <li><a href="resulty.html"><i class="fas fa-poll"></i> <span>Manage Results</span></a></li>
+                <li><a href="student.html"><i class="fas fa-user-graduate"></i> <span>Student Records</span></a></li>
+                <li><a href="teacher.html"><i class="fas fa-chalkboard-teacher"></i> <span>Teacher Management</span></a></li>
+                <li><a href="classmanagment.html"><i class="fas fa-book-open"></i> <span>Class Management</span></a></li>
+                <li><a href="attendance.html"><i class="fas fa-user-check"></i> <span>Attendance</span></a></li>
+                <li><a href="fee-managment.html"><i class="fas fa-dollar-sign"></i> <span>Fee Management</span></a></li>
+                <li><a href="exams-admin.html"><i class="fas fa-pen-fancy"></i> <span>Manage Exams</span></a></li>
+                <li><a href="report.html"><i class="fas fa-chart-bar"></i> <span>Report Generation</span></a></li>
+                <li><a href="/HTML/index.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <button class="btn btn-primary d-lg-none" id="sidebar-toggler" type="button"><i class="fas fa-bars"></i></button>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-trophy text-warning fs-5"></i>
+                    <h4 class="mb-0 fw-bold" style="color:var(--navy-primary);">Exam Leaders &amp; Top Performers</h4>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 btn-print-hide" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> Print Awards
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 btn-print-hide" id="btn-refresh-leaders">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+            </nav>
+
+            <div class="content-area p-3 p-lg-4">
+                <!-- Hero Header -->
+                <div class="awards-hero-banner">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">
+                                <i class="fas fa-award me-1"></i> Official Student Honor Roll
+                            </span>
+                            <h2 class="fw-bold mb-1" id="banner-exam-title">Exam Leaders &amp; Top Performers</h2>
+                            <p class="mb-0 opacity-75" style="font-size:0.92rem;" id="banner-exam-sub">
+                                Celebrating academic excellence, top three podium winners, and first-place class champions at Baidoa Bedrock ICT Campus.
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <div class="d-inline-flex flex-column align-items-lg-end">
+                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold" id="badge-publish-status">
+                                    <i class="fas fa-check-circle me-1"></i> Officially Published
+                                </span>
+                                <small class="text-white-50 mt-1" id="banner-date-stamp"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls Panel -->
+                <div class="filter-panel-card btn-print-hide">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted"><i class="fas fa-calendar-alt me-1 text-primary"></i>Exam Period / Month</label>
+                            <select class="form-select form-select-sm" id="filter-exam-period">
+                                <option value="">Loading exam periods...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted"><i class="fas fa-chalkboard me-1 text-primary"></i>Filter Class</label>
+                            <select class="form-select form-select-sm" id="filter-class">
+                                <option value="all">All Participating Classes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted"><i class="fas fa-graduation-cap me-1 text-primary"></i>Academic Year</label>
+                            <select class="form-select form-select-sm" id="filter-academic-year">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted"><i class="fas fa-filter me-1 text-primary"></i>Results Status</label>
+                            <select class="form-select form-select-sm" id="filter-status">
+                                <option value="approved" selected>Official (Approved)</option>
+                                <option value="all">All Submissions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button class="btn btn-primary btn-sm w-100 fw-semibold" id="btn-apply-filters">
+                                <i class="fas fa-search me-1"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Metrics Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-award-card">
+                            <div>
+                                <div class="stat-award-val" id="metric-total-classes">0</div>
+                                <div class="stat-award-lbl">Classes Participating</div>
+                            </div>
+                            <div class="stat-award-icon bg-primary-subtle text-primary"><i class="fas fa-school"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-award-card">
+                            <div>
+                                <div class="stat-award-val text-warning" id="metric-class-champions">0</div>
+                                <div class="stat-award-lbl">1st Place Champions</div>
+                            </div>
+                            <div class="stat-award-icon bg-warning-subtle text-warning"><i class="fas fa-trophy"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-award-card">
+                            <div>
+                                <div class="stat-award-val text-success" id="metric-distinct-students">0</div>
+                                <div class="stat-award-lbl">Distinct Champions</div>
+                            </div>
+                            <div class="stat-award-icon bg-success-subtle text-success"><i class="fas fa-user-check"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-award-card">
+                            <div>
+                                <div class="stat-award-val text-info" id="metric-eligible-students">0</div>
+                                <div class="stat-award-lbl">Ranked Students</div>
+                            </div>
+                            <div class="stat-award-icon bg-info-subtle text-info"><i class="fas fa-users"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: OVERALL SCHOOL CHAMPIONS (Top 3 across school) -->
+                <div class="podium-honor-roll-card" id="schoolwide-podium-card">
+                    <div class="podium-honor-header">
+                        <div>
+                            <h5 class="podium-honor-title">
+                                <i class="fas fa-crown text-warning"></i> Overall School Champions — Top 3 Leaders
+                            </h5>
+                            <div class="podium-honor-subtitle" id="schoolwide-subtitle">
+                                Highest-performing students across the entire campus for the selected exam
+                            </div>
+                        </div>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-bold">
+                            <i class="fas fa-star me-1 text-warning"></i> Campus Top 3
+                        </span>
+                    </div>
+                    <div class="podium-container" id="schoolwide-podium-container">
+                        <!-- Populated dynamically: 2nd place (left), 1st place (center), 3rd place (right) -->
+                    </div>
+                </div>
+
+                <!-- SECTION 2: CLASS CHAMPIONS (All First-Place Students in One Place) -->
+                <div class="card mb-4" style="border-radius:18px; border:1px solid #e2e8f0; box-shadow:var(--card-shadow);">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom:1px solid #f1f5f9;">
+                        <div>
+                            <h5 class="mb-0 fw-bold" style="color:var(--navy-primary);">
+                                <i class="fas fa-medal text-warning me-2"></i>Class Champions — 1st Place in Every Class
+                            </h5>
+                            <small class="text-muted">A consolidated showcase of every student who achieved first place in their class</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill px-3 py-2" id="badge-champions-count">0 Champions</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-3" id="class-champions-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: TOP 3 FOR EVERY CLASS (Class-by-Class Honor Rolls) -->
+                <div class="mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h4 class="fw-bold mb-0" style="color:var(--navy-primary);">
+                                <i class="fas fa-award text-primary me-2"></i>Class Honor Rolls — Top 3 by Class
+                            </h4>
+                            <small class="text-muted">Browse every class's top three podium winners matching the official design</small>
+                        </div>
+                    </div>
+
+                    <div id="class-honor-rolls-wrapper">
+                        <!-- Populated dynamically: one podium card per class -->
+                    </div>
+                </div>
+
+                <!-- SECTION 4: DETAILED RANKINGS TABLE -->
+                <div class="card" style="border-radius:18px; border:1px solid #e2e8f0; box-shadow:var(--card-shadow);">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom:1px solid #f1f5f9;">
+                        <h6 class="mb-0 fw-bold" style="color:var(--navy-primary);">
+                            <i class="fas fa-list-ol me-2 text-primary"></i>Comprehensive Student Rankings Table
+                        </h6>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control form-control-sm" id="search-rankings-input" placeholder="Search name or ID..." style="max-width:220px;">
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="font-size:0.85rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px;" class="text-center">Rank</th>
+                                        <th>Student</th>
+                                        <th>Student ID</th>
+                                        <th>Class</th>
+                                        <th class="text-center">Total Score</th>
+                                        <th class="text-center">Percentage</th>
+                                        <th class="text-center">Grade</th>
+                                        <th class="text-center">Components</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankings-table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/HTML/js/admin.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            if (typeof initAdminSidebar === 'function') initAdminSidebar();
+
+            let currentExamPeriodId = null;
+            let currentData = null;
+
+            // Load Exam Periods and Classes into filters
+            async function initFilters() {
+                try {
+                    const [pRes, cRes] = await Promise.all([
+                        fetch('/api/exam-periods'),
+                        fetch('/api/classes')
+                    ]);
+                    
+                    const periods = await pRes.json();
+                    const classes = await cRes.json();
+
+                    const periodSelect = document.getElementById('filter-exam-period');
+                    periodSelect.innerHTML = (periods || []).map(p => `
+                        <option value="${p.id}" ${p.is_active ? 'selected' : ''}>${p.name} (${p.academic_year || '2026'})${p.is_published ? ' - Published' : ''}</option>
+                    `).join('');
+
+                    if (periodSelect.value) {
+                        currentExamPeriodId = parseInt(periodSelect.value);
+                    }
+
+                    const classSelect = document.getElementById('filter-class');
+                    classSelect.innerHTML = '<option value="all">All Participating Classes</option>' + 
+                        (classes || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+                } catch (e) {
+                    console.error('Could not load filters:', e);
+                }
+            }
+
+            // Render a single 3-student podium (Second on Left, First in Center, Third on Right)
+            function renderPodiumHtml(top3, examName) {
+                const first = top3.find(s => s.rank === 1 || s.classRank === 1);
+                const second = top3.find(s => s.rank === 2 || s.classRank === 2);
+                const third = top3.find(s => s.rank === 3 || s.classRank === 3);
+
+                function renderCard(st, rankNum, medalEmoji, baseText) {
+                    if (!st) {
+                        return `
+                            <div class="podium-col">
+                                <div class="podium-box rank-${rankNum} opacity-50">
+                                    <div class="podium-avatar-frame">
+                                        <div class="podium-avatar-img d-flex align-items-center justify-content-center bg-light text-muted">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <div class="podium-medal-badge">${medalEmoji}</div>
+                                    </div>
+                                    <div class="podium-name text-muted">Vacant</div>
+                                    <div class="podium-id">—</div>
+                                    <div class="podium-score-pill"><i class="fas fa-minus me-1"></i>0 pts</div>
+                                    <div class="podium-base-pedestal">${baseText}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const avatarUrl = st.image || '/images/BEDRCOK LOGO.JPG';
+                    const crownHtml = rankNum === 1 ? '<i class="fas fa-crown crown-overlay"></i>' : '';
+
+                    return `
+                        <div class="podium-col">
+                            <div class="podium-box rank-${rankNum}">
+                                ${crownHtml}
+                                <div class="podium-avatar-frame">
+                                    <img src="${avatarUrl}" alt="${st.name}" class="podium-avatar-img" onerror="this.src='/images/BEDRCOK LOGO.JPG'">
+                                    <div class="podium-medal-badge">${medalEmoji}</div>
+                                </div>
+                                <div class="podium-name" title="${st.name}">${st.name}</div>
+                                <div class="podium-id">${st.bbId}</div>
+                                ${st.className ? `<div class="podium-class-tag">${st.className}</div>` : ''}
+                                <div class="podium-score-pill">
+                                    <i class="fas fa-star text-warning me-1"></i>${st.totalScore} pts 
+                                    <span class="opacity-75">(${st.percentage}%)</span>
+                                </div>
+                                <div class="podium-base-pedestal">${baseText}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    ${renderCard(second, 2, '🥈', '2nd')}
+                    ${renderCard(first, 1, '🥇', '1st')}
+                    ${renderCard(third, 3, '🥉', '3rd')}
+                `;
+            }
+
+            // Fetch and render Leaderboards data
+            async function loadLeaderboards() {
+                const periodId = document.getElementById('filter-exam-period').value;
+                const classId = document.getElementById('filter-class').value;
+                const academicYear = document.getElementById('filter-academic-year').value;
+                const status = document.getElementById('filter-status').value;
+
+                const params = new URLSearchParams();
+                if (periodId) params.append('periodId', periodId);
+                if (classId && classId !== 'all') params.append('classId', classId);
+                if (academicYear) params.append('academicYear', academicYear);
+                if (status) params.append('status', status);
+
+                try {
+                    const res = await fetch(`/api/results/leaderboards?${params.toString()}`);
+                    if (!res.ok) throw new Error('Failed to load leaderboards data');
+                    const data = await res.json();
+                    currentData = data;
+
+                    // Update Hero Header
+                    const periodName = data.periodInfo ? data.periodInfo.name : 'All Examinations';
+                    document.getElementById('banner-exam-title').textContent = `${periodName} — Exam Leaders`;
+                    document.getElementById('banner-date-stamp').textContent = `Generated: ${new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}`;
+
+                    const badgePub = document.getElementById('badge-publish-status');
+                    if (data.summary.isOfficiallyPublished) {
+                        badgePub.className = 'badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold';
+                        badgePub.innerHTML = '<i class="fas fa-check-circle me-1"></i> Officially Published';
+                    } else {
+                        badgePub.className = 'badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold';
+                        badgePub.innerHTML = '<i class="fas fa-clock me-1"></i> Unreleased Draft';
+                    }
+
+                    // Update Metrics
+                    document.getElementById('metric-total-classes').textContent = data.summary.totalClassesParticipating || 0;
+                    document.getElementById('metric-class-champions').textContent = data.summary.totalFirstPlaceAwards || 0;
+                    document.getElementById('metric-distinct-students').textContent = data.summary.distinctFirstPlaceStudents || 0;
+                    document.getElementById('metric-eligible-students').textContent = data.summary.totalEligibleStudents || 0;
+                    document.getElementById('badge-champions-count').textContent = `${data.summary.totalFirstPlaceAwards || 0} Champions`;
+
+                    // Render Section 1: Schoolwide Top 3 Podium
+                    const schoolContainer = document.getElementById('schoolwide-podium-container');
+                    if (data.schoolwideTop3 && data.schoolwideTop3.length > 0) {
+                        schoolContainer.innerHTML = renderPodiumHtml(data.schoolwideTop3, periodName);
+                    } else {
+                        schoolContainer.innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-trophy fa-2x mb-2 d-block text-warning"></i>No approved marks published yet for this exam selection.</div>';
+                    }
+
+                    // Render Section 2: Class Champions (All 1st place in one place)
+                    const champGrid = document.getElementById('class-champions-grid');
+                    if (data.classChampions && data.classChampions.length > 0) {
+                        champGrid.innerHTML = data.classChampions.map(c => `
+                            <div class="col-md-6 col-lg-3">
+                                <div class="champion-card">
+                                    <div class="champion-badge-ribbon"><i class="fas fa-crown me-1"></i>1st Place</div>
+                                    <img src="${c.image || '/images/BEDRCOK LOGO.JPG'}" alt="${c.name}" class="champion-avatar" onerror="this.src='/images/BEDRCOK LOGO.JPG'">
+                                    <div style="min-width:0; flex:1;">
+                                        <div class="fw-bold text-dark text-truncate" style="font-size:0.92rem;" title="${c.name}">${c.name}</div>
+                                        <div class="small text-muted"><code class="text-primary">${c.bbId}</code> &bull; <strong class="text-primary">${c.className}</strong></div>
+                                        <div class="mt-1 d-flex align-items-center gap-1" style="font-size:0.8rem;">
+                                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold">${c.totalScore} pts</span>
+                                            <span class="badge bg-light text-dark border">Grade ${c.grade}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        champGrid.innerHTML = '<div class="col-12 text-center py-3 text-muted">No class champions qualified for this assessment.</div>';
+                    }
+
+                    // Render Section 3: Class-by-Class Top 3 Honor Rolls
+                    const rollsWrapper = document.getElementById('class-honor-rolls-wrapper');
+                    if (data.classHonorRolls && data.classHonorRolls.length > 0) {
+                        rollsWrapper.innerHTML = data.classHonorRolls.map(cls => `
+                            <div class="podium-honor-roll-card">
+                                <div class="podium-honor-header">
+                                    <div>
+                                        <h5 class="podium-honor-title">
+                                            <i class="fas fa-trophy text-warning"></i> Class Honor Roll — Top 3 Leaders
+                                        </h5>
+                                        <div class="podium-honor-subtitle">
+                                            Top performers in <strong>${cls.className}</strong> for <strong>${periodName}</strong> (${cls.participatingCount} students participating)
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                                        <i class="fas fa-check-circle me-1"></i> Officially Published
+                                    </span>
+                                </div>
+                                <div class="podium-container">
+                                    ${renderPodiumHtml(cls.top3, periodName)}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        rollsWrapper.innerHTML = '<div class="card p-4 text-center text-muted">No class honor rolls available for the chosen filters.</div>';
+                    }
+
+                    // Render Section 4: Detailed Rankings Table
+                    renderTable(data.detailedRankings || []);
+
+                } catch (e) {
+                    console.error('Error loading leaderboards:', e);
+                }
+            }
+
+            // Render Table Rows
+            function renderTable(list) {
+                const tbody = document.getElementById('rankings-table-body');
+                if (!list.length) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No students matching the criteria.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = list.map((s, idx) => {
+                    let rankBadge = `<span class="badge bg-light text-dark border">${s.overallRank || idx + 1}</span>`;
+                    if (s.overallRank === 1) rankBadge = '<span class="badge bg-warning text-dark"><i class="fas fa-trophy me-1"></i>1st</span>';
+                    else if (s.overallRank === 2) rankBadge = '<span class="badge bg-secondary text-white">2nd</span>';
+                    else if (s.overallRank === 3) rankBadge = '<span class="badge text-white" style="background:#d97706;">3rd</span>';
+
+                    return `
+                        <tr>
+                            <td class="text-center">${rankBadge}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="${s.image || '/images/BEDRCOK LOGO.JPG'}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/BEDRCOK LOGO.JPG'">
+                                    <div class="fw-bold text-dark">${s.name}</div>
+                                </div>
+                            </td>
+                            <td><code>${s.bbId}</code></td>
+                            <td><span class="badge bg-primary-subtle text-primary">${s.className}</span></td>
+                            <td class="text-center fw-bold">${s.totalScore} <small class="text-muted">/${s.totalMax}</small></td>
+                            <td class="text-center fw-bold text-primary">${s.percentage}%</td>
+                            <td class="text-center"><span class="badge bg-light text-dark border fw-bold">${s.grade}</span></td>
+                            <td class="text-center"><span class="badge bg-light text-muted">${s.componentCount} parts</span></td>
+                            <td class="text-center"><span class="badge bg-success-subtle text-success">Approved</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Search filter in table
+            document.getElementById('search-rankings-input').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                if (!currentData || !currentData.detailedRankings) return;
+                const filtered = currentData.detailedRankings.filter(s => 
+                    s.name.toLowerCase().includes(term) || s.bbId.toLowerCase().includes(term)
+                );
+                renderTable(filtered);
+            });
+
+            // Filter Apply & Refresh Handlers
+            document.getElementById('btn-apply-filters').addEventListener('click', loadLeaderboards);
+            document.getElementById('btn-refresh-leaders').addEventListener('click', loadLeaderboards);
+            document.getElementById('filter-exam-period').addEventListener('change', loadLeaderboards);
+
+            // Startup
+            await initFilters();
+            await loadLeaderboards();
+        });
+    </script>
+</body>
+</html>

@@ -134,6 +134,227 @@ router.get('/class-leaders/:classId', async (req, res) => {
     }
 });
 
+// GET /api/results/leaderboards
+// Returns:
+// 1. Schoolwide Top 3 (Overall Champions across all classes)
+// 2. Class Champions (1st place in every class)
+// 3. Top 3 for every participating class
+// 4. Detailed leaderboard ranking table
+// 5. Summary metrics (total classes, finalized classes, distinct champions, eligible students)
+router.get('/leaderboards', async (req, res) => {
+    try {
+        const { periodId, academicYear, classId, subject, status } = req.query;
+        let targetPeriodId = periodId ? parseInt(periodId) : null;
+
+        // If no period provided, get the active or latest published exam period
+        if (!targetPeriodId) {
+            const { rows: pRows } = await query(`
+                SELECT id FROM exam_periods 
+                WHERE deleted_at IS NULL AND (is_active = true OR is_published = true)
+                ORDER BY is_active DESC, year DESC, month DESC, id DESC LIMIT 1
+            `);
+            if (pRows[0]) targetPeriodId = pRows[0].id;
+        }
+
+        // Fetch period metadata
+        let periodInfo = null;
+        if (targetPeriodId) {
+            const { rows: pi } = await query(
+                `SELECT id, name, academic_year, is_published, is_locked, status, year, month FROM exam_periods WHERE id = $1`,
+                [targetPeriodId]
+            );
+            periodInfo = pi[0] || null;
+        }
+
+        // Filter parameters
+        const params = [];
+        let whereClauses = [
+            `r.deleted_at IS NULL`,
+            `s.deleted_at IS NULL`
+        ];
+
+        // Approval status filter: default to approved for official leaderboards
+        const approvalFilter = status || 'approved';
+        if (approvalFilter !== 'all') {
+            params.push(approvalFilter);
+            whereClauses.push(`r.approval_status = $${params.length}`);
+        }
+
+        if (targetPeriodId) {
+            params.push(targetPeriodId);
+            whereClauses.push(`r.period_id = $${params.length}`);
+        }
+
+        if (academicYear) {
+            params.push(academicYear);
+            whereClauses.push(`(r.academic_year = $${params.length} OR s.academic_year = $${params.length})`);
+        }
+
+        if (subject && subject !== 'all') {
+            params.push(subject.trim());
+            whereClauses.push(`LOWER(r.subject) = LOWER($${params.length})`);
+        }
+
+        // Specific class filter if selected
+        const filterClassId = classId && classId !== 'all' ? parseInt(classId) : null;
+
+        // Query all eligible students with marks in this assessment scope
+        const sql = `
+            SELECT s.id AS student_id,
+                   s.name,
+                   s.image,
+                   s.grade,
+                   s.gpa,
+                   COALESCE(s.classid, 0) AS class_id,
+                   COALESCE(c.name, 'Unassigned') AS class_name,
+                   ('BB' || LPAD((260000 + s.id)::TEXT, 6, '0')) AS bb_id,
+                   COALESCE(SUM(r.score), 0) AS total_score,
+                   COALESCE(SUM(COALESCE(r.max_score, 100)), 0) AS total_max,
+                   ROUND((COALESCE(SUM(r.score), 0) / NULLIF(SUM(COALESCE(r.max_score, 100)), 0)) * 100, 1) AS percentage,
+                   COUNT(r.id) AS subject_count,
+                   BOOL_AND(r.approval_status = 'approved') AS is_all_approved
+            FROM students s
+            LEFT JOIN classes c ON c.id = s.classid
+            JOIN results r ON r.student_id = s.id
+            WHERE ${whereClauses.join(' AND ')}
+            GROUP BY s.id, s.name, s.image, s.grade, s.gpa, s.classid, c.name
+            HAVING COUNT(r.id) > 0
+            ORDER BY total_score DESC, percentage DESC, s.name ASC
+        `;
+
+        const { rows: allRankedStudents } = await query(sql, params);
+
+        // Grade calculation helper
+        function calculateGrade(pct) {
+            if (pct >= 90) return 'A+';
+            if (pct >= 85) return 'A';
+            if (pct >= 80) return 'A-';
+            if (pct >= 75) return 'B+';
+            if (pct >= 70) return 'B';
+            if (pct >= 65) return 'B-';
+            if (pct >= 60) return 'C+';
+            if (pct >= 50) return 'C';
+            return 'F';
+        }
+
+        // Format each student record
+        const formattedStudents = allRankedStudents.map((st, idx) => {
+            const tot = parseFloat(st.total_score) || 0;
+            const mx = parseFloat(st.total_max) || 0;
+            const pct = mx > 0 ? parseFloat(st.percentage) || Math.round((tot / mx) * 1000) / 10 : 0;
+            return {
+                overallRank: idx + 1,
+                studentId: st.student_id,
+                name: st.name,
+                image: st.image || '/images/BEDRCOK LOGO.JPG',
+                classId: st.class_id,
+                className: st.class_name,
+                bbId: st.bb_id,
+                totalScore: tot % 1 === 0 ? tot : tot.toFixed(1),
+                totalMax: mx % 1 === 0 ? mx : mx.toFixed(1),
+                percentage: pct,
+                grade: st.grade || calculateGrade(pct),
+                gpa: st.gpa,
+                componentCount: parseInt(st.subject_count) || 0,
+                isApproved: st.is_all_approved
+            };
+        });
+
+        // 1. Overall School Champions (Top 3 across entire school)
+        // Handle ties gracefully: if tie for 1st or 2nd, include tied positions
+        let overallSchoolTop3 = [];
+        if (formattedStudents.length > 0) {
+            let currentRank = 1;
+            for (let i = 0; i < formattedStudents.length; i++) {
+                if (i > 0 && formattedStudents[i].totalScore < formattedStudents[i - 1].totalScore) {
+                    currentRank = i + 1;
+                }
+                if (currentRank > 3) break;
+                overallSchoolTop3.push({
+                    ...formattedStudents[i],
+                    rank: currentRank
+                });
+            }
+        }
+
+        // 2. Class-by-Class Grouping & Rankings
+        const { rows: allClasses } = await query(`
+            SELECT id, name FROM classes WHERE deleted_at IS NULL ORDER BY id ASC
+        `);
+
+        const classHonorRolls = [];
+        const classChampions = [];
+        const championStudentIds = new Set();
+
+        for (const cls of allClasses) {
+            if (filterClassId && cls.id !== filterClassId) continue;
+
+            const studentsInClass = formattedStudents.filter(s => s.classId === cls.id);
+            if (studentsInClass.length === 0) continue;
+
+            // Rank within class with transparent tie handling
+            const rankedClassStudents = [];
+            let classRank = 1;
+            for (let i = 0; i < studentsInClass.length; i++) {
+                if (i > 0 && studentsInClass[i].totalScore < studentsInClass[i - 1].totalScore) {
+                    classRank = i + 1;
+                }
+                rankedClassStudents.push({
+                    ...studentsInClass[i],
+                    classRank
+                });
+            }
+
+            // Top 3 in this class
+            const classTop3 = rankedClassStudents.filter(s => s.classRank <= 3);
+
+            // First-place champions for this class
+            const firstPlace = rankedClassStudents.filter(s => s.classRank === 1);
+            firstPlace.forEach(champ => {
+                classChampions.push({
+                    ...champ,
+                    rank: 1,
+                    examName: periodInfo ? periodInfo.name : 'Current Exam',
+                    academicYear: periodInfo ? periodInfo.academic_year : '2026'
+                });
+                championStudentIds.add(champ.studentId);
+            });
+
+            classHonorRolls.push({
+                classId: cls.id,
+                className: cls.name,
+                participatingCount: studentsInClass.length,
+                top3: classTop3,
+                allClassStudents: rankedClassStudents
+            });
+        }
+
+        // Summary statistics
+        const summary = {
+            totalClassesParticipating: classHonorRolls.length,
+            classesWithFinalizedRankings: classHonorRolls.filter(c => c.top3.length > 0).length,
+            totalFirstPlaceAwards: classChampions.length,
+            distinctFirstPlaceStudents: championStudentIds.size,
+            totalEligibleStudents: formattedStudents.length,
+            isOfficiallyPublished: periodInfo ? (periodInfo.is_published === true) : true,
+            examName: periodInfo ? periodInfo.name : 'All Exams',
+            academicYear: periodInfo ? periodInfo.academic_year : '2026'
+        };
+
+        res.json({
+            periodId: targetPeriodId,
+            periodInfo,
+            summary,
+            schoolwideTop3: overallSchoolTop3,
+            classChampions,
+            classHonorRolls,
+            detailedRankings: filterClassId ? formattedStudents.filter(s => s.classId === filterClassId) : formattedStudents
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET results for a class and subject (to populate existing scores & lock status for teacher)
 // Scoped by periodId / examId to prevent marks leaking across different exams
 router.get('/class/:classId/subject/:subject', async (req, res) => {
