@@ -3874,8 +3874,36 @@
             function setupExamDefs(data) {
                 var exams = (data && data.exams) ? data.exams : [];
                 exams = exams.filter(function(e) { return e.active !== false && !e.deleted_at; });
-                exams.sort(function(a, b) { return (a.sort_order || 0) - (b.sort_order || 0) || a.id - b.id; });
-                EXAM_PARTS = exams.map(function(e, i) {
+
+                // Deduplicate by normalized exam category (e.g. keep only one practical, one oral, one typing)
+                var seenCats = {};
+                var deduplicated = [];
+                // Sort to prefer short keys ('oral', 'practical', 'typing') and higher ID
+                exams.sort(function(a, b) {
+                    var aIsSpecific = (a.exam_key === 'oral' || a.exam_key === 'practical' || a.exam_key === 'typing') ? 1 : 0;
+                    var bIsSpecific = (b.exam_key === 'oral' || b.exam_key === 'practical' || b.exam_key === 'typing') ? 1 : 0;
+                    if (bIsSpecific !== aIsSpecific) return bIsSpecific - aIsSpecific;
+                    return (b.id || 0) - (a.id || 0);
+                });
+                exams.forEach(function(e) {
+                    var normKey = e.exam_key;
+                    if (normKey === 'practical_exam' || normKey === 'practical_work') normKey = 'practical';
+                    if (normKey === 'oral_exam') normKey = 'oral';
+                    if (!seenCats[normKey]) {
+                        seenCats[normKey] = true;
+                        deduplicated.push(e);
+                    }
+                });
+
+                // Standard order: Oral, Practical, Typing
+                var orderMap = { 'oral': 1, 'oral_exam': 1, 'practical': 2, 'practical_exam': 2, 'typing': 3 };
+                deduplicated.sort(function(a, b) {
+                    var oA = orderMap[a.exam_key] || (a.sort_order || 99);
+                    var oB = orderMap[b.exam_key] || (b.sort_order || 99);
+                    return oA - oB || a.id - b.id;
+                });
+
+                EXAM_PARTS = deduplicated.map(function(e, i) {
                     return {
                         key:      e.exam_key,
                         label:    e.name,
@@ -3888,8 +3916,9 @@
                 });
                 if (EXAM_PARTS.length === 0) {
                     EXAM_PARTS = [
-                        { key:'oral_exam',      label:'Oral Exam',      max:20, barClass:'rc3-bar-quiz',   lblClass:'rc3-quiz',   icon:'fa-pen',   bpClass:'bp-quiz' },
-                        { key:'practical_exam', label:'Practical Exam', max:80, barClass:'rc3-bar-assign', lblClass:'rc3-assign', icon:'fa-tasks', bpClass:'bp-assign' }
+                        { key:'oral',      label:'ORAL',      max:10, barClass:'rc3-bar-quiz',   lblClass:'rc3-quiz',   icon:'fa-pen',   bpClass:'bp-quiz' },
+                        { key:'practical', label:'PRACTICAL', max:80, barClass:'rc3-bar-assign', lblClass:'rc3-assign', icon:'fa-tasks', bpClass:'bp-assign' },
+                        { key:'typing',    label:'TYPING',    max:10, barClass:'rc3-bar-final',  lblClass:'rc3-final',  icon:'fa-keyboard', bpClass:'bp-final' }
                     ];
                 }
                 EXAM_DEFS = EXAM_PARTS;
@@ -4204,8 +4233,18 @@
                     partsToRender.forEach(function(p, pIdx) {
                         var resolved = resolveScoreAndMax(p.key, p, subjectData.scores, subjectData.maxScores);
                         if (!resolved) return;
+                        if (usedScoreKeys[resolved.usedKey]) return; // Never render the same score twice!
 
                         usedScoreKeys[resolved.usedKey] = true;
+                        if (resolved.usedKey === 'practical' || resolved.usedKey === 'practical_exam') {
+                            usedScoreKeys['practical'] = true;
+                            usedScoreKeys['practical_exam'] = true;
+                        }
+                        if (resolved.usedKey === 'oral' || resolved.usedKey === 'oral_exam' || resolved.usedKey === 'quiz') {
+                            usedScoreKeys['oral'] = true;
+                            usedScoreKeys['oral_exam'] = true;
+                            usedScoreKeys['quiz'] = true;
+                        }
                         if (resolved.usedKey === 'assignment') usedScoreKeys['final'] = true;
 
                         var scoreVal = resolved.score;
