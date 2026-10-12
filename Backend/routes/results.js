@@ -238,22 +238,43 @@ router.get('/leaderboards', async (req, res) => {
         }
 
         // Format each student record
+        const validGradeLetters = new Set(['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'F']);
         const formattedStudents = allRankedStudents.map((st, idx) => {
             const tot = parseFloat(st.total_score) || 0;
             const mx = parseFloat(st.total_max) || 0;
             const pct = mx > 0 ? parseFloat(st.percentage) || Math.round((tot / mx) * 1000) / 10 : 0;
+            const cleanGrade = (st.grade && validGradeLetters.has(st.grade.trim().toUpperCase()))
+                ? st.grade.trim().toUpperCase()
+                : calculateGrade(pct);
+
+            const studentName = (st.name || '').trim();
+            const studentImage = st.image || '/images/BEDRCOK LOGO.JPG';
+            const className = st.class_name || 'Unassigned';
+            const bbId = st.bb_id || ('BB' + (260000 + st.student_id));
+            const scoreFormatted = tot % 1 === 0 ? tot : tot.toFixed(1);
+            const maxFormatted = mx % 1 === 0 ? mx : mx.toFixed(1);
+
             return {
                 overallRank: idx + 1,
+                rank: idx + 1,
                 studentId: st.student_id,
-                name: st.name,
-                image: st.image || '/images/BEDRCOK LOGO.JPG',
+                student_id: st.student_id,
+                name: studentName,
+                student_name: studentName,
+                image: studentImage,
+                student_image: studentImage,
                 classId: st.class_id,
-                className: st.class_name,
-                bbId: st.bb_id,
-                totalScore: tot % 1 === 0 ? tot : tot.toFixed(1),
-                totalMax: mx % 1 === 0 ? mx : mx.toFixed(1),
+                class_id: st.class_id,
+                className: className,
+                class_name: className,
+                bbId: bbId,
+                bb_id: bbId,
+                totalScore: scoreFormatted,
+                total_score: scoreFormatted,
+                totalMax: maxFormatted,
+                total_max: maxFormatted,
                 percentage: pct,
-                grade: st.grade || calculateGrade(pct),
+                grade: cleanGrade,
                 gpa: st.gpa,
                 componentCount: parseInt(st.subject_count) || 0,
                 isApproved: st.is_all_approved
