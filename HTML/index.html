@@ -517,11 +517,12 @@
             async function loadTestimonials() {
                 try {
                     const response = await fetch('/api/testimonials');
+                    if (!response.ok) return;
                     const testimonials = await response.json();
                     const container = document.getElementById('testimonial-carousel-inner');
                     if (!container) return;
 
-                    if (testimonials.length === 0) {
+                    if (!Array.isArray(testimonials) || testimonials.length === 0) {
                         container.innerHTML = `<div class="carousel-item active"><p class="lead fst-italic">Testimonials from our community will be featured here soon!</p></div>`;
                         return;
                     }

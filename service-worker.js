@@ -1,9 +1,10 @@
 // Baidoa Bedrock ICT Campus - Progressive Web App Service Worker
-const CACHE_NAME = 'bedrock-campus-v6';
+const CACHE_NAME = 'bedrock-campus-v7';
 const STATIC_ASSETS = [
   '/HTML/index.html',
   '/HTML/portal_login.html',
   '/HTML/Student Results.html',
+  '/HTML/Student%20Results.html',
   '/HTML/teacher-dashboard.html',
   '/HTML/parent_dashboard.html',
   '/HTML/library.html',
@@ -17,15 +18,19 @@ const STATIC_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap'
 ];
 
-// Install Event - Force immediate activation
+// Install Event - Force immediate activation and cache assets safely
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[SW] Caching partial fail:', err);
-      });
+      return Promise.allSettled(
+        STATIC_ASSETS.map((asset) =>
+          cache.add(asset).catch((err) => {
+            console.warn('[SW] Could not precache asset:', asset, err.message);
+          })
+        )
+      );
     })
   );
 });
@@ -54,7 +59,50 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
 
-  // Always Network-First for HTML navigation & document requests so fresh pages load immediately
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (e) {
+    return;
+  }
+
+  // 1. API Requests Handling
+  // Homepage public read-only content can be served network-first with safe JSON cache fallback
+  const isHomepagePublicApi =
+    url.pathname === '/api/content' ||
+    url.pathname.startsWith('/api/announcements/latest') ||
+    url.pathname === '/api/testimonials';
+
+  if (isHomepagePublicApi) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          // Safe fallback response: NEVER return undefined to event.respondWith!
+          const fallbackData = url.pathname === '/api/content' ? {} : [];
+          return new Response(JSON.stringify(fallbackData), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+          });
+        })
+    );
+    return;
+  }
+
+  // ALL other API calls: bypass service worker completely so browser performs native network fetch
+  if (url.pathname.startsWith('/api/') || request.url.includes('/api/')) {
+    return;
+  }
+
+  // 2. HTML navigation & document requests (Network-First)
   const isHtml = request.mode === 'navigate' ||
                  request.destination === 'document' ||
                  request.url.includes('.html') ||
@@ -66,53 +114,56 @@ self.addEventListener('fetch', (event) => {
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
             const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          const fallback = await caches.match('/HTML/index.html');
+          if (fallback) return fallback;
+          return new Response(
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Offline | Bedrock ICT Campus</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>You are offline</h2><p>Please check your internet connection and reload.</p></body></html>',
+            { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+          );
+        })
+    );
+    return;
+  }
+
+  // 3. Static Assets (Cache-first with network fallback)
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        // Fetch in background to update cache
+        fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse)).catch(() => {});
+            }
+          })
+          .catch(() => {});
+        return cachedResponse;
+      }
+
+      return fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
           }
           return networkResponse;
         })
         .catch(() => {
-          return caches.match(request);
-        })
-    );
-    return;
-  }
-
-  // Network first for APIs
-  if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request).catch(() => {
-        return caches.match(request);
-      })
-    );
-    return;
-  }
-
-  // Cache first with network fallback for static files
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
+          if (request.destination === 'image') {
+            return new Response(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect fill="transparent"/></svg>',
+              { headers: { 'Content-Type': 'image/svg+xml' } }
+            );
           }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-
-      return fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && !networkResponse.redirected) {
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return networkResponse;
-      }).catch(() => {
-        if (request.destination === 'image') {
-          return new Response(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect fill="transparent"/></svg>',
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
-        }
-      });
+          return new Response('', { status: 404 });
+        });
     })
   );
 });
