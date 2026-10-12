@@ -102,9 +102,9 @@
                 if (!email || !password) { showAlert('Please fill in all fields.', 'error'); return; }
                 setLoading(true);
 
-                // AbortController: auto-cancel after 10 seconds to prevent infinite spinner
+                // AbortController: auto-cancel after 60 seconds to allow for serverless cold-start / DB connection
                 var controller = new AbortController();
-                var timeoutId = setTimeout(function () { controller.abort(); }, 10000);
+                var timeoutId = setTimeout(function () { controller.abort(); }, 60000);
 
                 try {
                     var response = await fetch('/api/auth/login', {
@@ -176,7 +176,7 @@
                 } catch (err) {
                     clearTimeout(timeoutId);
                     if (err.name === 'AbortError') {
-                        showAlert('Connection timed out. Please check your internet connection and try again.', 'error');
+                        showAlert('Server took too long to respond. Please wait a moment and try again.', 'error');
                     } else {
                         showAlert(err.message, 'error');
                     }
