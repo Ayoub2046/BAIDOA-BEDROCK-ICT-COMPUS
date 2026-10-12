@@ -44,10 +44,27 @@ router.get('/dashboard-details', async (req, res) => {
 
         const { rows: classes } = await query(
             `SELECT c.id, c.name, c.room,
-                    COALESCE((SELECT COUNT(*) FROM class_students cs WHERE cs.class_id = c.id), c.students, 0)::int AS students
+                    (SELECT COUNT(DISTINCT s.id)
+                     FROM students s
+                     WHERE s.classid = c.id
+                        OR s.id IN (SELECT cs.student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL)
+                    )::int AS students
              FROM classes c WHERE c.teacherid = $1 AND c.deleted_at IS NULL`, [teacher.id]
         );
-        const totalStudents = classes.reduce((sum, c) => sum + (parseInt(c.students) || 0), 0);
+
+        // Count DISTINCT students across all teacher's classes (avoids double-counting multi-class students)
+        const { rows: totalRow } = await query(
+            `SELECT COUNT(DISTINCT s.id) AS total
+             FROM students s
+             JOIN classes c ON c.teacherid = $1 AND c.deleted_at IS NULL
+             WHERE s.classid = c.id
+                OR s.id IN (SELECT cs.student_id FROM class_students cs
+                             JOIN classes c2 ON cs.class_id = c2.id
+                             WHERE c2.teacherid = $1 AND c2.deleted_at IS NULL AND cs.deleted_at IS NULL)`,
+            [teacher.id]
+        );
+        const totalStudents = parseInt(totalRow[0]?.total || 0);
+
         res.json({ ...teacher, classes: classes || [], totalStudents });
     } catch (err) {
         res.status(500).json({ error: err.message });
