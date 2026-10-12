@@ -68,7 +68,10 @@ router.get('/:studentId', async (req, res) => {
                         ep.id as exam_id, ep.name as period_name, ep.month, ep.year, ep.exam_code, ep.total_marks
                  FROM results r
                  LEFT JOIN exam_periods ep ON r.period_id = ep.id
-                 WHERE r.student_id = $1 AND r.approval_status = 'approved' AND r.deleted_at IS NULL
+                 WHERE r.student_id = $1 
+                   AND r.approval_status = 'approved' 
+                   AND r.deleted_at IS NULL
+                   AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
                  ORDER BY ep.year DESC, ep.month DESC NULLS LAST, r.subject ASC, r.id ASC`,
                 [studentId]
             );
@@ -346,10 +349,12 @@ router.get('/:studentId', async (req, res) => {
                            COUNT(r.id) AS subject_count
                     FROM students s
                     JOIN results r ON r.student_id = s.id
+                    LEFT JOIN exam_periods ep ON r.period_id = ep.id
                     WHERE (s.classid = $1 OR s.id IN (SELECT student_id FROM class_students WHERE class_id = $1))
                       AND s.deleted_at IS NULL
                       AND r.approval_status = 'approved'
                       AND r.deleted_at IS NULL
+                      AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
                     GROUP BY s.id, s.name, s.image, s.grade, s.gpa
                     HAVING COUNT(r.id) > 0
                     ORDER BY total_score DESC, avg_score DESC
@@ -382,7 +387,7 @@ router.get('/:studentId', async (req, res) => {
                        ep.is_active, ep.is_archived,
                        (SELECT COUNT(*) FROM results r WHERE r.period_id = ep.id AND r.student_id = $1 AND r.deleted_at IS NULL AND r.approval_status = 'approved') AS my_result_count
                 FROM exam_periods ep
-                WHERE ep.deleted_at IS NULL
+                WHERE ep.deleted_at IS NULL AND ep.is_published = true
                 ORDER BY ep.year DESC, ep.month ASC NULLS LAST
             `, [studentId]);
             const MONTHS_ARR = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -483,7 +488,10 @@ router.get('/:studentId/results-filter', async (req, res) => {
             FROM results r
             LEFT JOIN exams e ON e.exam_key = r.exam_type AND e.deleted_at IS NULL
             LEFT JOIN exam_periods ep ON ep.id = r.period_id
-            WHERE r.student_id = $1 AND r.deleted_at IS NULL AND r.approval_status = 'approved'
+            WHERE r.student_id = $1 
+              AND r.deleted_at IS NULL 
+              AND r.approval_status = 'approved'
+              AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
         `;
         const params = [studentId];
         let idx = 2;
@@ -539,6 +547,13 @@ router.get('/:studentId/period/:periodId', async (req, res) => {
     const periodId = parseInt(req.params.periodId);
     if (isNaN(studentId) || isNaN(periodId)) return res.status(400).json({ error: 'Invalid IDs' });
     try {
+        const { rows: periodCheck } = await query(`
+            SELECT id, name, is_published FROM exam_periods WHERE id = $1 AND deleted_at IS NULL
+        `, [periodId]);
+        if (!periodCheck[0] || !periodCheck[0].is_published) {
+            return res.json({ results: {}, rows: [], components: [], message: 'Results for this exam period have not been released yet.' });
+        }
+
         const { rows } = await query(`
             SELECT r.id, r.subject, r.exam_type, r.score, r.max_score, r.remarks, r.approval_status,
                    COALESCE(ec.name, e.name, r.component_name, r.exam_type) AS exam_name,

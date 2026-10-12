@@ -316,17 +316,19 @@ router.post('/', async (req, res) => {
 
         await client.query('BEGIN');
 
+        const isPublished = (req.body.isPublished === true || req.body.is_published === true);
+
         // 1. Insert into exam_periods
         const { rows: insertedExam } = await client.query(`
             INSERT INTO exam_periods (
                 name, year, month, period_type, academic_year, exam_code, total_marks, num_components,
                 status, is_active, is_archived, is_locked, is_published, start_date, end_date, created_by
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open', true, false, false, true, $9, $10, $11)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open', true, false, false, $12, $9, $10, $11)
             RETURNING *
         `, [
             name.trim(), finalYear, monthNum, examType, String(finalYear), examCode, totMarks, components.length,
-            startDate || null, endDate || null, createdBy
+            startDate || null, endDate || null, createdBy, isPublished
         ]);
         const exam = insertedExam[0];
 
@@ -607,10 +609,74 @@ router.get('/:id/tracker', async (req, res) => {
                 u.id AS teacher_id,
                 COALESCE(u.name, 'Unassigned') AS teacher_name,
                 COALESCE(u.subject, 'General') AS subject_name,
-                (SELECT COUNT(*) FROM students s WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id)) AND s.deleted_at IS NULL) AS total_students,
-                (SELECT COUNT(DISTINCT r.student_id) FROM results r WHERE r.period_id = $1 AND (r.classid = c.id OR r.student_id IN (SELECT student_id FROM class_students WHERE class_id = c.id)) AND r.deleted_at IS NULL) AS graded_students,
-                (SELECT MAX(r.submitted_at) FROM results r WHERE r.period_id = $1 AND (r.classid = c.id OR r.student_id IN (SELECT student_id FROM class_students WHERE class_id = c.id)) AND r.deleted_at IS NULL) AS last_submitted_at,
-                (SELECT r.approval_status FROM results r WHERE r.period_id = $1 AND (r.classid = c.id OR r.student_id IN (SELECT student_id FROM class_students WHERE class_id = c.id)) AND r.deleted_at IS NULL LIMIT 1) AS status
+                (
+                    SELECT COUNT(*) 
+                    FROM students s 
+                    WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                      AND s.deleted_at IS NULL
+                ) AS total_students,
+                (
+                    SELECT COUNT(DISTINCT r.student_id) 
+                    FROM results r 
+                    WHERE r.period_id = $1 
+                      AND r.student_id IN (
+                          SELECT s.id 
+                          FROM students s 
+                          WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                            AND s.deleted_at IS NULL
+                      )
+                      AND r.deleted_at IS NULL
+                ) AS graded_students,
+                (
+                    SELECT COUNT(*) 
+                    FROM results r 
+                    WHERE r.period_id = $1 
+                      AND r.student_id IN (
+                          SELECT s.id 
+                          FROM students s 
+                          WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                            AND s.deleted_at IS NULL
+                      )
+                      AND r.deleted_at IS NULL
+                ) AS total_records,
+                (
+                    SELECT COUNT(*) 
+                    FROM results r 
+                    WHERE r.period_id = $1 
+                      AND r.student_id IN (
+                          SELECT s.id 
+                          FROM students s 
+                          WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                            AND s.deleted_at IS NULL
+                      )
+                      AND r.approval_status = 'approved'
+                      AND r.deleted_at IS NULL
+                ) AS approved_count,
+                (
+                    SELECT COUNT(*) 
+                    FROM results r 
+                    WHERE r.period_id = $1 
+                      AND r.student_id IN (
+                          SELECT s.id 
+                          FROM students s 
+                          WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                            AND s.deleted_at IS NULL
+                      )
+                      AND r.approval_status = 'pending'
+                      AND r.deleted_at IS NULL
+                ) AS pending_count,
+                (
+                    SELECT MAX(r.submitted_at) 
+                    FROM results r 
+                    WHERE r.period_id = $1 
+                      AND r.student_id IN (
+                          SELECT s.id 
+                          FROM students s 
+                          WHERE (s.classid = c.id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = c.id AND cs.deleted_at IS NULL))
+                            AND s.deleted_at IS NULL
+                      )
+                      AND r.deleted_at IS NULL
+                ) AS last_submitted_at
             FROM classes c
             LEFT JOIN users u ON u.id = c.teacherid AND u.role = 'Teacher'
             WHERE c.deleted_at IS NULL
@@ -621,32 +687,100 @@ router.get('/:id/tracker', async (req, res) => {
             ORDER BY c.name ASC
         `, [examId]);
 
+        const submissions = trackerData.map(t => {
+            const total = parseInt(t.total_students) || 0;
+            const graded = parseInt(t.graded_students) || 0;
+            const totalRec = parseInt(t.total_records) || 0;
+            const approved = parseInt(t.approved_count) || 0;
+            const pending = parseInt(t.pending_count) || 0;
+
+            let submissionState = 'Not Started';
+            if (graded > 0 && graded >= total) submissionState = 'Submitted';
+            else if (graded > 0) submissionState = 'In Progress';
+
+            return {
+                class_id: t.class_id,
+                classId: t.class_id,
+                class_name: t.class_name,
+                className: t.class_name,
+                teacher_id: t.teacher_id,
+                teacherId: t.teacher_id,
+                teacher_name: t.teacher_name,
+                teacherName: t.teacher_name,
+                submitted_by: t.teacher_name,
+                subject: t.subject_name,
+                total_students: total,
+                totalStudents: total,
+                graded_students: graded,
+                gradedStudents: graded,
+                total_records: totalRec,
+                totalRecords: totalRec,
+                approved_count: approved,
+                approvedCount: approved,
+                pending_count: pending,
+                pendingCount: pending,
+                submissionState,
+                approvalStatus: approved > 0 ? (pending > 0 ? 'partially_approved' : 'approved') : (pending > 0 ? 'pending' : 'none'),
+                last_submission: t.last_submitted_at,
+                lastSubmittedAt: t.last_submitted_at
+            };
+        });
+
         res.json({
             exam: examRows[0],
-            tracker: trackerData.map(t => {
-                const total = parseInt(t.total_students) || 0;
-                const graded = parseInt(t.graded_students) || 0;
-                let submissionState = 'Not Started';
-                if (graded > 0 && graded >= total) submissionState = 'Submitted';
-                else if (graded > 0) submissionState = 'In Progress';
-
-                return {
-                    classId: t.class_id,
-                    className: t.class_name,
-                    teacherId: t.teacher_id,
-                    teacherName: t.teacher_name,
-                    subject: t.subject_name,
-                    totalStudents: total,
-                    gradedStudents: graded,
-                    submissionState,
-                    approvalStatus: t.status || 'pending',
-                    lastSubmittedAt: t.last_submitted_at
-                };
-            })
+            tracker: submissions,
+            submissions: submissions
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8b. PUT /api/exams/:id/release - Toggle result publication / release to students
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id/release', async (req, res) => {
+    try {
+        const examId = parseInt(req.params.id);
+        const { rows: examRows } = await query(`SELECT * FROM exam_periods WHERE id = $1 AND deleted_at IS NULL`, [examId]);
+        if (!examRows[0]) return res.status(404).json({ error: 'Exam not found.' });
+
+        const isPublished = (req.body.isPublished === true || req.body.isPublished === 'true' || req.body.is_published === true);
+        const changedBy = req.body.changedBy || 'Admin';
+        const reason = req.body.reason || (isPublished ? 'Exam results released to students' : 'Exam results hidden from students');
+
+        await query(`UPDATE exam_periods SET is_published = $1, updated_at = NOW() WHERE id = $2`, [isPublished, examId]);
+
+        await query(`
+            INSERT INTO exam_audit_logs (exam_id, action, old_status, new_status, changed_by, reason)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `, [
+            examId,
+            isPublished ? 'RELEASE_RESULTS' : 'UNRELEASE_RESULTS',
+            examRows[0].status || 'open',
+            isPublished ? 'released' : 'hidden',
+            changedBy,
+            reason
+        ]).catch(() => {});
+
+        res.json({
+            message: isPublished ? 'Exam results released to students successfully.' : 'Exam results hidden from students.',
+            examId,
+            isPublished
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/:id/publish', async (req, res) => {
+    req.body = { ...req.body, isPublished: true };
+    return router.handle(req, res);
+});
+
+router.put('/:id/unpublish', async (req, res) => {
+    req.body = { ...req.body, isPublished: false };
+    return router.handle(req, res);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -793,26 +927,42 @@ router.post('/aggregate/calculate', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 11. DELETE /api/exams/:id - Soft-delete exam (strictly prevents deleting exams with marks)
+// 11. DELETE /api/exams/:id - Delete exam (cascades marks & components cleanup)
 // ─────────────────────────────────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
     try {
         const examId = parseInt(req.params.id);
-        const { rows: check } = await query(`
-            SELECT COUNT(*) AS cnt FROM results 
-            WHERE period_id = $1 AND deleted_at IS NULL
-        `, [examId]);
+        const permanent = req.query.permanent === 'true';
 
-        if (parseInt(check[0].cnt) > 0) {
-            return res.status(400).json({
-                error: `Cannot delete this exam: It contains ${check[0].cnt} official student mark records. To protect academic integrity, lock or close the exam instead of deleting it.`
-            });
+        const { rows: examRows } = await query(`SELECT * FROM exam_periods WHERE id = $1`, [examId]);
+        if (!examRows[0]) return res.status(404).json({ error: 'Exam not found.' });
+
+        const examName = examRows[0].name;
+
+        if (permanent) {
+            await query(`DELETE FROM results WHERE period_id = $1`, [examId]);
+            await query(`DELETE FROM exam_attendance WHERE period_id = $1`, [examId]).catch(() => {});
+            await query(`DELETE FROM exam_components WHERE exam_id = $1`, [examId]).catch(() => {});
+            await query(`DELETE FROM exam_classes WHERE exam_id = $1`, [examId]).catch(() => {});
+            await query(`DELETE FROM exam_subjects WHERE exam_id = $1`, [examId]).catch(() => {});
+            await query(`DELETE FROM exam_audit_logs WHERE exam_id = $1`, [examId]).catch(() => {});
+            await query(`DELETE FROM exam_periods WHERE id = $1`, [examId]);
+        } else {
+            // Cascade soft-delete: archive marks and exam so they no longer appear in student results or active cycles
+            await query(`UPDATE results SET deleted_at = NOW() WHERE period_id = $1 AND deleted_at IS NULL`, [examId]);
+            await query(`UPDATE exam_attendance SET deleted_at = NOW() WHERE period_id = $1 AND deleted_at IS NULL`, [examId]).catch(() => {});
+            await query(`UPDATE exam_components SET deleted_at = NOW() WHERE exam_id = $1 AND deleted_at IS NULL`, [examId]).catch(() => {});
+            await query(`UPDATE exam_periods SET deleted_at = NOW(), is_active = false, is_published = false, status = 'deleted' WHERE id = $1`, [examId]);
+
+            await query(`
+                INSERT INTO exam_audit_logs (exam_id, action, old_status, new_status, changed_by, reason)
+                VALUES ($1, 'DELETE', $2, 'deleted', $3, $4)
+            `, [examId, examRows[0].status || 'open', req.body?.changedBy || 'Admin', 'Exam and associated records deleted by administrator']).catch(() => {});
         }
 
-        await query(`UPDATE exam_periods SET deleted_at = NOW() WHERE id = $1`, [examId]);
-        res.json({ message: 'Exam deleted successfully.' });
+        res.json({ message: `Exam "${examName}" deleted successfully.` });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 

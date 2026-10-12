@@ -705,11 +705,20 @@
                                 <small class="text-muted"><i class="fas fa-users me-1"></i>All Enrolled</small>
                             </td>
                             <td>
-                                <span class="badge ${badgeClass} px-2 py-1">${statusText}</span>
+                                <div><span class="badge ${badgeClass} px-2 py-1">${statusText}</span></div>
+                                <div class="mt-1">
+                                    ${e.is_published 
+                                        ? `<span class="badge bg-success-subtle text-success border border-success-subtle" title="Results released to students"><i class="fas fa-bullhorn me-1"></i>Released</span>` 
+                                        : `<span class="badge bg-secondary-subtle text-muted border" title="Results hidden from students"><i class="fas fa-eye-slash me-1"></i>Hidden</span>`}
+                                </div>
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
                                     ${renderActionButtons(e)}
+                                    ${e.is_published 
+                                        ? `<button class="btn btn-outline-warning btn-release" data-id="${e.id}" data-action="unrelease" title="Hide Results from Students"><i class="fas fa-eye-slash"></i></button>`
+                                        : `<button class="btn btn-outline-success btn-release" data-id="${e.id}" data-action="release" title="Release Results to Students"><i class="fas fa-bullhorn"></i></button>`
+                                    }
                                     <button class="btn btn-outline-info btn-tracker" data-id="${e.id}" title="Teacher Submission Tracker">
                                         <i class="fas fa-tasks"></i>
                                     </button>
@@ -941,25 +950,35 @@
                     try {
                         const res = await fetch(`/api/exams/${id}/tracker`);
                         const data = await res.json();
-                        document.getElementById('trackerModalTitle').textContent = `Teacher Tracker: ${data.exam.name}`;
-                        document.getElementById('tracker-exam-badge').textContent = data.exam.exam_code;
+                        if (!res.ok) throw new Error(data.error || 'Failed to load tracker');
+                        const examObj = data.exam || allExams.find(x => x.id === id) || { name: 'Exam', exam_code: '' };
+                        document.getElementById('trackerModalTitle').textContent = `Teacher Tracker: ${examObj.name}`;
+                        document.getElementById('tracker-exam-badge').textContent = examObj.exam_code || '';
                         const tbody = document.getElementById('tracker-table-body');
-                        if (data.submissions.length === 0) {
+                        const submissions = data.submissions || data.tracker || [];
+                        if (submissions.length === 0) {
                             tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No submissions yet for this exam period.</td></tr>`;
                         } else {
-                            tbody.innerHTML = data.submissions.map(s => `
-                                <tr>
-                                    <td><strong>${s.class_name}</strong></td>
-                                    <td>${s.subject}</td>
-                                    <td><i class="fas fa-chalkboard-teacher me-1 text-muted"></i>${s.submitted_by || 'Teacher'}</td>
-                                    <td><span class="badge bg-light text-dark border">${s.total_records} Records</span></td>
-                                    <td>
-                                        ${s.approved_count > 0 ? `<span class="badge bg-success-subtle text-success me-1">${s.approved_count} Approved</span>` : ''}
-                                        ${s.pending_count > 0 ? `<span class="badge bg-warning-subtle text-warning">${s.pending_count} Pending</span>` : ''}
-                                    </td>
-                                    <td><small class="text-muted">${new Date(s.last_submission).toLocaleDateString()}</small></td>
-                                </tr>
-                            `).join('');
+                            tbody.innerHTML = submissions.map(s => {
+                                const lastSub = (s.last_submission || s.lastSubmittedAt) ? new Date(s.last_submission || s.lastSubmittedAt).toLocaleDateString() : '—';
+                                const appCount = parseInt(s.approved_count || s.approvedCount) || 0;
+                                const pendCount = parseInt(s.pending_count || s.pendingCount) || 0;
+                                const totalRec = parseInt(s.total_records || s.gradedStudents || s.graded_students) || 0;
+                                return `
+                                    <tr>
+                                        <td><strong>${s.class_name || s.className || 'Class'}</strong></td>
+                                        <td>${s.subject || 'General'}</td>
+                                        <td><i class="fas fa-chalkboard-teacher me-1 text-muted"></i>${s.submitted_by || s.teacher_name || s.teacherName || 'Teacher'}</td>
+                                        <td><span class="badge bg-light text-dark border">${totalRec} Records</span></td>
+                                        <td>
+                                            ${appCount > 0 ? `<span class="badge bg-success-subtle text-success me-1">${appCount} Approved</span>` : ''}
+                                            ${pendCount > 0 ? `<span class="badge bg-warning-subtle text-warning">${pendCount} Pending</span>` : ''}
+                                            ${(appCount === 0 && pendCount === 0) ? `<span class="badge bg-secondary-subtle text-muted">${s.submissionState || 'Not Started'}</span>` : ''}
+                                        </td>
+                                        <td><small class="text-muted">${lastSub}</small></td>
+                                    </tr>
+                                `;
+                            }).join('');
                         }
                         trackerModal.show();
                     } catch(err) {
@@ -967,12 +986,45 @@
                     }
                 }
 
-                // 5. Delete Exam (Safe deletion check)
+                // 5. Release / Hide Results Toggle
+                if (btn.classList.contains('btn-release')) {
+                    const exam = allExams.find(x => x.id === id);
+                    const isRelease = btn.dataset.action === 'release';
+                    const promptTitle = isRelease ? 'Release Results to Students' : 'Hide Results from Students';
+                    const promptMsg = isRelease 
+                        ? `Release examination marks for <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-success">Students will immediately be able to view their approved results in the student portal.</small>`
+                        : `Hide examination marks for <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-warning">Students will no longer see marks from this exam in their portal.</small>`;
+
+                    const ok = await BedrockDialog.confirm({
+                        title: promptTitle,
+                        message: promptMsg,
+                        confirmText: isRelease ? 'Release Results' : 'Hide Results',
+                        type: isRelease ? 'success' : 'warning',
+                        icon: isRelease ? 'fas fa-bullhorn' : 'fas fa-eye-slash'
+                    });
+                    if (!ok) return;
+
+                    try {
+                        const res = await fetch(`/api/exams/${id}/release`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isPublished: isRelease, changedBy: 'Admin' })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to update release status');
+                        showAlert(data.message || (isRelease ? 'Exam results released successfully.' : 'Exam results hidden from students.'), 'success');
+                        await loadExams();
+                    } catch(err) {
+                        showAlert(err.message, 'danger');
+                    }
+                }
+
+                // 6. Delete Exam (Cascade deletion)
                 if (btn.classList.contains('btn-delete')) {
                     const exam = allExams.find(x => x.id === id);
                     const ok = await BedrockDialog.confirm({
                         title: 'Delete Exam',
-                        message: `Delete exam <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-danger">Exams with recorded student marks cannot be deleted to prevent data loss.</small>`,
+                        message: `Delete exam <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-muted">This exam and any student marks associated with it will be deleted.</small>`,
                         confirmText: 'Delete Exam',
                         type: 'danger',
                         icon: 'fas fa-trash-alt'

@@ -65,6 +65,7 @@ router.get('/class-leaders/:classId', async (req, res) => {
               AND s.deleted_at IS NULL
               AND r.approval_status = 'approved'
               AND r.deleted_at IS NULL
+              AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))
         `;
         const params = [classId];
         if (examType && examType.trim() !== '') {
@@ -192,11 +193,11 @@ router.get('/:studentId', async (req, res) => {
         try {
             const subjectsRes = examType
                 ? await query(
-                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND exam_type = $2`,
+                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND exam_type = $2 AND (period_id IS NULL OR period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))`,
                     [studentId, examType]
                 )
                 : await query(
-                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved'`,
+                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND (period_id IS NULL OR period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))`,
                     [studentId]
                 );
             subjects = subjectsRes.rows;
