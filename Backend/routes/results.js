@@ -724,12 +724,30 @@ router.put('/approve', async (req, res) => {
             );
         }
 
-        // If approved, update student GPA
+        // If approved, update student GPA and fix attendance for any student whose marks were
+        // recorded by admin (they may have been marked 'did_not_attend' but admin entered scores)
         if (status === 'approved') {
             for (const id of ids) {
-                const { rows } = await query(`SELECT student_id FROM results WHERE id = $1`, [id]);
+                const { rows } = await query(
+                    `SELECT student_id, subject, period_id FROM results WHERE id = $1`,
+                    [id]
+                );
                 if (rows[0]) {
-                    await updateStudentGPA(rows[0].student_id);
+                    const { student_id, subject, period_id } = rows[0];
+                    await updateStudentGPA(student_id);
+                    // If this student was marked did_not_attend but now has approved results,
+                    // update attendance to 'attended' so teacher dashboard shows correctly
+                    if (subject && period_id) {
+                        await query(
+                            `UPDATE exam_attendance
+                             SET status = 'attended', notes = 'Attendance updated — result approved by Admin', updated_at = NOW()
+                             WHERE student_id = $1
+                               AND period_id = $2
+                               AND LOWER(subject) = LOWER($3)
+                               AND status IN ('did_not_attend', 'absent')`,
+                            [student_id, period_id, subject]
+                        ).catch(() => {});
+                    }
                 }
             }
         }
@@ -793,6 +811,20 @@ router.put('/admin/direct-update', async (req, res) => {
             }
         }
         await updateStudentGPA(studentId);
+
+        // Fix attendance: if admin entered scores for a previously absent student, mark them attended
+        if (targetPeriodId) {
+            await query(
+                `UPDATE exam_attendance
+                 SET status = 'attended', notes = 'Attendance updated — result entered by Admin', updated_at = NOW()
+                 WHERE student_id = $1
+                   AND period_id = $2
+                   AND LOWER(subject) = LOWER($3)
+                   AND status IN ('did_not_attend', 'absent')`,
+                [studentId, targetPeriodId, subject]
+            ).catch(() => {});
+        }
+
         res.json({ message: 'Result updated successfully by admin.' });
     } catch (err) {
         res.status(500).json({ error: err.message });

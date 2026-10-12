@@ -1718,18 +1718,34 @@
 
                     // Attendance lookup
                     const sAttRecord = existingAttendance.find(a => a.student_id === s.id);
+                    const hasScores = sRecords.length > 0;
                     let curStatus = 'attended';
                     if (sAttRecord) {
                         curStatus = sAttRecord.status;
-                    } else if (hasSubmissions && sRecords.length === 0) {
+                        // If student has positive submitted scores recorded, override stale did_not_attend
+                        if (hasScores && sRecords.some(r => parseFloat(r.score) > 0)) {
+                            curStatus = 'attended';
+                        }
+                    } else if (hasSubmissions && !hasScores) {
                         curStatus = 'did_not_attend';
                     }
                     const isAttended = (curStatus === 'attended');
 
+                    // Helper to get score with alias fallback (practical <-> practical_exam, oral <-> oral_exam)
+                    function getStudentScoreForPart(key, scores) {
+                        if (scores[key] !== undefined) return scores[key];
+                        if (key === 'practical' && scores['practical_exam'] !== undefined) return scores['practical_exam'];
+                        if (key === 'practical_exam' && scores['practical'] !== undefined) return scores['practical'];
+                        if (key === 'oral' && scores['oral_exam'] !== undefined) return scores['oral_exam'];
+                        if (key === 'oral_exam' && scores['oral'] !== undefined) return scores['oral'];
+                        return undefined;
+                    }
+
                     // Build parts object dynamically from admin-defined exam keys
                     const initialParts = {};
                     examParts.forEach(p => {
-                        initialParts[p.key] = (isAttended && sScores[p.key] !== undefined) ? sScores[p.key] : 0;
+                        const val = getStudentScoreForPart(p.key, sScores);
+                        initialParts[p.key] = (isAttended && val !== undefined) ? val : 0;
                     });
                     currentResultsStudents[s.id] = {
                         name: s.name,
@@ -1743,7 +1759,8 @@
                     const totalMax = examParts.reduce((sum, p) => sum + p.max, 0);
 
                     const partInputs = examParts.map(p => {
-                        const existingVal = (isAttended && hasSubmissions && sScores[p.key] !== undefined) ? sScores[p.key] : '';
+                        const partVal = getStudentScoreForPart(p.key, sScores);
+                        const existingVal = (isAttended && hasSubmissions && partVal !== undefined) ? partVal : '';
                         const isInputLocked = allLocked || p.locked || !isAttended;
                         return `<td style="text-align:center;padding:0.5rem 0.3rem;">
                             <input type="number" min="0" max="${p.max}" value="${existingVal}" placeholder="${isAttended ? '0' : '—'}" inputmode="numeric"

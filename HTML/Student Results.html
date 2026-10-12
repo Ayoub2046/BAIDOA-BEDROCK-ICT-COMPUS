@@ -4155,36 +4155,61 @@
 
                     function pct(score, max) { return max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0; }
 
-                    var partsToRender = (EXAM_PARTS && EXAM_PARTS.length > 0) ? EXAM_PARTS : [];
-                    if (partsToRender.length === 0) {
-                        var keys = Object.keys(subjectData.scores);
-                        partsToRender = keys.map(function(k, idx) {
-                            return {
-                                key: k,
-                                label: k.replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); }),
-                                max: (subjectData.maxScores && subjectData.maxScores[k]) ? parseFloat(subjectData.maxScores[k]) : 100,
-                                barClass: PART_BAR_CLASSES[idx % PART_BAR_CLASSES.length],
-                                lblClass: PART_LABEL_CLASSES[idx % PART_LABEL_CLASSES.length],
-                                icon: PART_ICONS[idx % PART_ICONS.length]
-                            };
-                        });
+                    // Robust component resolution helper
+                    function resolveScoreAndMax(key, pDef, scores, maxScores) {
+                        if (!scores) return null;
+                        // 1. Direct match
+                        if (scores[key] !== undefined) {
+                            var m = (maxScores && maxScores[key]) ? parseFloat(maxScores[key]) : (pDef ? pDef.max : 0);
+                            return { score: parseFloat(scores[key]) || 0, max: m || (pDef ? pDef.max : 100), usedKey: key };
+                        }
+                        // 2. Practical aliases
+                        if (key === 'practical' || key === 'practical_exam' || key === 'practical_work') {
+                            if (scores['practical'] !== undefined) {
+                                return { score: parseFloat(scores['practical']) || 0, max: (maxScores && maxScores['practical']) ? parseFloat(maxScores['practical']) : (pDef ? pDef.max : 80), usedKey: 'practical' };
+                            }
+                            if (scores['practical_exam'] !== undefined) {
+                                return { score: parseFloat(scores['practical_exam']) || 0, max: (maxScores && maxScores['practical_exam']) ? parseFloat(maxScores['practical_exam']) : (pDef ? pDef.max : 80), usedKey: 'practical_exam' };
+                            }
+                            if (scores['practical_work'] !== undefined) {
+                                return { score: parseFloat(scores['practical_work']) || 0, max: (maxScores && maxScores['practical_work']) ? parseFloat(maxScores['practical_work']) : (pDef ? pDef.max : 80), usedKey: 'practical_work' };
+                            }
+                            if (scores['assignment'] !== undefined || scores['final'] !== undefined) {
+                                var sum = (parseFloat(scores['assignment']) || 0) + (parseFloat(scores['final']) || 0);
+                                return { score: sum, max: (pDef ? pDef.max : 80), usedKey: 'assignment' };
+                            }
+                        }
+                        // 3. Oral aliases
+                        if (key === 'oral' || key === 'oral_exam') {
+                            if (scores['oral'] !== undefined) {
+                                return { score: parseFloat(scores['oral']) || 0, max: (maxScores && maxScores['oral']) ? parseFloat(maxScores['oral']) : (pDef ? pDef.max : 20), usedKey: 'oral' };
+                            }
+                            if (scores['oral_exam'] !== undefined) {
+                                return { score: parseFloat(scores['oral_exam']) || 0, max: (maxScores && maxScores['oral_exam']) ? parseFloat(maxScores['oral_exam']) : (pDef ? pDef.max : 20), usedKey: 'oral_exam' };
+                            }
+                            if (scores['quiz'] !== undefined) {
+                                return { score: parseFloat(scores['quiz']) || 0, max: (maxScores && maxScores['quiz']) ? parseFloat(maxScores['quiz']) : (pDef ? pDef.max : 20), usedKey: 'quiz' };
+                            }
+                        }
+                        // 4. Typing alias
+                        if (key === 'typing' && scores['typing'] !== undefined) {
+                            return { score: parseFloat(scores['typing']) || 0, max: (maxScores && maxScores['typing']) ? parseFloat(maxScores['typing']) : (pDef ? pDef.max : 10), usedKey: 'typing' };
+                        }
+                        return null;
                     }
 
-                    partsToRender.forEach(function(p) {
-                        var scoreVal = 0;
-                        if (subjectData.scores && subjectData.scores[p.key] !== undefined) {
-                            scoreVal = parseFloat(subjectData.scores[p.key]) || 0;
-                        } else if (p.key === 'oral_exam' && subjectData.scores && subjectData.scores['quiz'] !== undefined) {
-                            scoreVal = parseFloat(subjectData.scores['quiz']) || 0;
-                        } else if (p.key === 'practical_exam' && subjectData.scores && (subjectData.scores['assignment'] !== undefined || subjectData.scores['final'] !== undefined)) {
-                            scoreVal = (parseFloat(subjectData.scores['assignment']) || 0) + (parseFloat(subjectData.scores['final']) || 0);
-                        } else {
-                            // Don't render exams that the student didn't take/were not assigned
-                            return;
-                        }
+                    var usedScoreKeys = {};
+                    var partsToRender = (EXAM_PARTS && EXAM_PARTS.length > 0) ? EXAM_PARTS : [];
 
-                        var maxVal = (subjectData.maxScores && subjectData.maxScores[p.key]) ? parseFloat(subjectData.maxScores[p.key]) : p.max;
-                        if (!maxVal || maxVal <= 0) maxVal = p.max || 100;
+                    partsToRender.forEach(function(p, pIdx) {
+                        var resolved = resolveScoreAndMax(p.key, p, subjectData.scores, subjectData.maxScores);
+                        if (!resolved) return;
+
+                        usedScoreKeys[resolved.usedKey] = true;
+                        if (resolved.usedKey === 'assignment') usedScoreKeys['final'] = true;
+
+                        var scoreVal = resolved.score;
+                        var maxVal   = resolved.max > 0 ? resolved.max : (p.max || 100);
 
                         subjectTotal += scoreVal;
                         subjectMax   += maxVal;
@@ -4193,6 +4218,29 @@
                         partRows += '  <div class="rc3-part-label ' + p.lblClass + '"><i class="fas ' + p.icon + '"></i> ' + p.label + '</div>';
                         partRows += '  <div class="rc3-bar-wrap">';
                         partRows += '    <div class="rc3-bar ' + p.barClass + '" style="width:' + pct(scoreVal, maxVal) + '%"></div>';
+                        partRows += '  </div>';
+                        partRows += '  <div class="rc3-score">' + scoreVal + '<span class="rc3-max">/' + maxVal + '</span></div>';
+                        partRows += '</div>';
+                    });
+
+                    // Render any additional scores present in subjectData.scores that weren't covered by EXAM_PARTS
+                    Object.keys(subjectData.scores || {}).forEach(function(k, kIdx) {
+                        if (usedScoreKeys[k]) return;
+                        var scoreVal = parseFloat(subjectData.scores[k]) || 0;
+                        var maxVal = (subjectData.maxScores && subjectData.maxScores[k]) ? parseFloat(subjectData.maxScores[k]) : 100;
+                        if (maxVal <= 0) maxVal = 100;
+                        var label = k.replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+                        var barCls = PART_BAR_CLASSES[kIdx % PART_BAR_CLASSES.length];
+                        var lblCls = PART_LABEL_CLASSES[kIdx % PART_LABEL_CLASSES.length];
+                        var iconCls = PART_ICONS[kIdx % PART_ICONS.length];
+
+                        subjectTotal += scoreVal;
+                        subjectMax   += maxVal;
+
+                        partRows += '<div class="rc3-row">';
+                        partRows += '  <div class="rc3-part-label ' + lblCls + '"><i class="fas ' + iconCls + '"></i> ' + label + '</div>';
+                        partRows += '  <div class="rc3-bar-wrap">';
+                        partRows += '    <div class="rc3-bar ' + barCls + '" style="width:' + pct(scoreVal, maxVal) + '%"></div>';
                         partRows += '  </div>';
                         partRows += '  <div class="rc3-score">' + scoreVal + '<span class="rc3-max">/' + maxVal + '</span></div>';
                         partRows += '</div>';

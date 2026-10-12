@@ -409,6 +409,7 @@
                 <div class="modal-body">
                     <input type="hidden" id="edit-student-id">
                     <input type="hidden" id="edit-subject">
+                    <input type="hidden" id="edit-period-id">
                     <div class="mb-2">
                         <span class="text-muted small">Student:</span> <strong id="edit-student-name"></strong>
                     </div>
@@ -697,6 +698,7 @@
                             student_id_code: r.student_id_code,
                             class_name: r.class_name,
                             subject: r.subject,
+                            period_id: r.period_id,
                             period_name: r.period_name,
                             approval_status: r.approval_status,
                             submitted_by: r.submitted_by,
@@ -754,7 +756,7 @@
                             <button type="button" class="btn btn-sm ${g.edit_allowed ? 'btn-warning text-dark' : 'btn-outline-secondary'} btn-toggle-unlock me-1" data-ids="${ids}" data-unlocked="${g.edit_allowed}" title="${g.edit_allowed ? 'Unlocked for teacher. Click to lock.' : 'Unlock for teacher to resubmit.'}">
                                 <i class="fas ${g.edit_allowed ? 'fa-lock-open' : 'fa-lock'}"></i> ${g.edit_allowed ? 'Unlocked' : 'Unlock'}
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-edit" data-student-id="${g.student_id}" data-student-name="${g.studentName}" data-subject="${g.subject}" data-scores='${JSON.stringify(g.scores)}' data-status="${g.approval_status}" title="Correct / Edit scores">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-edit" data-student-id="${g.student_id}" data-student-name="${g.studentName}" data-subject="${g.subject}" data-period-id="${g.period_id || ''}" data-scores='${JSON.stringify(g.scores)}' data-status="${g.approval_status}" title="Correct / Edit scores">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                         </td>
@@ -802,6 +804,9 @@
                         <td><span class="badge badge-absence ${badge.cls}">${badge.text}</span></td>
                         <td><small class="text-muted">${a.notes || '—'}</small></td>
                         <td class="text-end text-nowrap">
+                            <button class="btn btn-sm btn-outline-info btn-record-marks me-1" data-id="${a.student_id}" data-name="${a.student_name}" data-class="${a.class_id}" data-period="${a.period_id || ''}" data-subject="${a.subject}" title="Record Marks for Student (sets Attended & saves results)">
+                                <i class="fas fa-edit"></i> Record Marks
+                            </button>
                             <button class="btn btn-sm btn-outline-success btn-mark-attended me-1" data-id="${a.student_id}" data-name="${a.student_name}" data-class="${a.class_id}" data-period="${a.period_id}" data-subject="${a.subject}" title="Mark as Attended (enables entering marks)">
                                 <i class="fas fa-check"></i> Attended
                             </button>
@@ -887,8 +892,35 @@
                 if (unlockBtn) unlockBtn.disabled = checked.length === 0;
             }
 
-            // Actions in Absence Table: Mark Attended
+            // Actions in Absence Table: Record Marks / Mark Attended / Excused / Makeup
             document.getElementById('absence-table-body').addEventListener('click', async (e) => {
+                const btnRecord = e.target.closest('.btn-record-marks');
+                if (btnRecord) {
+                    const studentId = btnRecord.dataset.id;
+                    const studentName = btnRecord.dataset.name;
+                    const subject = btnRecord.dataset.subject;
+                    const periodId = btnRecord.dataset.period || '';
+
+                    document.getElementById('edit-student-id').value = studentId;
+                    document.getElementById('edit-subject').value = subject;
+                    document.getElementById('edit-period-id').value = periodId;
+                    document.getElementById('edit-student-name').textContent = `${studentName} (BB${String(260000 + parseInt(studentId)).slice(-6)})`;
+                    document.getElementById('edit-subject-name').textContent = subject;
+
+                    const inputsContainer = document.getElementById('direct-edit-inputs-container');
+                    if (inputsContainer) {
+                        inputsContainer.innerHTML = approvalExams.map(e => `
+                            <div class="col-6 mb-2">
+                                <label class="form-label small fw-bold">${e.name} (Max ${parseFloat(e.max_score)})</label>
+                                <input type="number" class="form-control form-control-sm direct-edit-score-input" data-exam-key="${e.exam_key}" min="0" max="${parseFloat(e.max_score)}" step="0.5" value="">
+                            </div>
+                        `).join('');
+                    }
+                    document.getElementById('edit-approval-status').value = 'approved';
+                    if (directEditModal) directEditModal.show();
+                    return;
+                }
+
                 const btnAtt = e.target.closest('.btn-mark-attended');
                 if (btnAtt) {
                     const studentId = parseInt(btnAtt.dataset.id);
@@ -1027,12 +1059,14 @@
                 const studentId = btn.dataset.studentId;
                 const studentName = btn.dataset.studentName;
                 const subject = btn.dataset.subject;
+                const periodId = btn.dataset.periodId || '';
                 let scores = {};
                 try { scores = JSON.parse(btn.dataset.scores || '{}'); } catch {}
                 const status = btn.dataset.status || 'approved';
 
                 document.getElementById('edit-student-id').value = studentId;
                 document.getElementById('edit-subject').value = subject;
+                document.getElementById('edit-period-id').value = periodId;
                 document.getElementById('edit-student-name').textContent = `${studentName} (BB${String(260000 + parseInt(studentId)).slice(-6)})`;
                 document.getElementById('edit-subject-name').textContent = subject;
 
@@ -1063,6 +1097,8 @@
             document.getElementById('btn-save-direct-edit').addEventListener('click', async () => {
                 const studentId = parseInt(document.getElementById('edit-student-id').value);
                 const subject = document.getElementById('edit-subject').value;
+                const periodIdVal = document.getElementById('edit-period-id').value;
+                const periodId = periodIdVal ? parseInt(periodIdVal) : null;
                 const approvalStatus = document.getElementById('edit-approval-status').value;
 
                 const scores = {};
@@ -1074,7 +1110,7 @@
                     const res = await fetch(`${RESULTS_API}/admin/direct-update`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, subject, scores, approvalStatus })
+                        body: JSON.stringify({ studentId, subject, scores, approvalStatus, periodId })
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.error || 'Update failed');
