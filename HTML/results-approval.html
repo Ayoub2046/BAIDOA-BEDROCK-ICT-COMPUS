@@ -270,6 +270,11 @@
                             <i class="fas fa-user-slash me-1"></i> Students Who Did Not Attend (<span id="tab-absence-count">0</span>)
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-btn-missing" data-bs-toggle="pill" data-bs-target="#pane-missing" type="button" role="tab">
+                            <i class="fas fa-user-clock me-1"></i> Missing Marks (<span id="tab-missing-count">0</span>)
+                        </button>
+                    </li>
                 </ul>
 
                 <div class="tab-content" id="approvalTabsContent">
@@ -361,6 +366,30 @@
                                         </thead>
                                         <tbody id="absence-table-body">
                                             <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                    <!-- TAB 3: MISSING STUDENTS (NEITHER SUBMITTED NOR MARKED ABSENT) -->
+                    <div class="tab-pane fade" id="pane-missing" role="tabpanel">
+                        <div class="card main-table-card">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <h6 class="mb-0 fw-bold"><i class="fas fa-user-clock me-2 text-warning"></i>Missing Students (No Marks Submitted Yet)</h6>
+                                <button class="btn btn-sm btn-outline-primary" id="btn-refresh-missing"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Student ID</th>
+                                                <th>Grade</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="missing-table-body">
+                                            <tr><td colspan="4" class="text-center py-4 text-muted">Select an Exam Period and Class to view missing students.</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -1243,9 +1272,13 @@
                     const checked = document.querySelectorAll('.result-checkbox:checked');
                     const ids = Array.from(checked).flatMap(cb => cb.dataset.ids.split(',').map(Number));
                     if (ids.length === 0) return;
+                    
+                    const reason = prompt('Please enter a reason for unlocking these results (e.g. "Teacher requested to enter missing marks"):', 'Teacher requested to enter missing marks');
+                    if (reason === null) return; // user cancelled prompt
+
                     const ok = await BedrockDialog.confirm({
                         title: 'Unlock Results for Re-edit',
-                        message: `Unlock <strong>${ids.length} result(s)</strong> for teachers to re-edit and resubmit?`,
+                        message: `Unlock <strong>${ids.length} result(s)</strong> for teachers to re-edit and resubmit?<br><br><em>Reason: ${reason || 'Not specified'}</em>`,
                         confirmText: 'Unlock', type: 'warning', icon: 'fas fa-lock-open'
                     });
                     if (!ok) return;
@@ -1253,7 +1286,7 @@
                         const response = await fetch(`${RESULTS_API}/unlock`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ids, unlock: true })
+                            body: JSON.stringify({ ids, unlock: true, reason: reason || 'Admin unlocked for re-edit', changedBy: 'Admin' })
                         });
                         if (!response.ok) throw new Error('Unlock failed');
                         await BedrockDialog.alert({ title: 'Unlocked', message: `${ids.length} result(s) unlocked for teacher re-edit.`, type: 'success' });
@@ -1264,9 +1297,65 @@
                 });
             }
 
+            // Missing Students Tracking Loader
+            async function loadMissingStudents() {
+                const tbody = document.getElementById('missing-table-body');
+                const periodId = document.getElementById('filter-period').value;
+                const classId = document.getElementById('filter-class').value;
+                const subject = document.getElementById('filter-subject').value;
+
+                if (!tbody) return;
+                if (periodId === 'all' || classId === 'all') {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted"><i class="fas fa-info-circle me-1 text-primary"></i>Please select both an <strong>Exam Period</strong> and a <strong>Class</strong> above to track missing marks.</td></tr>';
+                    const tabMissingCount = document.getElementById('tab-missing-count');
+                    if (tabMissingCount) tabMissingCount.textContent = '0';
+                    return;
+                }
+
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Checking missing student marks...</td></tr>';
+
+                try {
+                    const subjQuery = subject !== 'all' ? `&subject=${encodeURIComponent(subject)}` : '';
+                    const res = await fetch(`${RESULTS_API}/missing-students?periodId=${periodId}&classId=${classId}${subjQuery}`);
+                    if (!res.ok) throw new Error('Could not load missing students');
+                    const data = await res.json();
+
+                    const tabMissingCount = document.getElementById('tab-missing-count');
+                    if (tabMissingCount) tabMissingCount.textContent = data.missingCount || 0;
+
+                    if (!data.missingStudents || data.missingStudents.length === 0) {
+                        tbody.innerHTML = `
+                            <tr><td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-check-double fa-3x mb-2 d-block text-success"></i>
+                                <h6 class="fw-bold text-success">100% Complete!</h6>
+                                <p class="mb-0">All ${data.totalExpected} student(s) in this class have either submitted marks or recorded attendance.</p>
+                            </td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.missingStudents.map(s => `
+                        <tr>
+                            <td><div class="fw-bold">${s.name}</div></td>
+                            <td><code class="text-primary fw-semibold">${s.bb_id}</code></td>
+                            <td><span class="badge bg-light text-dark border">${s.grade || '—'}</span></td>
+                            <td><span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Marks Not Submitted</span></td>
+                        </tr>
+                    `).join('');
+                } catch(e) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${e.message}</td></tr>`;
+                }
+            }
+
+            const btnRefreshMissing = document.getElementById('btn-refresh-missing');
+            if (btnRefreshMissing) btnRefreshMissing.addEventListener('click', () => loadMissingStudents());
+
+            const tabBtnMissing = document.getElementById('tab-btn-missing');
+            if (tabBtnMissing) tabBtnMissing.addEventListener('shown.bs.tab', () => loadMissingStudents());
+
             // Initialize
             await loadFilterOptions();
             await loadApprovalData();
+            loadMissingStudents();
         });
 
         // Sidebar toggle & logout

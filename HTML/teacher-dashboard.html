@@ -712,10 +712,20 @@
                                 </div>
 
                                 <div class="mt-3 p-3 rounded-3" style="background:linear-gradient(135deg,#e8eef7,#f0f5ff);border:1px solid #c3d1e6;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.7rem;">
-                                    <small class="text-muted"><i class="fas fa-shield-alt me-1" style="color:#0d2b4e;"></i> Submitted scores go to admin for review &amp; approval before being visible to students.</small>
-                                    <button id="submit-results-btn" class="btn px-4 fw-bold" style="background:#0d2b4e;color:#d4af37;border:none;border-radius:10px;">
-                                        <i class="fas fa-paper-plane me-1"></i> Submit All Parts
-                                    </button>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <small class="text-muted"><i class="fas fa-shield-alt me-1" style="color:#0d2b4e;"></i> Submitted scores go to admin for approval before being visible to students.</small>
+                                        <span id="draft-autosave-indicator" class="badge bg-light text-muted border ms-2" style="font-size:0.72rem;display:none;">
+                                            <i class="fas fa-check-circle text-success me-1"></i> Draft Saved
+                                        </span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button id="save-draft-btn" type="button" class="btn btn-outline-secondary px-3 fw-semibold" style="border-radius:10px;font-size:0.85rem;">
+                                            <i class="fas fa-save me-1"></i> Save Draft
+                                        </button>
+                                        <button id="submit-results-btn" class="btn px-4 fw-bold" style="background:#0d2b4e;color:#d4af37;border:none;border-radius:10px;">
+                                            <i class="fas fa-paper-plane me-1"></i> Submit All Parts
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -728,6 +738,16 @@
                             <h5><i class="fas fa-tasks text-primary"></i> Exam Submission Tracker</h5>
                         </div>
                         <div class="td-card-b p-0" id="submission-status-list" style="max-height:350px;overflow-y:auto;"></div>
+                    </div>
+
+                    <div class="td-card mt-3">
+                        <div class="td-card-h d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-file-alt text-warning"></i> In-Progress Drafts</h5>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="loadDraftList()" title="Refresh Drafts"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="td-card-b p-0" id="draft-results-list" style="max-height:260px;overflow-y:auto;">
+                            <div class="p-3 text-muted text-center" style="font-size:0.8rem;">No active drafts saved yet.</div>
+                        </div>
                     </div>
 
                     <div class="td-card mt-3">
@@ -1913,10 +1933,16 @@
                         if (lbl) lbl.textContent = pct + '%';
                         if (badge) { const g = getGradeBadge(pct); badge.className = 'grade-badge ' + g.cls; badge.textContent = g.text; }
                         updateLiveResultsStats();
+                        triggerDraftAutoSave();
                     });
                 });
 
                 updateLiveResultsStats();
+
+                // If not locked by official submission, restore in-progress draft if exists
+                if (!isLockedBySubmission) {
+                    await loadAndApplyDraft(classId, subject, periodId);
+                }
 
             } catch(e) { $('results-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
             finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-users me-1"></i> Load Roster'; }
@@ -1985,7 +2011,9 @@
                     examParts.forEach(p => {
                         if (p.locked) return; // skip locked parts
                         const inp = row.querySelector(`.si-part[data-part="${p.key}"]`);
-                        const score = inp && inp.value !== '' ? (parseFloat(inp.value) || 0) : 0;
+                        // Do NOT send empty fields as 0 — skip so missing students aren't treated as scored zero
+                        if (!inp || inp.value === '' || inp.value === null) return;
+                        const score = parseFloat(inp.value) || 0;
                         records.push({ studentId: parseInt(sid), subject, examType: p.key, componentId: p.id, score, remarks, date, periodId: periodIdVal });
                     });
                 } else {
@@ -2049,12 +2077,242 @@
 
                 await loadSubmittedResults();
                 renderSubmissionStatus();
+                loadDraftList();
             } catch(e) {
                 btn.disabled = false;
                 btn.innerHTML = original;
                 $('results-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
             }
         });
+
+        // ==================== DRAFT AUTO-SAVE & RESTORATION ====================
+        let draftAutoSaveTimeout = null;
+
+        function triggerDraftAutoSave() {
+            clearTimeout(draftAutoSaveTimeout);
+            draftAutoSaveTimeout = setTimeout(() => {
+                saveResultsDraft(true);
+            }, 3000);
+        }
+
+        async function saveResultsDraft(isAuto = false) {
+            const subject = $('results-subject') ? $('results-subject').value.trim() : '';
+            const periodSelect = $('results-exam-period-select');
+            const periodIdVal = periodSelect && periodSelect.value ? parseInt(periodSelect.value) : null;
+            const classSelect = $('results-class-select');
+            const classIdVal = classSelect && classSelect.value ? parseInt(classSelect.value) : null;
+
+            if (!subject || !periodIdVal) return;
+
+            const draftData = [];
+            const attendanceData = [];
+
+            $$('#results-table-body tr').forEach(row => {
+                const sid = row.dataset.student;
+                if (!sid) return;
+                const remarkInp = row.querySelector('.remark-input');
+                const remarks = remarkInp ? remarkInp.value.trim() : '';
+                const attSelect = row.querySelector('.att-status-select');
+                const attStatus = attSelect ? attSelect.value : 'attended';
+
+                const parts = {};
+                row.querySelectorAll('.si-part').forEach(inp => {
+                    const pKey = inp.dataset.part;
+                    if (pKey && inp.value !== '') {
+                        parts[pKey] = parseFloat(inp.value);
+                    }
+                });
+
+                if (Object.keys(parts).length > 0 || remarks || attStatus !== 'attended') {
+                    draftData.push({
+                        studentId: parseInt(sid),
+                        parts,
+                        remarks,
+                        attendanceStatus: attStatus
+                    });
+                }
+
+                if (attStatus !== 'attended') {
+                    attendanceData.push({
+                        studentId: parseInt(sid),
+                        status: attStatus,
+                        notes: remarks
+                    });
+                }
+            });
+
+            const indicator = $('draft-autosave-indicator');
+            if (indicator) {
+                indicator.style.display = 'inline-block';
+                indicator.className = 'badge bg-warning text-dark border ms-2';
+                indicator.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving Draft...';
+            }
+
+            try {
+                const res = await fetch('/api/results/draft/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        teacherId: activeUser.id,
+                        teacherName: activeUser.name,
+                        periodId: periodIdVal,
+                        classId: classIdVal,
+                        subject,
+                        draftData,
+                        attendanceData
+                    })
+                });
+                if (res.ok) {
+                    if (indicator) {
+                        indicator.className = 'badge bg-success-subtle text-success border border-success-subtle ms-2';
+                        indicator.innerHTML = `<i class="fas fa-check-circle me-1"></i> Draft Saved (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                        setTimeout(() => { if (indicator) indicator.style.display = 'none'; }, 5000);
+                    }
+                    if (!isAuto) {
+                        $('results-alert').innerHTML = `<div class="alert alert-success py-2 px-3 mb-2" style="font-size:0.85rem;"><i class="fas fa-check-circle me-2"></i>Draft saved successfully! You can resume entering marks at any time.</div>`;
+                    }
+                    loadDraftList();
+                } else if (!isAuto) {
+                    const err = await res.json().catch(() => ({}));
+                    $('results-alert').innerHTML = `<div class="alert alert-danger py-2 px-3 mb-2" style="font-size:0.85rem;"><i class="fas fa-exclamation-triangle me-2"></i>Could not save draft: ${err.error || 'Server error'}</div>`;
+                }
+            } catch (e) {
+                if (indicator) {
+                    indicator.className = 'badge bg-danger text-white border ms-2';
+                    indicator.innerHTML = '<i class="fas fa-times-circle me-1"></i> Save Failed';
+                }
+            }
+        }
+
+        // Manual Save Draft Button
+        const saveDraftBtn = $('save-draft-btn');
+        if (saveDraftBtn) {
+            saveDraftBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                saveResultsDraft(false);
+            });
+        }
+
+        // Load and apply draft if available
+        async function loadAndApplyDraft(classId, subject, periodId) {
+            if (!activeUser || !activeUser.id || !periodId || !subject) return;
+            try {
+                const res = await fetch(`/api/results/draft/load?teacherId=${activeUser.id}&periodId=${periodId}&classId=${classId}&subject=${encodeURIComponent(subject)}`);
+                if (!res.ok) return;
+                const draft = await res.json();
+                if (!draft.found || !Array.isArray(draft.draft_data)) return;
+
+                let restoredCount = 0;
+                draft.draft_data.forEach(item => {
+                    const row = $(`row-student-${item.studentId}`);
+                    if (!row) return;
+
+                    // Restore attendance if non-default
+                    if (item.attendanceStatus) {
+                        const attSel = row.querySelector('.att-status-select');
+                        if (attSel && !attSel.disabled) {
+                            attSel.value = item.attendanceStatus;
+                            attSel.dispatchEvent(new Event('change'));
+                        }
+                    }
+
+                    // Restore part scores
+                    if (item.parts) {
+                        Object.entries(item.parts).forEach(([partKey, val]) => {
+                            const inp = row.querySelector(`.si-part[data-part="${partKey}"]`);
+                            if (inp && !inp.disabled && (inp.value === '' || inp.value === '0')) {
+                                inp.value = val;
+                                inp.dispatchEvent(new Event('input'));
+                                restoredCount++;
+                            }
+                        });
+                    }
+
+                    // Restore remarks
+                    if (item.remarks) {
+                        const rem = row.querySelector('.remark-input');
+                        if (rem && !rem.disabled && !rem.value) rem.value = item.remarks;
+                    }
+                });
+
+                if (restoredCount > 0) {
+                    const dateStr = draft.last_saved_at ? new Date(draft.last_saved_at).toLocaleString() : 'recently';
+                    $('results-alert').innerHTML = `
+                        <div class="alert alert-info py-2 px-3 mb-2 d-flex justify-content-between align-items-center" style="font-size:0.85rem;border-left:4px solid #0dcaf0;border-radius:8px;">
+                            <div><i class="fas fa-history me-2 text-info"></i>Restored <strong>in-progress draft</strong> from ${dateStr}.</div>
+                            <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="saveResultsDraft(false)"><i class="fas fa-save me-1"></i>Save Draft Now</button>
+                        </div>`;
+                }
+            } catch (e) {
+                console.warn('Could not load draft:', e);
+            }
+        }
+
+        // List drafts in right sidebar
+        async function loadDraftList() {
+            const listEl = $('draft-results-list');
+            if (!listEl || !activeUser || !activeUser.id) return;
+            try {
+                const res = await fetch(`/api/results/draft/list?teacherId=${activeUser.id}`);
+                if (!res.ok) return;
+                const drafts = await res.json();
+                if (!drafts.length) {
+                    listEl.innerHTML = '<div class="p-3 text-muted text-center" style="font-size:0.8rem;">No active drafts saved yet.</div>';
+                    return;
+                }
+                listEl.innerHTML = drafts.map(d => `
+                    <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="font-size:0.8rem;">
+                        <div>
+                            <div class="fw-bold text-dark">${d.subject || 'Subject'} (${d.class_name || 'Class'})</div>
+                            <small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>${d.period_name || 'Exam'} &bull; ${d.students_with_marks || 0} student(s) drafted</small>
+                            <div style="font-size:0.68rem;color:#888;">Saved: ${new Date(d.last_saved_at).toLocaleDateString()} ${new Date(d.last_saved_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="resumeDraft(${d.class_id}, '${d.subject}', ${d.period_id})" title="Resume Editing">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.75rem;" onclick="deleteDraft(${d.id})" title="Discard Draft">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.warn('Could not load draft list:', e);
+            }
+        }
+
+        window.resumeDraft = async function(classId, subject, periodId) {
+            if (classId) {
+                const cSel = $('results-class-select');
+                if (cSel) { cSel.value = classId; cSel.dispatchEvent(new Event('change')); }
+            }
+            if (subject) {
+                const sInp = $('results-subject');
+                if (sInp) sInp.value = subject;
+            }
+            if (periodId) {
+                const pSel = $('results-exam-period-select');
+                if (pSel) { pSel.value = periodId; pSel.dispatchEvent(new Event('change')); }
+            }
+            // Trigger load roster
+            $('btn-load-results-students').click();
+        };
+
+        window.deleteDraft = async function(id) {
+            const ok = await BedrockDialog.confirm({
+                title: 'Discard Draft',
+                message: 'Are you sure you want to discard this draft? Unsaved marks will be removed.',
+                confirmText: 'Discard',
+                type: 'warning',
+                icon: 'fa-trash'
+            });
+            if (!ok) return;
+            try {
+                await fetch(`/api/results/draft/${id}`, { method: 'DELETE' });
+                loadDraftList();
+            } catch (e) {}
+        };
 
 
 
@@ -2184,6 +2442,7 @@
             }).join('');
         }
         loadSubmittedResults();
+        loadDraftList();
 
         // === MY FEES & SALARY ===
         async function loadTeacherFees() {

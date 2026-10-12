@@ -485,11 +485,11 @@ router.post('/', async (req, res) => {
 
         // Check if a result already exists for this student/subject/exam/period and is locked
         const { rows: existing } = await query(
-            `SELECT id, approval_status, edit_allowed FROM results
-             WHERE student_id = $1 AND subject = $2 AND exam_type = $3
-               AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5) AND deleted_at IS NULL
+            `SELECT id, approval_status, edit_allowed, score FROM results
+             WHERE student_id = $1 AND lower(subject) = lower($2) AND exam_type = $3
+               AND ($4::INTEGER IS NULL OR period_id = $4) AND deleted_at IS NULL
              ORDER BY id DESC LIMIT 1`,
-            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`, targetPeriodId]
+            [studentId, subject, examType, targetPeriodId]
         );
         if (existing[0]) {
             const rec = existing[0];
@@ -517,18 +517,31 @@ router.post('/', async (req, res) => {
         } catch (e) { /* fall back to default */ }
         const parsedScore = Math.min(parseFloat(score) || 0, maxScore);
 
-        // Delete any existing result so we can re-insert (only gets here if unlocked or rejected)
-        await query(
-            `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5)`,
-            [studentId, subject, examType, teacherName || `Teacher-${teacherId}`, targetPeriodId]
-        );
-
-        // Insert new result with pending status, lock it (edit_allowed = false)
-        await query(
-            `INSERT INTO results (student_id, subject, score, exam_type, max_score, approval_status, submitted_by, submitted_at, edit_allowed, period_id)
-             VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW(), false, $7)`,
+        // Safe upsert respecting uq_results_student_subject_part_period partial unique index
+        const { rows: upsertRows } = await query(
+            `INSERT INTO results (student_id, subject, score, exam_type, max_score, approval_status, submitted_by, submitted_at, edit_allowed, period_id, updated_at)
+             VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW(), false, $7, NOW())
+             ON CONFLICT (student_id, lower(subject), exam_type, COALESCE(period_id, 0))
+             WHERE deleted_at IS NULL
+             DO UPDATE SET
+                 score = EXCLUDED.score,
+                 max_score = EXCLUDED.max_score,
+                 approval_status = 'pending',
+                 submitted_by = EXCLUDED.submitted_by,
+                 submitted_at = NOW(),
+                 edit_allowed = false,
+                 updated_at = NOW()
+             RETURNING id, score`,
             [studentId, subject, parsedScore, examType, maxScore, teacherName || `Teacher-${teacherId}`, targetPeriodId]
         );
+
+        if (existing[0] && existing[0].score !== parsedScore) {
+            await query(`
+                INSERT INTO result_audit_log (result_id, student_id, subject, exam_type, period_id, old_score, new_score, old_status, new_status, action, actor, reason)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', 'UPDATE', $9, 'Teacher corrected score upon resubmission')
+            `, [upsertRows[0]?.id || existing[0].id, studentId, subject, examType, targetPeriodId, existing[0].score, parsedScore, existing[0].approval_status, teacherName || `Teacher-${teacherId}`]).catch(() => {});
+        }
+
         res.status(201).json({ message: 'Result submitted for approval.', periodId: targetPeriodId });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -555,35 +568,44 @@ router.post('/batch', async (req, res) => {
             } catch(e) {}
         }
 
-        // Pre-check for locked exams or already submitted locked results before opening transaction
+        // Global check: Is the exam period locked or closed by admin?
+        if (defaultPeriodId) {
+            const { rows: examLock } = await query(
+                `SELECT ep.name, ep.status, COALESCE(ep.is_locked, false) AS exam_locked
+                 FROM exam_periods ep WHERE ep.id = $1 AND ep.deleted_at IS NULL LIMIT 1`,
+                [defaultPeriodId]
+            );
+            if (examLock[0] && (examLock[0].exam_locked || examLock[0].status === 'locked' || examLock[0].status === 'closed')) {
+                return res.status(403).json({
+                    error: `The exam "${examLock[0].name}" is currently ${examLock[0].status || 'locked'} by the administrator. Scores cannot be submitted or changed.`,
+                    locked: true,
+                    examId: defaultPeriodId
+                });
+            }
+        }
+
+        // Pre-check: Ensure any existing results for this batch are unlocked (or rejected) before proceeding
+        // Deduplicate incoming records by studentId + examType + subject to prevent duplicate items within payload
+        const seenPayloadKeys = new Set();
+        const validRecords = [];
         for (const rec of (records || [])) {
             const { studentId, subject, examType } = rec;
             if (!studentId || !subject || !examType) continue;
+            // Ignore blank or unentered scores in partial submissions
+            if (rec.score === '' || rec.score === null || rec.score === undefined) continue;
+
             const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
+            const pKey = `${studentId}_${String(subject).toLowerCase()}_${String(examType).toLowerCase()}_${recPeriodId || 0}`;
+            if (seenPayloadKeys.has(pKey)) continue; // ignore duplicate payload rows
+            seenPayloadKeys.add(pKey);
 
-            // 1. Check if the exam itself is locked or closed globally by admin in exam_periods
-            if (recPeriodId) {
-                const { rows: examLock } = await query(
-                    `SELECT ep.name, ep.status, COALESCE(ep.is_locked, false) AS exam_locked
-                     FROM exam_periods ep WHERE ep.id = $1 AND ep.deleted_at IS NULL LIMIT 1`,
-                    [recPeriodId]
-                );
-                if (examLock[0] && (examLock[0].exam_locked || examLock[0].status === 'locked' || examLock[0].status === 'closed')) {
-                    return res.status(403).json({
-                        error: `The exam "${examLock[0].name}" is currently ${examLock[0].status || 'locked'} by the administrator. Scores cannot be submitted or changed.`,
-                        locked: true,
-                        examId: recPeriodId
-                    });
-                }
-            }
-
-            // 2. Check if previous submission is locked
+            // Verify result-level lock
             const { rows: existing } = await query(
                 `SELECT id, approval_status, edit_allowed FROM results
-                 WHERE student_id = $1 AND subject = $2 AND exam_type = $3
-                   AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5) AND deleted_at IS NULL
+                 WHERE student_id = $1 AND lower(subject) = lower($2) AND exam_type = $3
+                   AND ($4::INTEGER IS NULL OR period_id = $4) AND deleted_at IS NULL
                  ORDER BY id DESC LIMIT 1`,
-                [studentId, subject, examType, tName, recPeriodId]
+                [studentId, subject, examType, recPeriodId]
             );
             if (existing[0] && !existing[0].edit_allowed && existing[0].approval_status !== 'rejected') {
                 return res.status(409).json({
@@ -593,15 +615,15 @@ router.post('/batch', async (req, res) => {
                     examType
                 });
             }
+
+            validRecords.push(rec);
         }
 
         client = await pool.connect();
         await client.query('BEGIN');
-        for (const rec of (records || [])) {
+
+        for (const rec of validRecords) {
             const { studentId, subject, examType, score, remarks } = rec;
-            if (!studentId || !subject || !examType) {
-                throw new Error('studentId, subject and examType are required for every record.');
-            }
             const recPeriodId = rec.periodId ? parseInt(rec.periodId) : (rec.period_id ? parseInt(rec.period_id) : defaultPeriodId);
 
             // Lookup component in exam_components for this exam
@@ -647,16 +669,51 @@ router.post('/batch', async (req, res) => {
             }
             const parsedScore = Math.max(0, Math.min(rawScore, maxScore));
 
-            // Delete existing (only reachable if unlocked or rejected, due to pre-check above)
-            await client.query(
-                `DELETE FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND submitted_by = $4 AND ($5::INTEGER IS NULL OR period_id = $5)`,
-                [studentId, subject, examType, tName, recPeriodId]
+            // Fetch previous record for audit log if updating
+            const { rows: prevRec } = await client.query(
+                `SELECT id, score, approval_status FROM results
+                 WHERE student_id = $1 AND lower(subject) = lower($2) AND exam_type = $3
+                   AND ($4::INTEGER IS NULL OR period_id = $4) AND deleted_at IS NULL LIMIT 1`,
+                [studentId, subject, examType, recPeriodId]
             );
-            await client.query(
-                `INSERT INTO results (student_id, subject, score, exam_type, max_score, remarks, approval_status, submitted_by, submitted_at, edit_allowed, period_id, component_id, component_name, attendance_status)
-                 VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8, $9, $10, 'attended')`,
-                [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId, componentId, componentName]
-            );
+
+            // Safe upsert on (student_id, lower(subject), exam_type, COALESCE(period_id, 0)) WHERE deleted_at IS NULL
+            const { rows: upserted } = await client.query(`
+                INSERT INTO results (
+                    student_id, subject, score, exam_type, max_score, remarks,
+                    approval_status, submitted_by, submitted_at, edit_allowed,
+                    period_id, component_id, component_name, attendance_status, updated_at
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, NOW(), false, $8, $9, $10, 'attended', NOW())
+                ON CONFLICT (student_id, lower(subject), exam_type, COALESCE(period_id, 0))
+                WHERE deleted_at IS NULL
+                DO UPDATE SET
+                    score = EXCLUDED.score,
+                    max_score = EXCLUDED.max_score,
+                    remarks = COALESCE(EXCLUDED.remarks, results.remarks),
+                    approval_status = 'pending',
+                    submitted_by = EXCLUDED.submitted_by,
+                    submitted_at = NOW(),
+                    edit_allowed = false,
+                    component_id = COALESCE(EXCLUDED.component_id, results.component_id),
+                    component_name = COALESCE(EXCLUDED.component_name, results.component_name),
+                    attendance_status = 'attended',
+                    updated_at = NOW()
+                RETURNING id, score
+            `, [studentId, subject, parsedScore, examType, maxScore, remarks || null, tName, recPeriodId, componentId, componentName]);
+
+            // Audit log mark correction if score changed
+            if (prevRec[0] && prevRec[0].score !== parsedScore) {
+                await client.query(`
+                    INSERT INTO result_audit_log (result_id, student_id, subject, exam_type, period_id, old_score, new_score, old_status, new_status, action, actor, reason)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', 'UPDATE', $9, 'Score updated on teacher resubmission')
+                `, [upserted[0]?.id || prevRec[0].id, studentId, subject, examType, recPeriodId, prevRec[0].score, parsedScore, prevRec[0].approval_status, tName]);
+            } else if (!prevRec[0]) {
+                await client.query(`
+                    INSERT INTO result_audit_log (result_id, student_id, subject, exam_type, period_id, old_score, new_score, old_status, new_status, action, actor, reason)
+                    VALUES ($1, $2, $3, $4, $5, NULL, $6, NULL, 'pending', 'INSERT', $7, 'Initial partial/full result submission')
+                `, [upserted[0]?.id, studentId, subject, examType, recPeriodId, parsedScore, tName]);
+            }
 
             // Synchronize exam_attendance as 'attended'
             await client.query(`
@@ -693,8 +750,17 @@ router.post('/batch', async (req, res) => {
             }
         }
 
+        // Update draft status to submitted if exists
+        if (defaultPeriodId) {
+            await client.query(`
+                UPDATE result_drafts
+                SET status = 'submitted', updated_at = NOW()
+                WHERE teacher_id = $1 AND period_id = $2
+            `, [teacherId || 0, defaultPeriodId]).catch(() => {});
+        }
+
         await client.query('COMMIT');
-        const countResults = (records || []).length;
+        const countResults = validRecords.length;
         const countAtt = (attendanceRecords || []).length;
         res.status(201).json({ message: `${countResults} result(s) and ${countAtt} attendance record(s) submitted for approval.` });
     } catch (err) {
@@ -761,17 +827,29 @@ router.put('/approve', async (req, res) => {
 // PUT unlock results for teacher re-edit (admin only)
 // Sets edit_allowed = true so teacher can resubmit
 router.put('/unlock', async (req, res) => {
-    const { ids, unlock } = req.body; // unlock: true = allow edit, false = lock
+    const { ids, unlock, reason, changedBy } = req.body; // unlock: true = allow edit, false = lock
     if (!ids || !Array.isArray(ids)) {
         return res.status(400).json({ error: 'ids array is required.' });
     }
     const allow = unlock !== false; // default true
+    const actor = changedBy || 'Administrator';
+    const logReason = reason || (allow ? 'Authorized for correction/missing marks entry' : 'Admin locked results');
     try {
         for (const id of ids) {
+            const { rows: rRow } = await query(
+                `SELECT student_id, subject, exam_type, period_id, score, approval_status, edit_allowed FROM results WHERE id = $1`,
+                [id]
+            );
             await query(
-                `UPDATE results SET edit_allowed = $1, approval_status = 'pending' WHERE id = $2`,
+                `UPDATE results SET edit_allowed = $1, approval_status = 'pending', updated_at = NOW() WHERE id = $2`,
                 [allow, id]
             );
+            if (rRow[0]) {
+                await query(`
+                    INSERT INTO result_audit_log (result_id, student_id, subject, exam_type, period_id, old_score, new_score, old_status, new_status, action, actor, reason)
+                    VALUES ($1, $2, $3, $4, $5, $6, $6, $7, 'pending', $8, $9, $10)
+                `, [id, rRow[0].student_id, rRow[0].subject, rRow[0].exam_type, rRow[0].period_id, rRow[0].score, rRow[0].approval_status, allow ? 'UNLOCK' : 'LOCK', actor, logReason]).catch(() => {});
+            }
         }
         res.json({ message: `${ids.length} result(s) ${allow ? 'unlocked for re-edit' : 're-locked'}.` });
     } catch (err) {
@@ -987,6 +1065,221 @@ router.post('/upload-csv', upload.single('file'), async (req, res) => {
         res.json({ message: `Imported ${imported} result(s).`, errors: errors.length > 0 ? errors : undefined });
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// --- DRAFT RESULTS MANAGEMENT ---
+
+// POST save draft (auto-save or manual save)
+router.post('/draft/save', async (req, res) => {
+    const { teacherId, teacherName, periodId, classId, subject, draftData, attendanceData } = req.body;
+    if (!teacherId || !periodId || !subject) {
+        return res.status(400).json({ error: 'teacherId, periodId, and subject are required.' });
+    }
+    try {
+        await query(`
+            INSERT INTO result_drafts (
+                teacher_id, teacher_name, period_id, class_id, subject,
+                draft_data, attendance_data, status, last_saved_at, updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, 'draft', NOW(), NOW())
+            ON CONFLICT (teacher_id, period_id, class_id, subject)
+            DO UPDATE SET
+                teacher_name = EXCLUDED.teacher_name,
+                draft_data = EXCLUDED.draft_data,
+                attendance_data = EXCLUDED.attendance_data,
+                status = 'draft',
+                last_saved_at = NOW(),
+                updated_at = NOW()
+        `, [
+            teacherId,
+            teacherName || 'Teacher',
+            parseInt(periodId),
+            classId ? parseInt(classId) : null,
+            subject.trim(),
+            JSON.stringify(draftData || []),
+            JSON.stringify(attendanceData || [])
+        ]);
+        res.json({ message: 'Draft saved successfully.', savedAt: new Date().toISOString() });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET load saved draft
+router.get('/draft/load', async (req, res) => {
+    const { teacherId, periodId, classId, subject } = req.query;
+    if (!teacherId || !periodId || !subject) {
+        return res.status(400).json({ error: 'teacherId, periodId, and subject are required.' });
+    }
+    try {
+        const { rows } = await query(`
+            SELECT id, draft_data, attendance_data, status, last_saved_at, updated_at
+            FROM result_drafts
+            WHERE teacher_id = $1
+              AND period_id = $2
+              AND ($3::INTEGER IS NULL OR class_id = $3)
+              AND LOWER(subject) = LOWER($4)
+            ORDER BY last_saved_at DESC
+            LIMIT 1
+        `, [
+            parseInt(teacherId),
+            parseInt(periodId),
+            classId ? parseInt(classId) : null,
+            subject.trim()
+        ]);
+        if (!rows[0]) return res.json({ found: false });
+        res.json({ found: true, ...rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET list all drafts for a teacher
+router.get('/draft/list', async (req, res) => {
+    const { teacherId } = req.query;
+    if (!teacherId) return res.status(400).json({ error: 'teacherId is required.' });
+    try {
+        const { rows } = await query(`
+            SELECT rd.id, rd.period_id, rd.class_id, rd.subject, rd.status,
+                   rd.last_saved_at, rd.updated_at,
+                   ep.name AS period_name,
+                   c.name AS class_name,
+                   jsonb_array_length(COALESCE(rd.draft_data, '[]'::jsonb)) AS students_with_marks,
+                   COALESCE((
+                       SELECT COUNT(DISTINCT s.id)
+                       FROM students s
+                       WHERE (s.classid = rd.class_id OR s.id IN (SELECT student_id FROM class_students cs WHERE cs.class_id = rd.class_id AND cs.deleted_at IS NULL))
+                         AND s.deleted_at IS NULL
+                   ), 0)::int AS total_students
+            FROM result_drafts rd
+            LEFT JOIN exam_periods ep ON ep.id = rd.period_id
+            LEFT JOIN classes c ON c.id = rd.class_id
+            WHERE rd.teacher_id = $1
+            ORDER BY rd.last_saved_at DESC
+        `, [parseInt(teacherId)]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE a draft
+router.delete('/draft/:id', async (req, res) => {
+    try {
+        await query(`DELETE FROM result_drafts WHERE id = $1`, [parseInt(req.params.id)]);
+        res.json({ message: 'Draft deleted.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET missing students for exam period and class
+router.get('/missing-students', async (req, res) => {
+    const { periodId, classId, subject } = req.query;
+    if (!periodId || !classId) {
+        return res.status(400).json({ error: 'periodId and classId are required.' });
+    }
+    try {
+        const pId = parseInt(periodId);
+        const cId = parseInt(classId);
+
+        // Fetch all students belonging to the class
+        const { rows: students } = await query(`
+            SELECT s.id, s.name, s.grade, s.image,
+                   ('BB' || LPAD((260000 + s.id)::TEXT, 6, '0')) AS bb_id
+            FROM students s
+            WHERE (s.classid = $1 OR s.id IN (SELECT cs.student_id FROM class_students cs WHERE cs.class_id = $1 AND cs.deleted_at IS NULL))
+              AND s.deleted_at IS NULL
+            ORDER BY s.id ASC
+        `, [cId]);
+
+        // Fetch counts of results per student for this period & subject
+        const { rows: resultCounts } = await query(`
+            SELECT student_id,
+                   COUNT(id) AS component_count,
+                   MAX(approval_status) AS approval_status,
+                   BOOL_AND(edit_allowed) AS edit_allowed
+            FROM results
+            WHERE period_id = $1
+              AND ($2::TEXT IS NULL OR LOWER(subject) = LOWER($2))
+              AND deleted_at IS NULL
+            GROUP BY student_id
+        `, [pId, subject ? subject.trim() : null]);
+
+        // Fetch attendance status
+        const { rows: attList } = await query(`
+            SELECT student_id, status FROM exam_attendance
+            WHERE period_id = $1
+              AND ($2::TEXT IS NULL OR LOWER(subject) = LOWER($2))
+        `, [pId, subject ? subject.trim() : null]);
+
+        const resultMap = new Map(resultCounts.map(r => [r.student_id, r]));
+        const attMap = new Map(attList.map(a => [a.student_id, a.status]));
+
+        const completed = [];
+        const missing = [];
+        const absent = [];
+
+        students.forEach(s => {
+            const resData = resultMap.get(s.id);
+            const attStatus = attMap.get(s.id);
+
+            if (attStatus && attStatus !== 'attended') {
+                absent.push({ ...s, attendance_status: attStatus });
+            } else if (resData && parseInt(resData.component_count) > 0) {
+                completed.push({
+                    ...s,
+                    component_count: parseInt(resData.component_count),
+                    approval_status: resData.approval_status,
+                    edit_allowed: resData.edit_allowed
+                });
+            } else {
+                missing.push(s);
+            }
+        });
+
+        res.json({
+            totalExpected: students.length,
+            submittedCount: completed.length,
+            missingCount: missing.length,
+            absentCount: absent.length,
+            completionPercentage: students.length > 0 ? Math.round((completed.length / students.length) * 100) : 0,
+            missingStudents: missing,
+            completedStudents: completed,
+            absentStudents: absent
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET audit logs for result changes
+router.get('/audit-logs', async (req, res) => {
+    const { periodId, studentId, limit } = req.query;
+    try {
+        let sql = `
+            SELECT ral.*, s.name as student_name
+            FROM result_audit_log ral
+            LEFT JOIN students s ON s.id = ral.student_id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (periodId) {
+            params.push(parseInt(periodId));
+            sql += ` AND ral.period_id = $${params.length}`;
+        }
+        if (studentId) {
+            params.push(parseInt(studentId));
+            sql += ` AND ral.student_id = $${params.length}`;
+        }
+        sql += ` ORDER BY ral.created_at DESC LIMIT $${params.length + 1}`;
+        params.push(parseInt(limit) || 50);
+
+        const { rows } = await query(sql, params);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
