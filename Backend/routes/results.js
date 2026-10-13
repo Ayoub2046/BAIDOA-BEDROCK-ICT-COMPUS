@@ -327,7 +327,14 @@ router.get('/leaderboards', async (req, res) => {
             }
 
             // Top 3 in this class
-            const classTop3 = rankedClassStudents.filter(s => s.classRank <= 3);
+            const classTop3 = rankedClassStudents
+                .filter(s => s.classRank <= 3)
+                .map(s => ({
+                    ...s,
+                    rank: s.classRank,
+                    classRank: s.classRank,
+                    class_rank: s.classRank
+                }));
 
             // First-place champions for this class
             const firstPlace = rankedClassStudents.filter(s => s.classRank === 1);
@@ -335,6 +342,8 @@ router.get('/leaderboards', async (req, res) => {
                 classChampions.push({
                     ...champ,
                     rank: 1,
+                    classRank: 1,
+                    class_rank: 1,
                     examName: periodInfo ? periodInfo.name : 'Current Exam',
                     academicYear: periodInfo ? periodInfo.academic_year : '2026'
                 });

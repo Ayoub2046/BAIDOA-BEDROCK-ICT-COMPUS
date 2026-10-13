@@ -1086,8 +1086,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="podium-medal-pip">${medalEmoji}</div>
                         </div>
                         <div class="podium-student-name text-muted">Vacant</div>
-                        <div class="podium-meta-pills"><span class="podium-id-pill">—</span></div>
-                        <div class="podium-score-badge"><i class="fas fa-minus me-1"></i>0 pts</div>
+                        <div class="podium-meta-pills"><span class="podium-id-pill">No Candidate</span></div>
+                        <div class="podium-score-badge"><i class="fas fa-minus me-1"></i>—</div>
                         <div class="podium-pedestal-base">${baseText}</div>
                     </div>
                 </div>
@@ -1131,9 +1131,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderPodium(top3, showClass = true) {
-        const r1 = top3.find(s => (s.rank || s.classRank) === 1);
-        const r2 = top3.find(s => (s.rank || s.classRank) === 2);
-        const r3 = top3.find(s => (s.rank || s.classRank) === 3);
+        if (!top3 || !top3.length) {
+            return renderPodiumCard(null, 2, '🥈', '2nd Place', showClass) +
+                   renderPodiumCard(null, 1, '🥇', '1st Champion', showClass) +
+                   renderPodiumCard(null, 3, '🥉', '3rd Place', showClass);
+        }
+
+        let r1 = null;
+        let r2 = null;
+        let r3 = null;
+
+        if (!showClass) {
+            // Class Honor Roll: rank strictly by classRank within this class
+            r1 = top3.find(s => (s.classRank ?? s.class_rank ?? s.rank) === 1) || top3[0] || null;
+            r2 = top3.find(s => (s.classRank ?? s.class_rank ?? s.rank) === 2 && s !== r1) || (top3[1] && top3[1] !== r1 ? top3[1] : null);
+            r3 = top3.find(s => (s.classRank ?? s.class_rank ?? s.rank) === 3 && s !== r1 && s !== r2) || (top3[2] && top3[2] !== r1 && top3[2] !== r2 ? top3[2] : null);
+        } else {
+            // Overall Schoolwide Top 3: rank strictly by overall school rank
+            r1 = top3.find(s => (s.overallRank ?? s.overall_rank ?? s.rank) === 1) || top3[0] || null;
+            r2 = top3.find(s => (s.overallRank ?? s.overall_rank ?? s.rank) === 2 && s !== r1) || (top3[1] && top3[1] !== r1 ? top3[1] : null);
+            r3 = top3.find(s => (s.overallRank ?? s.overall_rank ?? s.rank) === 3 && s !== r1 && s !== r2) || (top3[2] && top3[2] !== r1 && top3[2] !== r2 ? top3[2] : null);
+        }
+
         return renderPodiumCard(r2, 2, '🥈', '2nd Place', showClass) +
                renderPodiumCard(r1, 1, '🥇', '1st Champion', showClass) +
                renderPodiumCard(r3, 3, '🥉', '3rd Place', showClass);
