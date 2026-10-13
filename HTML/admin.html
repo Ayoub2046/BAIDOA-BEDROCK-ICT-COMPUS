@@ -918,7 +918,7 @@ async function loadLeadersPreview() {
                 : '<i class="fas fa-lock me-1"></i>Unpublished';
         }
 
-        const top3 = (data.schoolwideTop3 || []).slice(0, 3);
+        const top3 = (data.overallSchoolChampions || data.schoolwideTop3 || []).slice(0, 3);
 
         if (!top3.length) {
             container.innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-trophy me-2 opacity-25"></i>No approved results yet for this exam period.</div>';

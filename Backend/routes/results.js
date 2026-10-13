@@ -359,11 +359,22 @@ router.get('/leaderboards', async (req, res) => {
             });
         }
 
+        // Sort all class 1st-place champions by score descending to form the Overall School Champions
+        const overallSchoolChampions = [...classChampions].sort((a, b) => {
+            return (parseFloat(b.totalScore) - parseFloat(a.totalScore)) || (parseFloat(b.percentage) - parseFloat(a.percentage));
+        }).map((c, idx) => ({
+            ...c,
+            overallRank: idx + 1,
+            overall_rank: idx + 1,
+            championRank: idx + 1,
+            rank: idx + 1
+        }));
+
         // Summary statistics
         const summary = {
             totalClassesParticipating: classHonorRolls.length,
             classesWithFinalizedRankings: classHonorRolls.filter(c => c.top3.length > 0).length,
-            totalFirstPlaceAwards: classChampions.length,
+            totalFirstPlaceAwards: overallSchoolChampions.length,
             distinctFirstPlaceStudents: championStudentIds.size,
             totalEligibleStudents: formattedStudents.length,
             isOfficiallyPublished: periodInfo ? (periodInfo.is_published === true) : true,
@@ -375,8 +386,9 @@ router.get('/leaderboards', async (req, res) => {
             periodId: targetPeriodId,
             periodInfo,
             summary,
-            schoolwideTop3: overallSchoolTop3,
-            classChampions,
+            schoolwideTop3: overallSchoolChampions,
+            overallSchoolChampions,
+            classChampions: overallSchoolChampions,
             classHonorRolls,
             detailedRankings: filterClassId ? formattedStudents.filter(s => s.classId === filterClassId) : formattedStudents
         });

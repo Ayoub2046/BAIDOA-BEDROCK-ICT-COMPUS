@@ -917,42 +917,24 @@
                 </div>
             </div>
 
-            <!-- SECTION 1: OVERALL SCHOOL CHAMPIONS (Campus Top 3) -->
+            <!-- SECTION 1: OVERALL SCHOOL CHAMPIONS (Every Class 1st Place Winner Together) -->
             <div class="section-header-bar">
                 <div>
                     <h5 class="section-header-title">
-                        <i class="fas fa-crown text-warning"></i> Overall School Champions — Top 3 Leaders
+                        <i class="fas fa-crown text-warning"></i> Overall School Champions — Class 1st Place Leaders
                     </h5>
                     <div class="section-header-sub" id="schoolwide-subtitle">
-                        Highest-performing students across the entire campus for the selected exam
+                        Every participating class's first-place champion ranked together across the entire campus
                     </div>
                 </div>
-                <span class="badge rounded-pill fw-bold"
+                <span class="badge rounded-pill fw-bold" id="badge-schoolwide-count"
                       style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:6px 14px;">
-                    <i class="fas fa-star me-1 text-warning"></i> Campus Top 3
+                    <i class="fas fa-trophy me-1 text-warning"></i> <span id="badge-champions-count">4 Class Champions</span>
                 </span>
             </div>
-            <div class="podium-outer-wrapper">
-                <div class="podium-stage-container" id="schoolwide-podium-container">
-                    <!-- Populated dynamically: 2nd place (left), 1st place (center), 3rd place (right) -->
-                </div>
-            </div>
-
-            <!-- SECTION 2: CLASS CHAMPIONS (All First-Place Students in One Place) -->
-            <div class="section-header-bar">
-                <div>
-                    <h5 class="section-header-title">
-                        <i class="fas fa-medal text-warning"></i> Class Champions — 1st Place in Every Class
-                    </h5>
-                    <div class="section-header-sub">
-                        A consolidated showcase of every student who achieved first place in their class
-                    </div>
-                </div>
-                <span class="badge bg-warning rounded-pill px-3 py-2 fw-bold text-dark" id="badge-champions-count">0 Champions</span>
-            </div>
-            <div class="champions-container-card">
-                <div class="champions-grid" id="class-champions-grid">
-                    <!-- Populated dynamically with prestige cards -->
+            <div class="champions-container-card" style="margin-bottom:2.5rem;">
+                <div class="champions-grid" id="schoolwide-champions-grid">
+                    <!-- Populated dynamically with prestige cards for every class's 1st place student -->
                 </div>
             </div>
 
@@ -1158,8 +1140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                renderPodiumCard(r3, 3, '🥉', '3rd Place', showClass);
     }
 
-    // Render Prestige Class Champion Card (1st Place in Class)
-    function renderChampionCard(c) {
+    // Render Prestige Class Champion Card (1st Place in Every Class, ranked together)
+    function renderChampionCard(c, idx = 0) {
+        const rankNum = c.overallRank || c.championRank || (idx + 1);
         const nameDisplay = toTitleCase(c.name || c.student_name);
         const avatarSrc = c.image || c.student_image || '';
         const bbId = c.bbId || c.bb_id || 'ID';
@@ -1168,18 +1151,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pct = c.percentage ?? 0;
         const grade = c.grade || 'A';
 
-        const avatarMarkup = generateAvatarHtml(avatarSrc, nameDisplay, 88, 1);
+        let medalEmoji = '🏅';
+        let rankLabel = `#${rankNum} Overall`;
+        let borderStyle = 'border: 2px solid #cbd5e1;';
+        let ribbonGradient = 'linear-gradient(135deg, #1e3a5f, #0d2b4e)';
+        let footerText = `★ ${className} Class 1st Place ★`;
+        let crownMarkup = '';
+
+        if (rankNum === 1) {
+            medalEmoji = '🏆';
+            rankLabel = '🥇 1st Overall Champion';
+            borderStyle = 'border: 2.5px solid #f59e0b; box-shadow: 0 10px 32px rgba(245, 158, 11, 0.28);';
+            ribbonGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            crownMarkup = '<i class="fas fa-crown champ-floating-crown"></i>';
+            footerText = `👑 ${className} 1st Place • Overall #1 Champion`;
+        } else if (rankNum === 2) {
+            medalEmoji = '🥈';
+            rankLabel = '🥈 2nd Overall Champion';
+            borderStyle = 'border: 2px solid #94a3b8; box-shadow: 0 8px 24px rgba(148, 163, 184, 0.2);';
+            ribbonGradient = 'linear-gradient(135deg, #64748b, #475569)';
+            footerText = `🥈 ${className} 1st Place • Overall #2 Champion`;
+        } else if (rankNum === 3) {
+            medalEmoji = '🥉';
+            rankLabel = '🥉 3rd Overall Champion';
+            borderStyle = 'border: 2px solid #d97706; box-shadow: 0 8px 24px rgba(217, 119, 6, 0.18);';
+            ribbonGradient = 'linear-gradient(135deg, #d97706, #b45309)';
+            footerText = `🥉 ${className} 1st Place • Overall #3 Champion`;
+        } else {
+            medalEmoji = '🏅';
+            rankLabel = `🏅 #${rankNum} Overall Champion`;
+            borderStyle = 'border: 2px solid #3b82f6; box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);';
+            ribbonGradient = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
+            footerText = `🏅 ${className} 1st Place • Overall #${rankNum} Champion`;
+        }
+
+        const avatarMarkup = generateAvatarHtml(avatarSrc, nameDisplay, 88, rankNum);
 
         return `
-            <div class="prestige-champ-card">
+            <div class="prestige-champ-card" style="${borderStyle}">
                 <div class="champ-card-header-ribbon">
                     <span class="champ-class-tag"><i class="fas fa-school text-warning"></i> ${className}</span>
-                    <span class="champ-award-tag"><i class="fas fa-crown me-1"></i> 1st Place</span>
+                    <span class="champ-award-tag" style="background:${ribbonGradient};">${rankLabel}</span>
                 </div>
                 <div class="champ-avatar-container">
-                    <i class="fas fa-crown champ-floating-crown"></i>
+                    ${crownMarkup}
                     ${avatarMarkup}
-                    <div class="champ-trophy-pip">🏆</div>
+                    <div class="champ-trophy-pip">${medalEmoji}</div>
                 </div>
                 <div class="champ-card-body">
                     <div class="champ-student-name" title="${nameDisplay}">${nameDisplay}</div>
@@ -1199,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     <div class="champ-card-footer">
-                        <i class="fas fa-certificate text-warning"></i> Class Honor Champion
+                        ${footerText}
                     </div>
                 </div>
             </div>
@@ -1220,10 +1237,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (status) params.append('status', status);
 
         // Loading states
-        document.getElementById('schoolwide-podium-container').innerHTML =
-            `<div class="py-5 text-muted text-center w-100"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small class="mt-2 d-inline-block">Loading Podium...</small></div>`;
-        document.getElementById('class-champions-grid').innerHTML =
-            `<div class="text-center text-muted py-5 col-12"><i class="fas fa-spinner fa-spin me-2"></i>Loading Class Champions...</div>`;
+        const schoolwideGrid = document.getElementById('schoolwide-champions-grid');
+        if (schoolwideGrid) {
+            schoolwideGrid.innerHTML =
+                `<div class="text-center py-5 text-muted col-12"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small class="mt-2 d-inline-block">Loading Class Champions...</small></div>`;
+        }
 
         try {
             const res = await fetch(`/api/results/leaderboards?${params.toString()}`);
@@ -1247,26 +1265,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Summary metrics
+            const champsList = data.overallSchoolChampions || data.schoolwideTop3 || data.classChampions || [];
             document.getElementById('metric-total-classes').textContent = data.summary.totalClassesParticipating || 0;
-            document.getElementById('metric-class-champions').textContent = data.summary.totalFirstPlaceAwards || 0;
-            document.getElementById('metric-distinct-students').textContent = data.summary.distinctFirstPlaceStudents || 0;
+            document.getElementById('metric-class-champions').textContent = champsList.length;
+            document.getElementById('metric-distinct-students').textContent = data.summary.distinctFirstPlaceStudents || champsList.length;
             document.getElementById('metric-eligible-students').textContent = data.summary.totalEligibleStudents || 0;
-            document.getElementById('badge-champions-count').textContent = `${data.summary.totalFirstPlaceAwards || 0} Champions`;
+            document.getElementById('badge-champions-count').textContent = `${champsList.length} Class Champions`;
 
-            // Section 1: Schoolwide Podium
-            const schoolContainer = document.getElementById('schoolwide-podium-container');
-            if (data.schoolwideTop3 && data.schoolwideTop3.length > 0) {
-                schoolContainer.innerHTML = renderPodium(data.schoolwideTop3, true);
-            } else {
-                schoolContainer.innerHTML = '<div class="text-center py-5 text-muted w-100"><i class="fas fa-trophy fa-3x mb-3 d-block text-warning opacity-50"></i>No approved marks published yet for this exam selection.</div>';
-            }
-
-            // Section 2: Class Champions
-            const champGrid = document.getElementById('class-champions-grid');
-            if (data.classChampions && data.classChampions.length > 0) {
-                champGrid.innerHTML = data.classChampions.map(c => renderChampionCard(c)).join('');
-            } else {
-                champGrid.innerHTML = '<div class="col-12 text-center py-5 text-muted">No class champions qualified for this assessment.</div>';
+            // Section 1: Overall School Champions (Every class's 1st place student together)
+            if (schoolwideGrid) {
+                if (champsList.length > 0) {
+                    schoolwideGrid.innerHTML = champsList.map((c, idx) => renderChampionCard(c, idx)).join('');
+                } else {
+                    schoolwideGrid.innerHTML = '<div class="text-center py-5 text-muted col-12"><i class="fas fa-trophy fa-3x mb-3 d-block text-warning opacity-50"></i>No approved marks published yet for this exam selection.</div>';
+                }
             }
 
             // Section 3: Class Honor Rolls
