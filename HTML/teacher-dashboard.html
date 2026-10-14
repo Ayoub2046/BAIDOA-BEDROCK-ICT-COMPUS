@@ -536,6 +536,10 @@
                     <div class="td-card">
                         <div class="td-card-h"><h5><i class="fas fa-sliders-h"></i> Controls</h5></div>
                         <div class="td-card-b">
+                            <div class="p-2 mb-3 rounded" style="background:#f8fafc; border:1px solid #e2e8f0; font-size:0.8rem; color:#475569;">
+                                <i class="fas fa-shield-alt text-primary me-1"></i>
+                                <strong>Daily Attendance Policy:</strong> Attendance is submitted once per day for each class. Once submitted, records are locked until tomorrow to ensure official data integrity.
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Class</label>
                                 <select id="class-select" class="form-select"><option value="">-- Choose --</option></select>
@@ -543,6 +547,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Date</label>
                                 <input type="date" id="attendance-date" class="form-control">
+                                <small class="text-muted" style="font-size:0.75rem;"><i class="fas fa-calendar-day me-1"></i>Select today's date for daily roll call.</small>
                             </div>
                             <button id="load-attendance-btn" class="btn btn-primary w-100" disabled><i class="fas fa-sync me-1"></i> Load Roster</button>
                         </div>
@@ -556,9 +561,12 @@
                 </div>
                 <div class="col-lg-7">
                     <div class="td-card d-none" id="attendance-card">
-                        <div class="td-card-h">
-                            <h5><i class="fas fa-check-square"></i> Mark Attendance</h5>
-                            <button id="save-attendance-btn" class="btn btn-success btn-sm" disabled><i class="fas fa-save me-1"></i> Save</button>
+                        <div class="td-card-h d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h5 class="mb-0"><i class="fas fa-check-square"></i> Mark Class Attendance</h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <span id="attendance-lock-badge" class="badge bg-secondary-subtle text-secondary border d-none" style="font-size:0.78rem;"></span>
+                                <button id="save-attendance-btn" class="btn btn-success btn-sm" disabled><i class="fas fa-save me-1"></i> Submit Attendance</button>
+                            </div>
                         </div>
                         <div class="td-card-b p-0">
                             <div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>ID</th><th>Name</th><th style="width:38%;">Status</th></tr></thead><tbody id="attendance-table-body"></tbody></table></div>
@@ -1029,9 +1037,11 @@
         const fmtTime = t => { if (!t) return '—'; const p=t.split(':'), h=parseInt(p[0]), m=p[1]; return (h%12||12)+':'+m+(h<12?'AM':'PM'); };
         const now = new Date();
         $('header-date').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-        $('attendance-date').value = now.toISOString().split('T')[0];
-        $('attendance-date').max = now.toISOString().split('T')[0];
-        $('results-date').value = now.toISOString().split('T')[0];
+        // Use local date (en-CA gives YYYY-MM-DD without timezone offset issues)
+        const _localToday = now.toLocaleDateString('en-CA');
+        $('attendance-date').value = _localToday;
+        $('attendance-date').max = _localToday;
+        $('results-date').value = _localToday;
 
         let teacherClasses = [], allStudents = [], currentAttendance = {}, currentResultsStudents = {};
         let trendChart = null;
@@ -1350,13 +1360,39 @@
         window.openStudentModal = openStudentModal;
 
         // === ATTENDANCE ===
+        // Enforce: attendance date must be today or past, never future
+        const _todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local timezone
+        $('attendance-date').max = _todayStr;
+        if (!$('attendance-date').value || $('attendance-date').value > _todayStr) {
+            $('attendance-date').value = _todayStr;
+        }
+
         $('load-attendance-btn').addEventListener('click', loadAttendance);
         $('class-select').addEventListener('change', () => { if ($('class-select').value) loadAttendance(); });
-        $('attendance-date').addEventListener('change', loadAttendance);
+        $('attendance-date').addEventListener('change', () => {
+            if ($('attendance-date').value > _todayStr) {
+                $('attendance-date').value = _todayStr;
+                $('attendance-alert').innerHTML = `<div class="alert alert-warning mt-2 mb-0" style="font-size:0.85rem;"><i class="fas fa-exclamation-triangle me-2"></i>Future dates are not allowed for attendance.</div>`;
+                return;
+            }
+            loadAttendance();
+        });
 
         async function loadAttendance() {
             const classId = $('class-select').value, date = $('attendance-date').value;
-            if (!classId||!date) return;
+            if (!classId || !date) return;
+
+            const saveBtn = $('save-attendance-btn');
+            const alertEl = $('attendance-alert');
+            const lockBadge = $('attendance-lock-badge');
+            const isToday = (date === _todayStr);
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
+            saveBtn.className = 'btn btn-secondary btn-sm';
+            alertEl.innerHTML = '';
+            if (lockBadge) lockBadge.classList.add('d-none');
+
             try {
                 const res = await fetch(`/api/attendance/class/${classId}/${date}`);
                 const data = await res.json();
@@ -1365,44 +1401,60 @@
 
                 $('attendance-stats-row').classList.remove('d-none');
                 $('attendance-card').classList.remove('d-none');
-                const saveBtn = $('save-attendance-btn');
-                const alertEl = $('attendance-alert');
 
                 if (isLocked) {
                     saveBtn.disabled = true;
                     saveBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked';
                     saveBtn.className = 'btn btn-secondary btn-sm';
+                    if (lockBadge) { lockBadge.innerHTML = '<i class="fas fa-lock me-1"></i>Locked'; lockBadge.classList.remove('d-none'); }
                     alertEl.innerHTML = `
-                        <div class="alert alert-warning d-flex align-items-center gap-2 mt-3 mb-0" style="border-left:4px solid #f59e0b;border-radius:10px;font-size:0.85rem;">
-                            <i class="fas fa-lock fa-lg text-warning"></i>
-                            <div><strong>Attendance Locked for this Date:</strong> Attendance has already been submitted and is locked for today. Editing is disabled until tomorrow. Contact the Administrator if an edit is needed.</div>
+                        <div class="alert alert-warning d-flex align-items-start gap-2 mt-3 mb-0" style="border-left:4px solid #f59e0b;border-radius:10px;font-size:0.85rem;">
+                            <i class="fas fa-lock fa-lg text-warning mt-1 flex-shrink-0"></i>
+                            <div>
+                                <strong>Attendance Already Submitted & Locked</strong><br>
+                                Attendance for this class on <strong>${date}</strong> has been submitted and locked. Records are read-only.
+                                <br><small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1"></i>Contact the Administrator if a correction is needed.</small>
+                            </div>
                         </div>`;
                 } else {
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Save Attendance';
+                    saveBtn.disabled = students.length === 0;
+                    saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Submit Attendance';
                     saveBtn.className = 'btn btn-success btn-sm';
-                    alertEl.innerHTML = '';
+                    if (lockBadge) lockBadge.classList.add('d-none');
+                    alertEl.innerHTML = !isToday && students.length > 0
+                        ? `<div class="alert alert-info mt-2 mb-0" style="font-size:0.82rem;"><i class="fas fa-calendar-check me-2"></i>Viewing a past date. Submitting will lock this record.</div>`
+                        : '';
                 }
 
                 const tbody = $('attendance-table-body');
                 currentAttendance = {};
-                let pc=0,ac=0,lc=0;
+                let pc = 0, ac = 0, lc = 0;
                 tbody.innerHTML = students.map(s => {
-                    const st = s.status||'Absent';
-                    currentAttendance[s.id]=st;
-                    if(st==='Present')pc++;else if(st==='Absent')ac++;else if(st==='On-Leave')lc++;
-                    return `<tr data-student="${s.id}"><td>BB${String(260000+s.id).slice(-6)}</td><td>${s.name}</td>
+                    const st = s.status || 'Absent';
+                    currentAttendance[s.id] = st;
+                    if (st === 'Present') pc++;
+                    else if (st === 'Absent') ac++;
+                    else if (st === 'On-Leave') lc++;
+                    return `<tr data-student="${s.id}">
+                        <td><span class="font-monospace small">BB${String(260000 + s.id).slice(-6)}</span></td>
+                        <td>${s.name}</td>
                         <td><div class="d-flex gap-1 flex-wrap">
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="p-${s.id}" value="Present" autocomplete="off" ${st==='Present'?'checked':''} ${isLocked?'disabled':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="p-${s.id}" value="Present" autocomplete="off" ${st === 'Present' ? 'checked' : ''} ${isLocked ? 'disabled' : ''}>
                             <label class="btn btn-outline-success btn-sm" for="p-${s.id}"><i class="fas fa-check"></i> P</label>
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="a-${s.id}" value="Absent" autocomplete="off" ${st==='Absent'?'checked':''} ${isLocked?'disabled':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="a-${s.id}" value="Absent" autocomplete="off" ${st === 'Absent' ? 'checked' : ''} ${isLocked ? 'disabled' : ''}>
                             <label class="btn btn-outline-danger btn-sm" for="a-${s.id}"><i class="fas fa-times"></i> A</label>
-                            <input type="radio" class="btn-check" name="att-${s.id}" id="l-${s.id}" value="On-Leave" autocomplete="off" ${st==='On-Leave'?'checked':''} ${isLocked?'disabled':''}>
+                            <input type="radio" class="btn-check" name="att-${s.id}" id="l-${s.id}" value="On-Leave" autocomplete="off" ${st === 'On-Leave' ? 'checked' : ''} ${isLocked ? 'disabled' : ''}>
                             <label class="btn btn-outline-warning btn-sm" for="l-${s.id}"><i class="fas fa-hourglass-half"></i> L</label>
                         </div></td></tr>`;
                 }).join('');
-                updateAttStats(students.length,pc,ac,lc);
-            } catch(e) { $('attendance-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+                updateAttStats(students.length, pc, ac, lc);
+
+            } catch (e) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Submit Attendance';
+                saveBtn.className = 'btn btn-success btn-sm';
+                alertEl.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>${e.message}</div>`;
+            }
         }
 
         $('attendance-table-body').addEventListener('change', e => {
@@ -1418,17 +1470,31 @@
 
         $('save-attendance-btn').addEventListener('click', async () => {
             const classId = $('class-select').value, date = $('attendance-date').value;
-            if (!classId||!date) return;
+            if (!classId || !date) return;
+
+            // Frontend guard: reject future dates
+            if (date > _todayStr) {
+                $('attendance-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-ban me-2"></i>Cannot submit attendance for future dates.</div>`;
+                return;
+            }
+
             const records = [];
             $$('#attendance-table-body tr').forEach(row => {
                 const sid = row.dataset.student;
                 if (!sid) return;
                 const checked = row.querySelector('.btn-check:checked');
-                records.push({student_id:parseInt(sid),status:checked?checked.value:'Absent'});
+                records.push({ student_id: parseInt(sid), status: checked ? checked.value : 'Absent' });
             });
+            if (records.length === 0) {
+                $('attendance-alert').innerHTML = `<div class="alert alert-warning">No students to save. Load the roster first.</div>`;
+                return;
+            }
+
             const saveBtn = $('save-attendance-btn');
+            const lockBadge = $('attendance-lock-badge');
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
+
             try {
                 const res = await fetch('/api/attendance', {
                     method: 'POST',
@@ -1442,26 +1508,53 @@
                     })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Failed to save attendance');
-                await fetch('/api/attendance/recalculate-overall', { method: 'PUT' });
 
-                // Lock UI immediately upon saving
+                if (!res.ok) {
+                    if (res.status === 403 || data.locked) {
+                        // Server confirmed already locked — lock the UI
+                        $$('#attendance-table-body .btn-check').forEach(inp => inp.disabled = true);
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked';
+                        saveBtn.className = 'btn btn-secondary btn-sm';
+                        if (lockBadge) { lockBadge.innerHTML = '<i class="fas fa-lock me-1"></i>Locked'; lockBadge.classList.remove('d-none'); }
+                        $('attendance-alert').innerHTML = `
+                            <div class="alert alert-warning d-flex align-items-start gap-2 mt-3 mb-0" style="border-left:4px solid #f59e0b;border-radius:10px;font-size:0.85rem;">
+                                <i class="fas fa-lock fa-lg text-warning mt-1 flex-shrink-0"></i>
+                                <div><strong>Already Submitted & Locked:</strong> ${data.error || 'Attendance for this class has already been submitted today.'}
+                                <br><small class="text-muted d-block mt-1">Contact your Administrator if a correction is needed.</small></div>
+                            </div>`;
+                        return;
+                    }
+                    throw new Error(data.error || 'Failed to save attendance');
+                }
+
+                // Fire-and-forget recalculate
+                fetch('/api/attendance/recalculate-overall', { method: 'PUT' }).catch(() => {});
+
+                // Lock UI immediately upon successful save
                 $$('#attendance-table-body .btn-check').forEach(inp => inp.disabled = true);
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Submitted & Locked';
                 saveBtn.className = 'btn btn-secondary btn-sm';
+                if (lockBadge) { lockBadge.innerHTML = '<i class="fas fa-lock me-1"></i>Locked'; lockBadge.classList.remove('d-none'); }
 
                 $('attendance-alert').innerHTML = `
-                    <div class="alert alert-success d-flex align-items-center gap-2 mt-3 mb-0" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
-                        <i class="fas fa-check-circle fa-lg text-success"></i>
-                        <div><strong>Attendance Saved & Locked!</strong> Attendance has been recorded and locked for today. You cannot modify it until tomorrow unless unlocked by an Administrator.</div>
+                    <div class="alert alert-success d-flex align-items-start gap-2 mt-3 mb-0" style="border-left:4px solid #10b981;border-radius:10px;font-size:0.85rem;">
+                        <i class="fas fa-check-circle fa-lg text-success mt-1 flex-shrink-0"></i>
+                        <div>
+                            <strong>Attendance Submitted & Locked!</strong> Today's attendance for this class has been recorded and locked.<br>
+                            <small class="text-muted d-block mt-1"><i class="fas fa-shield-alt me-1"></i>You may not submit again until tomorrow. Contact your Administrator if a correction is needed.</small>
+                        </div>
                     </div>`;
-            } catch(e) {
+
+            } catch (e) {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Save Attendance';
-                $('attendance-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i> Submit Attendance';
+                saveBtn.className = 'btn btn-success btn-sm';
+                $('attendance-alert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>${e.message}</div>`;
             }
         });
+
 
         // === RESULTS ===
         $('load-results-students-btn').addEventListener('click', loadResultsStudents);

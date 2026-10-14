@@ -11,7 +11,8 @@ router.get('/:date', async (req, res) => {
         const { rows } = await query(`
             SELECT s.id, s.name, ar.status
             FROM students s
-            LEFT JOIN attendance_records ar ON s.id = ar.student_id AND ar.date = $1
+            LEFT JOIN attendance_records ar ON s.id = ar.student_id AND ar.date = $1::date AND ar.deleted_at IS NULL
+            WHERE s.deleted_at IS NULL
             ORDER BY s.id ASC
         `, [date]);
         res.json(rows);
@@ -28,7 +29,7 @@ router.get('/class/:classId/:date', async (req, res) => {
             SELECT DISTINCT s.id, s.name, ar.status
             FROM students s
             LEFT JOIN class_students cs ON (cs.student_id = s.id AND cs.deleted_at IS NULL)
-            LEFT JOIN attendance_records ar ON (s.id = ar.student_id AND ar.date = $2 AND ar.deleted_at IS NULL)
+            LEFT JOIN attendance_records ar ON (s.id = ar.student_id AND ar.date = $2::date AND ar.deleted_at IS NULL)
             WHERE (cs.class_id = $1 OR s.classid = $1)
               AND s.deleted_at IS NULL
             ORDER BY s.name ASC
@@ -36,25 +37,29 @@ router.get('/class/:classId/:date', async (req, res) => {
 
         let isLocked = false;
         let submittedAt = null;
+        let submittedBy = null;
         try {
             const { rows: lockRows } = await query(`
-                SELECT is_locked, created_at, updated_at
+                SELECT is_locked, submitted_by, created_at, updated_at
                 FROM class_attendance_locks
-                WHERE class_id = $1 AND date = $2
+                WHERE class_id = $1 AND date = $2::date
                 LIMIT 1
             `, [classId, date]);
             if (lockRows.length > 0) {
                 isLocked = lockRows[0].is_locked === true;
                 submittedAt = lockRows[0].updated_at || lockRows[0].created_at;
+                submittedBy = lockRows[0].submitted_by;
             } else {
                 const hasRecords = students.some(s => s.status !== null && s.status !== undefined);
                 if (hasRecords) {
                     isLocked = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error checking class attendance lock:', e);
+        }
 
-        res.json({ students, is_locked: isLocked, submitted_at: submittedAt });
+        res.json({ students, is_locked: isLocked, submitted_at: submittedAt, submitted_by: submittedBy });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -143,28 +148,71 @@ router.post('/', async (req, res) => {
     if (!records || !Array.isArray(records)) {
         return res.status(400).json({ error: 'Invalid records data format.' });
     }
+    if (!date) {
+        return res.status(400).json({ error: 'Attendance date is required.' });
+    }
+
     try {
-        // If user is a teacher and classId is provided, check if already locked
-        if (classId && role !== 'Admin') {
-            try {
-                const { rows: lockRows } = await query(`
-                    SELECT is_locked FROM class_attendance_locks WHERE class_id = $1 AND date = $2 LIMIT 1
-                `, [classId, date]);
-                if (lockRows.length > 0 && lockRows[0].is_locked) {
+        const isAdmin = role && role.toString().trim().toLowerCase() === 'admin';
+
+        // Teachers (non-admins) can only take daily attendance once per class until next day
+        if (!isAdmin) {
+            if (!classId) {
+                return res.status(400).json({ error: 'Class ID is required to submit class attendance.' });
+            }
+
+            // Cannot submit attendance for future dates
+            const localTodayStr = new Date().toLocaleDateString('en-CA');
+            if (date > localTodayStr) {
+                return res.status(400).json({ error: 'Cannot submit attendance for future dates.' });
+            }
+
+            // 1) Check lock record in class_attendance_locks
+            const { rows: lockRows } = await query(`
+                SELECT is_locked, submitted_by, created_at, updated_at
+                FROM class_attendance_locks 
+                WHERE class_id = $1 AND date = $2::date 
+                LIMIT 1
+            `, [classId, date]);
+
+            if (lockRows.length > 0) {
+                if (lockRows[0].is_locked) {
                     return res.status(403).json({
-                        error: 'Attendance for this date has already been submitted and is locked. Contact administrator to request an edit.',
+                        error: 'Attendance for this class on this date has already been submitted and is locked. You cannot submit again until tomorrow unless unlocked by an Administrator.',
                         locked: true
                     });
                 }
-            } catch (e) {}
+            } else {
+                // 2) If no lock row exists, check if attendance records were already saved for this class on this date
+                const { rows: existingRows } = await query(`
+                    SELECT 1 FROM attendance_records ar
+                    JOIN students s ON s.id = ar.student_id
+                    LEFT JOIN class_students cs ON (cs.student_id = s.id AND cs.deleted_at IS NULL)
+                    WHERE (cs.class_id = $1 OR s.classid = $1)
+                      AND ar.date = $2::date
+                      AND ar.deleted_at IS NULL
+                    LIMIT 1
+                `, [classId, date]);
+
+                if (existingRows.length > 0) {
+                    return res.status(403).json({
+                        error: 'Attendance for this class on this date has already been submitted and is locked. You cannot submit again until tomorrow unless unlocked by an Administrator.',
+                        locked: true
+                    });
+                }
+            }
         }
 
+        // Save records
         for (const record of records) {
             await query(
-                `INSERT INTO attendance_records (student_id, date, status)
-                 VALUES ($1, $2, $3)
-                 ON CONFLICT (student_id, date) DO UPDATE SET status = EXCLUDED.status`,
-                [record.student_id, date, record.status]
+                `INSERT INTO attendance_records (student_id, date, status, class_id)
+                 VALUES ($1, $2::date, $3, $4)
+                 ON CONFLICT (student_id, date) DO UPDATE 
+                 SET status = EXCLUDED.status, 
+                     class_id = COALESCE(EXCLUDED.class_id, attendance_records.class_id),
+                     deleted_at = NULL`,
+                [record.student_id, date, record.status, classId || null]
             );
         }
 
@@ -173,14 +221,21 @@ router.post('/', async (req, res) => {
             try {
                 await query(`
                     INSERT INTO class_attendance_locks (class_id, date, submitted_by, is_locked, updated_at)
-                    VALUES ($1, $2, $3, true, NOW())
+                    VALUES ($1, $2::date, $3, true, NOW())
                     ON CONFLICT (class_id, date) DO UPDATE
-                    SET is_locked = true, submitted_by = COALESCE(EXCLUDED.submitted_by, class_attendance_locks.submitted_by), updated_at = NOW()
+                    SET is_locked = true, 
+                        submitted_by = COALESCE(EXCLUDED.submitted_by, class_attendance_locks.submitted_by), 
+                        updated_at = NOW()
                 `, [classId, date, teacherId || null]);
-            } catch (e) {}
+            } catch (lockErr) {
+                console.error('Failed to create/update class_attendance_locks record:', lockErr);
+            }
         }
 
-        res.status(200).json({ message: 'Attendance saved and locked successfully.', is_locked: true });
+        res.status(200).json({ 
+            message: 'Attendance saved and locked successfully for today.', 
+            is_locked: true 
+        });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -194,14 +249,22 @@ router.put('/lock-status', async (req, res) => {
         if (classId) {
             await query(`
                 INSERT INTO class_attendance_locks (class_id, date, is_locked, updated_at)
-                VALUES ($1, $2, $3, NOW())
+                VALUES ($1, $2::date, $3, NOW())
                 ON CONFLICT (class_id, date) DO UPDATE
                 SET is_locked = EXCLUDED.is_locked, updated_at = NOW()
             `, [classId, date, isLocked === true]);
         } else {
             await query(`
-                UPDATE class_attendance_locks SET is_locked = $1, updated_at = NOW() WHERE date = $2
+                UPDATE class_attendance_locks SET is_locked = $1, updated_at = NOW() WHERE date = $2::date
             `, [isLocked === true, date]);
+            if (isLocked === false) {
+                await query(`
+                    INSERT INTO class_attendance_locks (class_id, date, is_locked, updated_at)
+                    SELECT id, $1::date, false, NOW() FROM classes
+                    ON CONFLICT (class_id, date) DO UPDATE
+                    SET is_locked = false, updated_at = NOW()
+                `, [date]);
+            }
         }
         res.json({ message: `Attendance ${isLocked ? 'locked' : 'unlocked'} successfully.`, is_locked: isLocked === true });
     } catch (err) {
