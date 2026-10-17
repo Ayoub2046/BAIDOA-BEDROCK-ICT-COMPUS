@@ -716,6 +716,83 @@
             gap: 6px;
         }
 
+        /* ─── CHAMPION CARD DOWNLOAD BUTTONS & ACTIONS ─── */
+        .champ-card-actions {
+            width: 100%;
+            margin-top: 0.85rem;
+            padding-top: 0.2rem;
+        }
+
+        .champ-single-dl-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #0a2540 0%, #153e6b 100%);
+            color: #ffffff;
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(10, 37, 64, 0.15);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .champ-single-dl-btn:hover {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            border-color: #f59e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .champ-single-dl-btn:active {
+            transform: translateY(0);
+        }
+
+        .champ-single-dl-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-download-champions {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            border: none;
+            font-weight: 800;
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-download-champions:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4);
+        }
+
+        .btn-download-champions:active {
+            transform: translateY(0);
+        }
+
+        .btn-download-champions:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* ─── SECTION 3: CLASS-BY-CLASS HONOR ROLLS ─── */
         .class-roll-wrapper {
             margin-bottom: 2.2rem;
@@ -927,10 +1004,18 @@
                         Every participating class's first-place champion ranked together across the entire campus
                     </div>
                 </div>
-                <span class="badge rounded-pill fw-bold" id="badge-schoolwide-count"
-                      style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:6px 14px;">
-                    <i class="fas fa-trophy me-1 text-warning"></i> <span id="badge-champions-count">4 Class Champions</span>
-                </span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge rounded-pill fw-bold" id="badge-schoolwide-count"
+                          style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:6px 14px;">
+                        <i class="fas fa-trophy me-1 text-warning"></i> <span id="badge-champions-count">0 Class Champions</span>
+                    </span>
+                    <button type="button" class="btn-download-champions" id="btn-download-all-zip" onclick="downloadAllChampionCards('zip')" title="Download all student champion cards packaged as a ZIP file">
+                        <i class="fas fa-file-zipper"></i> <span>Download All (ZIP)</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill fw-bold px-3 d-inline-flex align-items-center gap-1" id="btn-download-all-pngs" onclick="downloadAllChampionCards('png')" title="Download all cards directly as individual PNG images" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);font-size:0.82rem;">
+                        <i class="fas fa-images text-warning"></i> <span>All PNGs</span>
+                    </button>
+                </div>
             </div>
             <div class="champions-container-card" style="margin-bottom:2.5rem;">
                 <div class="champions-grid" id="schoolwide-champions-grid">
@@ -995,6 +1080,9 @@
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- html2canvas & JSZip for Card Downloads -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="/HTML/js/admin.js"></script>
 
 <script>
@@ -1022,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (hasRealPhoto) {
             return `
-                <img src="${imageSrc}" alt="${nameClean}" class="champ-avatar-img"
+                <img src="${imageSrc}" alt="${nameClean}" class="champ-avatar-img" crossorigin="anonymous"
                      style="width:${size}px;height:${size}px;"
                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                 <div class="champ-avatar-fallback" style="width:${size}px;height:${size}px;display:none;">${initials}</div>
@@ -1188,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const avatarMarkup = generateAvatarHtml(avatarSrc, nameDisplay, 88, rankNum);
 
         return `
-            <div class="prestige-champ-card" style="${borderStyle}">
+            <div class="prestige-champ-card" id="champ-card-${idx}" data-idx="${idx}" data-name="${nameDisplay}" data-class="${className}" data-bbid="${bbId}" data-rank="${rankNum}" style="${borderStyle}">
                 <div class="champ-card-header-ribbon">
                     <span class="champ-class-tag"><i class="fas fa-school text-warning"></i> ${className}</span>
                     <span class="champ-award-tag" style="background:${ribbonGradient};">${rankLabel}</span>
@@ -1218,10 +1306,247 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="champ-card-footer">
                         ${footerText}
                     </div>
+                    <div class="champ-card-actions" data-html2canvas-ignore="true">
+                        <button type="button" class="champ-single-dl-btn" 
+                                onclick="downloadSingleChampionCard(${idx})"
+                                id="btn-dl-champ-${idx}"
+                                title="Download ${nameDisplay}'s Official Champion Card (PNG)">
+                            <i class="fas fa-download"></i> <span>Download Card</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
     }
+
+    // ─── CARD EXPORT & DOWNLOAD ENGINE ───
+
+    // Notification toast for download progress
+    function showDownloadToast(title, subtitle, isSpinning = true, isSuccess = false) {
+        let toast = document.getElementById('champ-download-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'champ-download-toast';
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#07192e;color:#ffffff;border:1.5px solid #f59e0b;border-radius:16px;padding:14px 20px;box-shadow:0 12px 36px rgba(0,0,0,0.45);max-width:380px;display:flex;align-items:center;gap:12px;transition:all 0.3s ease;font-family:"Plus Jakarta Sans", sans-serif;';
+            document.body.appendChild(toast);
+        }
+
+        const iconMarkup = isSpinning
+            ? '<div class="spinner-border text-warning spinner-border-sm flex-shrink-0"></div>'
+            : (isSuccess
+                ? '<i class="fas fa-check-circle text-success fs-5 flex-shrink-0"></i>'
+                : '<i class="fas fa-info-circle text-warning fs-5 flex-shrink-0"></i>');
+
+        toast.innerHTML = `
+            ${iconMarkup}
+            <div class="flex-grow-1">
+                <div class="fw-bold" style="font-size:0.86rem;color:#ffffff;">${title}</div>
+                <div style="font-size:0.75rem;color:#94a3b8;">${subtitle}</div>
+            </div>
+        `;
+        toast.style.display = 'flex';
+        toast.style.opacity = '1';
+
+        if (isSuccess) {
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.style.display = 'none'; }, 300);
+            }, 3000);
+        }
+    }
+
+    // Rasterize a single card using html2canvas
+    async function renderCardToCanvas(cardEl, idx) {
+        if (typeof html2canvas === 'undefined') {
+            throw new Error('html2canvas library is still loading. Please check your internet connection or reload.');
+        }
+
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        try {
+            return await html2canvas(cardEl, {
+                scale: 3, // Ultra-sharp 3x resolution
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: null, // Transparent outside card borders
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedCard = clonedDoc.getElementById(`champ-card-${idx}`);
+                    if (clonedCard) {
+                        clonedCard.style.transform = 'none';
+                        clonedCard.style.transition = 'none';
+                        clonedCard.style.boxShadow = 'none';
+                        const crown = clonedCard.querySelector('.champ-floating-crown');
+                        if (crown) crown.style.animation = 'none';
+                    }
+                }
+            });
+        } catch (firstErr) {
+            console.warn('Initial html2canvas render encountered an issue, retrying with fallback...', firstErr);
+            return await html2canvas(cardEl, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedCard = clonedDoc.getElementById(`champ-card-${idx}`);
+                    if (clonedCard) {
+                        clonedCard.style.transform = 'none';
+                        clonedCard.style.transition = 'none';
+                        clonedCard.style.boxShadow = 'none';
+                        const crown = clonedCard.querySelector('.champ-floating-crown');
+                        if (crown) crown.style.animation = 'none';
+                        const img = clonedCard.querySelector('.champ-avatar-img');
+                        const fallback = clonedCard.querySelector('.champ-avatar-fallback');
+                        if (img && fallback) {
+                            img.style.display = 'none';
+                            fallback.style.display = 'flex';
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Download a single champion student card
+    async function downloadSingleChampionCard(idx) {
+        const cardEl = document.getElementById(`champ-card-${idx}`);
+        if (!cardEl) return;
+
+        const btn = document.getElementById(`btn-dl-champ-${idx}`);
+        const originalBtnHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Preparing...';
+        }
+
+        const studentName = cardEl.getAttribute('data-name') || 'Student';
+        const className = cardEl.getAttribute('data-class') || 'Class';
+        const rankNum = cardEl.getAttribute('data-rank') || (idx + 1);
+
+        showDownloadToast('Rendering Champion Card', `${studentName} (${className})...`, true);
+
+        try {
+            const canvas = await renderCardToCanvas(cardEl, idx);
+            const cleanName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const cleanClass = className.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const filename = `Champion_${rankNum}_${cleanClass}_${cleanName}.png`;
+
+            const imageUri = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = imageUri;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            showDownloadToast('Card Downloaded!', `${studentName}'s card saved successfully.`, false, true);
+
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check text-success me-1"></i> Downloaded!';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Error downloading card:', err);
+            showDownloadToast('Download Failed', err.message || 'Error creating image', false, false);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+    }
+
+    // Download all champion cards (ZIP archive or sequential PNGs)
+    async function downloadAllChampionCards(mode = 'zip') {
+        const cards = document.querySelectorAll('#schoolwide-champions-grid .prestige-champ-card');
+        if (!cards.length) {
+            alert('No champion cards are currently displayed to download.');
+            return;
+        }
+
+        const btnZip = document.getElementById('btn-download-all-zip');
+        const btnPngs = document.getElementById('btn-download-all-pngs');
+        if (btnZip) btnZip.disabled = true;
+        if (btnPngs) btnPngs.disabled = true;
+
+        const total = cards.length;
+        const examTitle = (document.getElementById('banner-exam-title')?.textContent || 'Exam')
+            .replace(/—/g, '-')
+            .replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        showDownloadToast(`Preparing ${total} Cards`, `Rendering cards for download...`, true);
+
+        try {
+            const hasZip = (mode === 'zip' && typeof JSZip !== 'undefined');
+            let zip = null;
+            let folder = null;
+            if (hasZip) {
+                zip = new JSZip();
+                folder = zip.folder(`Class_Champions_${examTitle}`);
+            }
+
+            for (let i = 0; i < total; i++) {
+                const card = cards[i];
+                const idx = card.getAttribute('data-idx') || i;
+                const studentName = card.getAttribute('data-name') || `Champion_${i+1}`;
+                const className = card.getAttribute('data-class') || 'Class';
+                const rankNum = card.getAttribute('data-rank') || (i + 1);
+
+                showDownloadToast(`Rendering Card (${i + 1}/${total})`, `${studentName} — ${className}`, true);
+
+                const canvas = await renderCardToCanvas(card, idx);
+                const cleanName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+                const cleanClass = className.replace(/[^a-zA-Z0-9_-]/g, '_');
+                const filename = `${String(i + 1).padStart(2, '0')}_${cleanClass}_${cleanName}_Rank${rankNum}.png`;
+
+                if (hasZip) {
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    folder.file(filename, blob);
+                } else {
+                    const imageUri = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = imageUri;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    await new Promise(r => setTimeout(r, 400));
+                }
+            }
+
+            if (hasZip) {
+                showDownloadToast(`Packaging ZIP File`, `Compressing ${total} cards into ZIP...`, true);
+                const zipContent = await zip.generateAsync({ type: 'blob' });
+                const zipUrl = URL.createObjectURL(zipContent);
+                const link = document.createElement('a');
+                link.download = `Baidoa_Bedrock_Class_Champions_${examTitle}.zip`;
+                link.href = zipUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(zipUrl), 6000);
+            }
+
+            showDownloadToast(`All Done!`, `Successfully downloaded all ${total} champion cards.`, false, true);
+
+        } catch (err) {
+            console.error('Error downloading all champion cards:', err);
+            showDownloadToast('Download Error', err.message || 'Could not complete download', false, false);
+        } finally {
+            if (btnZip) btnZip.disabled = false;
+            if (btnPngs) btnPngs.disabled = false;
+        }
+    }
+
+    // Expose functions globally for onclick attributes
+    window.downloadSingleChampionCard = downloadSingleChampionCard;
+    window.downloadAllChampionCards = downloadAllChampionCards;
 
     // Load and render all leaderboards
     async function loadLeaderboards() {
@@ -1271,6 +1596,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('metric-distinct-students').textContent = data.summary.distinctFirstPlaceStudents || champsList.length;
             document.getElementById('metric-eligible-students').textContent = data.summary.totalEligibleStudents || 0;
             document.getElementById('badge-champions-count').textContent = `${champsList.length} Class Champions`;
+            const btnZip = document.getElementById('btn-download-all-zip');
+            const btnPngs = document.getElementById('btn-download-all-pngs');
+            if (btnZip) btnZip.disabled = champsList.length === 0;
+            if (btnPngs) btnPngs.disabled = champsList.length === 0;
 
             // Section 1: Overall School Champions (Every class's 1st place student together)
             if (schoolwideGrid) {
