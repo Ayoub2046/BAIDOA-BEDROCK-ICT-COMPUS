@@ -62,8 +62,27 @@ router.get('/class-leaders/:classId', async (req, res) => {
     const classId = parseInt(req.params.classId);
     if (isNaN(classId)) return res.status(400).json({ error: 'Invalid class ID' });
     const examType = req.query.examType || null;
+    const periodId = req.query.periodId ? parseInt(req.query.periodId) : null;
     try {
-        // Query top students with approved results in this class
+        // Query top students with approved results in this class (scoped to specific or latest published period)
+        let periodClause;
+        const params = [classId];
+        let pIdx = 2;
+
+        if (periodId) {
+            periodClause = `r.period_id = $${pIdx++}`;
+            params.push(periodId);
+        } else {
+            periodClause = `r.period_id = (
+                SELECT id FROM exam_periods
+                WHERE deleted_at IS NULL
+                  AND is_published = true
+                  AND (is_archived = false OR is_archived IS NULL)
+                ORDER BY year DESC, month DESC NULLS LAST, id DESC
+                LIMIT 1
+            )`;
+        }
+
         let sql = `
             SELECT s.id AS student_id, s.name, s.image, s.grade, s.gpa,
                    COALESCE(SUM(r.score), 0) AS total_score,
@@ -76,11 +95,10 @@ router.get('/class-leaders/:classId', async (req, res) => {
               AND s.deleted_at IS NULL
               AND r.approval_status = 'approved'
               AND r.deleted_at IS NULL
-              AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND (is_archived = false OR is_archived IS NULL OR (SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams') = 'true') AND deleted_at IS NULL))
+              AND ${periodClause}
         `;
-        const params = [classId];
         if (examType && examType.trim() !== '') {
-            sql += ` AND r.exam_type = $2`;
+            sql += ` AND r.exam_type = $${pIdx++}`;
             params.push(examType.trim());
         }
         sql += `
@@ -91,20 +109,35 @@ router.get('/class-leaders/:classId', async (req, res) => {
         `;
         const { rows } = await query(sql, params);
 
-        // Check if any results for this class and exam are on hold (scoped to published non-archived exams)
+        // Check if any results for this class and exam are on hold (scoped to the same period)
         let onHold = false;
         try {
+            const holdParams = [classId];
+            let hIdx = 2;
+            let holdPeriodClause;
+            if (periodId) {
+                holdPeriodClause = `r.period_id = $${hIdx++}`;
+                holdParams.push(periodId);
+            } else {
+                holdPeriodClause = `r.period_id = (
+                    SELECT id FROM exam_periods
+                    WHERE deleted_at IS NULL
+                      AND is_published = true
+                      AND (is_archived = false OR is_archived IS NULL)
+                    ORDER BY year DESC, month DESC NULLS LAST, id DESC
+                    LIMIT 1
+                )`;
+            }
             let holdSql = `
                 SELECT r.id FROM results r
                 JOIN students s ON r.student_id = s.id
                 WHERE (s.classid = $1 OR s.id IN (SELECT student_id FROM class_students WHERE class_id = $1))
                   AND r.approval_status = 'on_hold'
                   AND r.deleted_at IS NULL
-                  AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND (is_archived = false OR is_archived IS NULL) AND deleted_at IS NULL))
+                  AND ${holdPeriodClause}
             `;
-            const holdParams = [classId];
             if (examType && examType.trim() !== '') {
-                holdSql += ` AND r.exam_type = $2`;
+                holdSql += ` AND r.exam_type = $${hIdx++}`;
                 holdParams.push(examType.trim());
             }
             holdSql += ` LIMIT 1`;
@@ -778,19 +811,8 @@ router.post('/', async (req, res) => {
             }
         }
 
-        // Validate the exam exists (admin-defined exams are supported)
-        let maxScore = 100;
-        try {
-            const { rows: examRows } = await query(
-                `SELECT max_score FROM exams WHERE exam_key = $1 AND deleted_at IS NULL LIMIT 1`,
-                [examType]
-            );
-            if (examRows[0]) {
-                maxScore = parseFloat(examRows[0].max_score);
-            } else if (EXAM_TYPES[examType]) {
-                maxScore = EXAM_TYPES[examType].maxScore;
-            }
-        } catch (e) { /* fall back to default */ }
+        // Validate the exam exists and get accurate max_score from exam_components (or exams fallback)
+        const maxScore = await getExamMaxScore(examType, targetPeriodId);
         const parsedScore = Math.min(parseFloat(score) || 0, maxScore);
 
         // Safe upsert respecting uq_results_student_subject_part_period partial unique index
@@ -1159,8 +1181,25 @@ router.put('/admin/direct-update', async (req, res) => {
         for (const [examType, scoreVal] of Object.entries(scores)) {
             const score = parseFloat(scoreVal);
             if (isNaN(score)) continue;
-            const maxScore = await getExamMaxScore(examType);
+            const maxScore = await getExamMaxScore(examType, targetPeriodId);
             const status = approvalStatus || 'approved';
+
+            let compId = null;
+            let compName = examType;
+            if (targetPeriodId) {
+                try {
+                    const { rows: compRows } = await query(
+                        `SELECT id, name FROM exam_components 
+                         WHERE exam_id = $1 AND (component_key = $2 OR LOWER(name) = LOWER($2) OR LOWER(component_key) = LOWER(REPLACE($2, ' ', '_'))) 
+                         AND deleted_at IS NULL LIMIT 1`,
+                        [targetPeriodId, examType]
+                    );
+                    if (compRows[0]) {
+                        compId = compRows[0].id;
+                        compName = compRows[0].name;
+                    }
+                } catch (e) {}
+            }
             
             const { rows: existing } = await query(
                 `SELECT id FROM results WHERE student_id = $1 AND subject = $2 AND exam_type = $3 AND ($4::INTEGER IS NULL OR period_id = $4) AND deleted_at IS NULL`,
@@ -1168,14 +1207,14 @@ router.put('/admin/direct-update', async (req, res) => {
             );
             if (existing.length > 0) {
                 await query(
-                    `UPDATE results SET score = $1, max_score = $2, approval_status = $3, edit_allowed = false, period_id = COALESCE($4, period_id) WHERE id = $5`,
-                    [score, maxScore, status, targetPeriodId, existing[0].id]
+                    `UPDATE results SET score = $1, max_score = $2, approval_status = $3, edit_allowed = false, period_id = COALESCE($4, period_id), component_id = COALESCE($5, component_id), component_name = COALESCE($6, component_name), updated_at = NOW() WHERE id = $7`,
+                    [score, maxScore, status, targetPeriodId, compId, compName, existing[0].id]
                 );
             } else {
                 await query(
-                    `INSERT INTO results (student_id, subject, exam_type, score, max_score, approval_status, submitted_by, edit_allowed, period_id)
-                     VALUES ($1, $2, $3, $4, $5, $6, 'Admin', false, $7)`,
-                    [studentId, subject, examType, score, maxScore, status, targetPeriodId]
+                    `INSERT INTO results (student_id, subject, exam_type, score, max_score, approval_status, submitted_by, edit_allowed, period_id, component_id, component_name, updated_at)
+                     VALUES ($1, $2, $3, $4, $5, $6, 'Admin', false, $7, $8, $9, NOW())`,
+                    [studentId, subject, examType, score, maxScore, status, targetPeriodId, compId, compName]
                 );
             }
         }

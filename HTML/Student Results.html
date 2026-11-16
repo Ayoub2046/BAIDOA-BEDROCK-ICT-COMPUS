@@ -3972,7 +3972,7 @@
                 }
             }
             // Load and render the Top 3 Class Leaders Honor Roll
-            async function loadClassLeaders(data, examType) {
+            async function loadClassLeaders(data, examType, periodId, periodLabel) {
                 var podiumEl = document.getElementById('podium-display');
                 var unreleasedEl = document.getElementById('leaders-unreleased');
                 var badgeEl = document.getElementById('leaders-exam-badge');
@@ -3981,7 +3981,7 @@
 
                 var className = (data.class && data.class.name) ? data.class.name : 'Class';
                 var examDef = getExamDef(examType);
-                var examLabel = examDef ? examDef.label : 'Overall Academic Standing';
+                var examLabel = periodLabel || (examDef ? examDef.label : 'Overall Academic Standing');
 
                 if (subtitleEl) {
                     subtitleEl.textContent = 'Top performers in ' + className + ' for ' + examLabel;
@@ -4004,12 +4004,19 @@
                 }
 
                 var leaders = [];
-                // FAST-PATH: Use pre-aggregated class leaders from dashboard payload without making another mobile fetch
-                if (!examType && data.classLeaders && data.classLeaders.length > 0) {
+                // FAST-PATH: Use pre-aggregated class leaders from dashboard payload if viewing default/latest period
+                var periods = data.examPeriods || [];
+                var latestPeriod = periods.find(function(p) { return !p.is_archived; }) || periods[0];
+                var isDefaultPeriod = !periodId || (latestPeriod && String(latestPeriod.id) === String(periodId));
+
+                if (!examType && isDefaultPeriod && data.classLeaders && data.classLeaders.length > 0) {
                     leaders = data.classLeaders;
                 } else {
                     try {
-                        var url = '/api/results/class-leaders/' + classId + (examType ? '?examType=' + encodeURIComponent(examType) : '');
+                        var params = [];
+                        if (examType) params.push('examType=' + encodeURIComponent(examType));
+                        if (periodId) params.push('periodId=' + encodeURIComponent(periodId));
+                        var url = '/api/results/class-leaders/' + classId + (params.length > 0 ? '?' + params.join('&') : '');
                         var res = await fetch(url);
                         var json = await res.json();
                         leaders = json.leaders || [];
@@ -4149,12 +4156,14 @@
                     }
 
                     if (!periodId) {
+                        loadClassLeaders(data, '', null, 'All Periods');
                         renderResultsCards(data.results || {}, data, elpId, 'All Periods');
                         return;
                     }
 
                     var selectedPeriod = periods.find(function(p) { return String(p.id) === String(periodId); });
                     var periodName = selectedPeriod ? selectedPeriod.name : 'Selected Period';
+                    loadClassLeaders(data, '', periodId, periodName);
 
                     // FAST-PATH: Render immediately from in-memory preloaded data (instant response on phones)
                     if (data.monthlyExamResults && data.monthlyExamResults[periodId] && data.monthlyExamResults[periodId].subjects) {
@@ -4189,12 +4198,16 @@
                 document.getElementById('rc-student-grade').textContent = data.student.grade || 'N/A';
                 document.getElementById('rc-enrollment-date').textContent = formatDate(data.student.enrollmentdate);
 
-                // Load honor roll
-                loadClassLeaders(data, '');
-
                 // Auto-select the latest (most recent) published period instead of showing cumulative "All Periods"
                 var periods = data.examPeriods || [];
                 var latestPeriod = periods.find(function(p) { return !p.is_archived; }) || periods[0];
+
+                // Load honor roll for the active period
+                if (latestPeriod) {
+                    loadClassLeaders(data, '', latestPeriod.id, latestPeriod.name);
+                } else {
+                    loadClassLeaders(data, '');
+                }
                 if (latestPeriod) {
                     // Trigger period chip click for the latest period — shows only current exam
                     var chipsEl = document.getElementById('period-chips-scroll');
