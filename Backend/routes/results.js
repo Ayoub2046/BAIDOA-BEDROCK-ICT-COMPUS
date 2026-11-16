@@ -35,7 +35,18 @@ router.get('/exam-types/definitions', async (req, res) => {
 });
 
 // Helper: get the max score for an exam from the DB (fallback to defaults)
-async function getExamMaxScore(examKey) {
+async function getExamMaxScore(examKey, periodId = null) {
+    if (periodId) {
+        try {
+            const { rows } = await query(
+                `SELECT max_marks FROM exam_components 
+                 WHERE exam_id = $1 AND (component_key = $2 OR LOWER(name) = LOWER($2) OR LOWER(component_key) = LOWER(REPLACE($2, ' ', '_'))) 
+                 AND deleted_at IS NULL LIMIT 1`,
+                [periodId, examKey]
+            );
+            if (rows[0]) return parseFloat(rows[0].max_marks);
+        } catch (e) { }
+    }
     try {
         const { rows } = await query(
             `SELECT max_score FROM exams WHERE exam_key = $1 AND deleted_at IS NULL LIMIT 1`,

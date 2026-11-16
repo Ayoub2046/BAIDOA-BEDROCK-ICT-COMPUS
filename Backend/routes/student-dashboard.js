@@ -118,6 +118,7 @@ router.get('/:studentId', async (req, res) => {
             examsRes,
             announcementsRes,
             classLeadersRes,
+            latestComponentsRes,
             periodsRes,
             certsRes,
             booksRes
@@ -243,7 +244,7 @@ router.get('/:studentId', async (req, res) => {
                 return rows;
             }),
 
-            // 13. Top 3 Class Leaders
+            // 13. Top 3 Class Leaders — ONLY the latest published non-archived period
             classId ? query(`
                 SELECT s.id AS student_id, s.name, s.image, s.grade, s.gpa,
                        COALESCE(SUM(r.score), 0) AS total_score,
@@ -257,12 +258,35 @@ router.get('/:studentId', async (req, res) => {
                   AND s.deleted_at IS NULL
                   AND r.approval_status = 'approved'
                   AND r.deleted_at IS NULL
-                  AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true ${!allowArchived ? 'AND (ep.is_archived = false OR ep.is_archived IS NULL)' : ''}))
+                  AND r.period_id = (
+                      SELECT id FROM exam_periods
+                      WHERE deleted_at IS NULL
+                        AND is_published = true
+                        AND (is_archived = false OR is_archived IS NULL)
+                      ORDER BY year DESC, month DESC NULLS LAST, id DESC
+                      LIMIT 1
+                  )
                 GROUP BY s.id, s.name, s.image, s.grade, s.gpa
                 HAVING COUNT(r.id) > 0
                 ORDER BY total_score DESC, avg_score DESC
                 LIMIT 3
             `, [classId]).catch(() => ({ rows: [] })) : Promise.resolve({ rows: [] }),
+
+            // 11b. Latest period exam_components for correct max marks in score breakdown legend
+            query(`
+                SELECT ec.id, ec.name, ec.component_key, ec.max_marks, ec.order_num
+                FROM exam_components ec
+                WHERE ec.exam_id = (
+                    SELECT id FROM exam_periods
+                    WHERE deleted_at IS NULL
+                      AND is_published = true
+                      AND (is_archived = false OR is_archived IS NULL)
+                    ORDER BY year DESC, month DESC NULLS LAST, id DESC
+                    LIMIT 1
+                )
+                AND ec.deleted_at IS NULL
+                ORDER BY ec.order_num ASC
+            `).catch(() => ({ rows: [] })),
 
             // 14. Exam Periods for filter
             query(`
@@ -507,7 +531,8 @@ router.get('/:studentId', async (req, res) => {
             examPeriods,
             certificates: certsRes.rows || [],
             books: booksRes || [],
-            allowStudentsViewArchivedExams: allowArchived
+            allowStudentsViewArchivedExams: allowArchived,
+            latestPeriodComponents: latestComponentsRes.rows || []
         });
     } catch (err) {
         console.error('[Student Dashboard Error]', err);

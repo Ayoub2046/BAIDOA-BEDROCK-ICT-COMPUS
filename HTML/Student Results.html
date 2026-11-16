@@ -3871,7 +3871,44 @@
             var PART_ICONS         = ['fa-pen','fa-tasks','fa-graduation-cap','fa-star','fa-bookmark'];
             var PART_BP_CLASSES    = ['bp-quiz','bp-assign','bp-final','bp-extra1','bp-extra2'];
 
+            // Apply exam_components array (from backend) to EXAM_PARTS — the authoritative source of max marks
+            function applyExamComponents(components) {
+                if (!components || components.length === 0) return false;
+                var iconMap = { 'oral': 'fa-pen', 'oral_exam': 'fa-pen', 'practical': 'fa-tasks', 'practical_exam': 'fa-tasks', 'typing': 'fa-keyboard', 'quize': 'fa-question-circle', 'quiz': 'fa-question-circle' };
+                EXAM_PARTS = components.map(function(c, i) {
+                    var key = c.component_key || c.key || '';
+                    return {
+                        key:      key,
+                        label:    (c.name || key).toUpperCase(),
+                        max:      parseFloat(c.max_marks) || 0,
+                        barClass: PART_BAR_CLASSES[i % PART_BAR_CLASSES.length],
+                        lblClass: PART_LABEL_CLASSES[i % PART_LABEL_CLASSES.length],
+                        icon:     iconMap[key] || PART_ICONS[i % PART_ICONS.length],
+                        bpClass:  PART_BP_CLASSES[i % PART_BP_CLASSES.length]
+                    };
+                });
+                EXAM_DEFS = EXAM_PARTS;
+                // Update breakdown legend with correct marks
+                var legendEl = document.getElementById('breakdown-parts-legend');
+                if (legendEl && EXAM_PARTS.length > 0) {
+                    var totalMax = EXAM_PARTS.reduce(function(sum, p) { return sum + p.max; }, 0);
+                    var legHtml = EXAM_PARTS.map(function(p) {
+                        return '<div class="bp-item ' + p.bpClass + '"><i class="fas ' + p.icon + ' me-1"></i>' + p.label + ' <span class="bp-max">/' + p.max + '</span></div>';
+                    }).join('');
+                    legHtml += '<div class="bp-item bp-total"><i class="fas fa-star me-1"></i>Total <span class="bp-max">/' + totalMax + '</span></div>';
+                    legendEl.innerHTML = legHtml;
+                }
+                return true;
+            }
+
             function setupExamDefs(data) {
+                // PRIMARY: Use latestPeriodComponents from exam_components table (authoritative per-period max marks)
+                if (data && data.latestPeriodComponents && data.latestPeriodComponents.length > 0) {
+                    applyExamComponents(data.latestPeriodComponents);
+                    return;
+                }
+
+                // FALLBACK: use legacy global exams table (for backward compatibility)
                 var exams = (data && data.exams) ? data.exams : [];
                 exams = exams.filter(function(e) { return e.active !== false && !e.deleted_at; });
 
@@ -3895,8 +3932,8 @@
                     }
                 });
 
-                // Standard order: Oral, Practical, Typing
-                var orderMap = { 'oral': 1, 'oral_exam': 1, 'practical': 2, 'practical_exam': 2, 'typing': 3 };
+                // Standard order: Oral, Practical, Typing/Quize
+                var orderMap = { 'oral': 1, 'oral_exam': 1, 'practical': 2, 'practical_exam': 2, 'typing': 3, 'quize': 3, 'quiz': 3 };
                 deduplicated.sort(function(a, b) {
                     var oA = orderMap[a.exam_key] || (a.sort_order || 99);
                     var oB = orderMap[b.exam_key] || (b.sort_order || 99);
@@ -3916,9 +3953,9 @@
                 });
                 if (EXAM_PARTS.length === 0) {
                     EXAM_PARTS = [
-                        { key:'oral',      label:'ORAL',      max:10, barClass:'rc3-bar-quiz',   lblClass:'rc3-quiz',   icon:'fa-pen',   bpClass:'bp-quiz' },
-                        { key:'practical', label:'PRACTICAL', max:80, barClass:'rc3-bar-assign', lblClass:'rc3-assign', icon:'fa-tasks', bpClass:'bp-assign' },
-                        { key:'typing',    label:'TYPING',    max:10, barClass:'rc3-bar-final',  lblClass:'rc3-final',  icon:'fa-keyboard', bpClass:'bp-final' }
+                        { key:'oral',      label:'ORAL',      max:30, barClass:'rc3-bar-quiz',   lblClass:'rc3-quiz',   icon:'fa-pen',   bpClass:'bp-quiz' },
+                        { key:'practical', label:'PRACTICAL', max:60, barClass:'rc3-bar-assign', lblClass:'rc3-assign', icon:'fa-tasks', bpClass:'bp-assign' },
+                        { key:'quize',     label:'QUIZE',     max:10, barClass:'rc3-bar-final',  lblClass:'rc3-final',  icon:'fa-question-circle', bpClass:'bp-final' }
                     ];
                 }
                 EXAM_DEFS = EXAM_PARTS;
@@ -4128,6 +4165,10 @@
                         var res = await fetch(API_BASE + '/' + data.student.id + '/period/' + periodId);
                         if (!res.ok) throw new Error('Could not fetch period results');
                         var periodData = await res.json();
+                        // Update EXAM_PARTS legend with this period's correct component marks
+                        if (periodData.components && periodData.components.length > 0) {
+                            applyExamComponents(periodData.components);
+                        }
                         if (periodData.message && (!periodData.results || Object.keys(periodData.results).length === 0)) {
                             var container = document.getElementById('results-cards-container');
                             container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-lock fa-3x mb-3 text-warning"></i><h5>' + periodData.message + '</h5></div>';
@@ -4151,7 +4192,43 @@
                 // Load honor roll
                 loadClassLeaders(data, '');
 
-                renderResultsCards(data.results || {}, data, elpId, 'All Periods');
+                // Auto-select the latest (most recent) published period instead of showing cumulative "All Periods"
+                var periods = data.examPeriods || [];
+                var latestPeriod = periods.find(function(p) { return !p.is_archived; }) || periods[0];
+                if (latestPeriod) {
+                    // Trigger period chip click for the latest period — shows only current exam
+                    var chipsEl = document.getElementById('period-chips-scroll');
+                    var selectEl = document.getElementById('period-filter-select');
+                    if (selectEl) selectEl.value = String(latestPeriod.id);
+                    if (chipsEl) {
+                        chipsEl.querySelectorAll('.period-chip-btn').forEach(function(btn) {
+                            btn.classList.toggle('active', btn.getAttribute('data-period-id') === String(latestPeriod.id));
+                        });
+                    }
+                    // Load that period's results
+                    (async function() {
+                        var periodName = latestPeriod.name || 'Latest Exam';
+                        // Fast-path: use preloaded data if available
+                        if (data.monthlyExamResults && data.monthlyExamResults[latestPeriod.id] && data.monthlyExamResults[latestPeriod.id].subjects) {
+                            renderResultsCards(data.monthlyExamResults[latestPeriod.id].subjects, data, elpId, periodName);
+                        }
+                        try {
+                            var res = await fetch(API_BASE + '/' + data.student.id + '/period/' + latestPeriod.id);
+                            if (res.ok) {
+                                var periodData = await res.json();
+                                if (periodData.components && periodData.components.length > 0) {
+                                    applyExamComponents(periodData.components);
+                                }
+                                if (!(periodData.message && (!periodData.results || Object.keys(periodData.results).length === 0))) {
+                                    renderResultsCards(periodData.results || {}, data, elpId, periodName);
+                                }
+                            }
+                        } catch(e) { console.error('Error loading initial period results:', e); }
+                    })();
+                } else {
+                    // No periods — render whatever is in results (legacy/global)
+                    renderResultsCards(data.results || {}, data, elpId, 'All Periods');
+                }
             }
 
             function renderResultsCards(results, data, elpId, periodName) {
@@ -4209,45 +4286,55 @@
 
                     function pct(score, max) { return max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0; }
 
-                    // Robust component resolution helper
+                    // Robust component resolution helper — always prefer maxScores from DB, then EXAM_PARTS def
                     function resolveScoreAndMax(key, pDef, scores, maxScores) {
                         if (!scores) return null;
+                        var defMax = pDef ? pDef.max : 100;
                         // 1. Direct match
                         if (scores[key] !== undefined) {
-                            var m = (maxScores && maxScores[key]) ? parseFloat(maxScores[key]) : (pDef ? pDef.max : 0);
-                            return { score: parseFloat(scores[key]) || 0, max: m || (pDef ? pDef.max : 100), usedKey: key };
+                            var m = (maxScores && maxScores[key]) ? parseFloat(maxScores[key]) : defMax;
+                            return { score: parseFloat(scores[key]) || 0, max: m || defMax, usedKey: key };
                         }
                         // 2. Practical aliases
                         if (key === 'practical' || key === 'practical_exam' || key === 'practical_work') {
                             if (scores['practical'] !== undefined) {
-                                return { score: parseFloat(scores['practical']) || 0, max: (maxScores && maxScores['practical']) ? parseFloat(maxScores['practical']) : (pDef ? pDef.max : 80), usedKey: 'practical' };
+                                return { score: parseFloat(scores['practical']) || 0, max: (maxScores && maxScores['practical']) ? parseFloat(maxScores['practical']) : defMax, usedKey: 'practical' };
                             }
                             if (scores['practical_exam'] !== undefined) {
-                                return { score: parseFloat(scores['practical_exam']) || 0, max: (maxScores && maxScores['practical_exam']) ? parseFloat(maxScores['practical_exam']) : (pDef ? pDef.max : 80), usedKey: 'practical_exam' };
+                                return { score: parseFloat(scores['practical_exam']) || 0, max: (maxScores && maxScores['practical_exam']) ? parseFloat(maxScores['practical_exam']) : defMax, usedKey: 'practical_exam' };
                             }
                             if (scores['practical_work'] !== undefined) {
-                                return { score: parseFloat(scores['practical_work']) || 0, max: (maxScores && maxScores['practical_work']) ? parseFloat(maxScores['practical_work']) : (pDef ? pDef.max : 80), usedKey: 'practical_work' };
+                                return { score: parseFloat(scores['practical_work']) || 0, max: (maxScores && maxScores['practical_work']) ? parseFloat(maxScores['practical_work']) : defMax, usedKey: 'practical_work' };
                             }
                             if (scores['assignment'] !== undefined || scores['final'] !== undefined) {
                                 var sum = (parseFloat(scores['assignment']) || 0) + (parseFloat(scores['final']) || 0);
-                                return { score: sum, max: (pDef ? pDef.max : 80), usedKey: 'assignment' };
+                                return { score: sum, max: defMax, usedKey: 'assignment' };
                             }
                         }
                         // 3. Oral aliases
                         if (key === 'oral' || key === 'oral_exam') {
                             if (scores['oral'] !== undefined) {
-                                return { score: parseFloat(scores['oral']) || 0, max: (maxScores && maxScores['oral']) ? parseFloat(maxScores['oral']) : (pDef ? pDef.max : 20), usedKey: 'oral' };
+                                return { score: parseFloat(scores['oral']) || 0, max: (maxScores && maxScores['oral']) ? parseFloat(maxScores['oral']) : defMax, usedKey: 'oral' };
                             }
                             if (scores['oral_exam'] !== undefined) {
-                                return { score: parseFloat(scores['oral_exam']) || 0, max: (maxScores && maxScores['oral_exam']) ? parseFloat(maxScores['oral_exam']) : (pDef ? pDef.max : 20), usedKey: 'oral_exam' };
+                                return { score: parseFloat(scores['oral_exam']) || 0, max: (maxScores && maxScores['oral_exam']) ? parseFloat(maxScores['oral_exam']) : defMax, usedKey: 'oral_exam' };
                             }
                             if (scores['quiz'] !== undefined) {
-                                return { score: parseFloat(scores['quiz']) || 0, max: (maxScores && maxScores['quiz']) ? parseFloat(maxScores['quiz']) : (pDef ? pDef.max : 20), usedKey: 'quiz' };
+                                return { score: parseFloat(scores['quiz']) || 0, max: (maxScores && maxScores['quiz']) ? parseFloat(maxScores['quiz']) : defMax, usedKey: 'quiz' };
                             }
                         }
-                        // 4. Typing alias
+                        // 4. Quize/Quiz aliases
+                        if (key === 'quize' || key === 'quiz') {
+                            if (scores['quize'] !== undefined) {
+                                return { score: parseFloat(scores['quize']) || 0, max: (maxScores && maxScores['quize']) ? parseFloat(maxScores['quize']) : defMax, usedKey: 'quize' };
+                            }
+                            if (scores['quiz'] !== undefined) {
+                                return { score: parseFloat(scores['quiz']) || 0, max: (maxScores && maxScores['quiz']) ? parseFloat(maxScores['quiz']) : defMax, usedKey: 'quiz' };
+                            }
+                        }
+                        // 5. Typing alias
                         if (key === 'typing' && scores['typing'] !== undefined) {
-                            return { score: parseFloat(scores['typing']) || 0, max: (maxScores && maxScores['typing']) ? parseFloat(maxScores['typing']) : (pDef ? pDef.max : 10), usedKey: 'typing' };
+                            return { score: parseFloat(scores['typing']) || 0, max: (maxScores && maxScores['typing']) ? parseFloat(maxScores['typing']) : defMax, usedKey: 'typing' };
                         }
                         return null;
                     }
