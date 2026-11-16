@@ -65,7 +65,7 @@ router.get('/class-leaders/:classId', async (req, res) => {
               AND s.deleted_at IS NULL
               AND r.approval_status = 'approved'
               AND r.deleted_at IS NULL
-              AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))
+              AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND (is_archived = false OR is_archived IS NULL OR (SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams') = 'true') AND deleted_at IS NULL))
         `;
         const params = [classId];
         if (examType && examType.trim() !== '') {
@@ -80,7 +80,7 @@ router.get('/class-leaders/:classId', async (req, res) => {
         `;
         const { rows } = await query(sql, params);
 
-        // Check if any results for this class and exam are on hold
+        // Check if any results for this class and exam are on hold (scoped to published non-archived exams)
         let onHold = false;
         try {
             let holdSql = `
@@ -89,6 +89,7 @@ router.get('/class-leaders/:classId', async (req, res) => {
                 WHERE (s.classid = $1 OR s.id IN (SELECT student_id FROM class_students WHERE class_id = $1))
                   AND r.approval_status = 'on_hold'
                   AND r.deleted_at IS NULL
+                  AND (r.period_id IS NULL OR r.period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND (is_archived = false OR is_archived IS NULL) AND deleted_at IS NULL))
             `;
             const holdParams = [classId];
             if (examType && examType.trim() !== '') {
@@ -97,7 +98,7 @@ router.get('/class-leaders/:classId', async (req, res) => {
             }
             holdSql += ` LIMIT 1`;
             const { rows: holdRows } = await query(holdSql, holdParams);
-            if (holdRows.length > 0) onHold = true;
+            if (holdRows.length > 0 && rows.length === 0) onHold = true;
         } catch (e) {}
 
         const leaders = rows.map((r, idx) => {
@@ -454,13 +455,14 @@ router.get('/:studentId', async (req, res) => {
 
         let subjects = [];
         try {
+            const archiveCheck = `(period_id IS NULL OR period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND (is_archived = false OR is_archived IS NULL OR (SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams') = 'true') AND deleted_at IS NULL))`;
             const subjectsRes = examType
                 ? await query(
-                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND exam_type = $2 AND (period_id IS NULL OR period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))`,
+                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND exam_type = $2 AND ${archiveCheck}`,
                     [studentId, examType]
                 )
                 : await query(
-                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND (period_id IS NULL OR period_id IN (SELECT id FROM exam_periods WHERE is_published = true AND deleted_at IS NULL))`,
+                    `SELECT subject, score, exam_type FROM results WHERE student_id = $1 AND approval_status = 'approved' AND deleted_at IS NULL AND ${archiveCheck}`,
                     [studentId]
                 );
             subjects = subjectsRes.rows;
@@ -1079,6 +1081,21 @@ router.put('/approve', async (req, res) => {
                     }
                 }
             }
+
+            // Ensure any active, non-archived exam period associated with these approved results is published
+            // so students can immediately see the new results that the admin just approved!
+            try {
+                const { rows: periodsToPublish } = await query(
+                    `SELECT DISTINCT period_id FROM results WHERE id = ANY($1::int[]) AND period_id IS NOT NULL`,
+                    [ids]
+                );
+                for (const p of periodsToPublish) {
+                    await query(
+                        `UPDATE exam_periods SET is_published = true, updated_at = NOW() WHERE id = $1 AND (is_archived = false OR is_archived IS NULL)`,
+                        [p.period_id]
+                    );
+                }
+            } catch (e) {}
         }
 
         res.json({ message: `${ids.length} result(s) ${status}.` });

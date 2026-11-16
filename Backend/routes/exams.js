@@ -34,6 +34,7 @@ router.get('/', async (req, res) => {
         const type = req.query.type && req.query.type !== 'all' ? req.query.type.trim().toLowerCase() : null;
         const classId = req.query.class_id ? parseInt(req.query.class_id) : null;
         const search = req.query.search ? req.query.search.trim().toLowerCase() : null;
+        const archived = req.query.archived;
 
         let sql = `
             SELECT ep.*,
@@ -47,6 +48,12 @@ router.get('/', async (req, res) => {
         `;
         const params = [];
         let idx = 1;
+
+        if (archived === 'true' || status === 'archived') {
+            sql += ` AND ep.is_archived = true`;
+        } else if (archived === 'false') {
+            sql += ` AND (ep.is_archived = false OR ep.is_archived IS NULL)`;
+        }
 
         if (year) {
             sql += ` AND (ep.year = $${idx} OR ep.academic_year = CAST($${idx} AS TEXT))`;
@@ -122,8 +129,93 @@ router.get('/', async (req, res) => {
             e.components = componentsMap[e.id] || [];
             e.classes = classesMap[e.id] || [];
             e.total_marks = parseFloat(e.total_marks) || 100.00;
-            e.status = e.current_status || (e.is_locked ? 'locked' : (e.is_archived ? 'closed' : 'open'));
+            e.status = e.is_archived ? 'archived' : (e.current_status || (e.is_locked ? 'locked' : (e.is_archived ? 'closed' : 'open')));
             e.num_components = e.components.length || e.num_components || 3;
+        });
+
+        res.json(exams);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1b. Settings: Student Visibility for Archived Exams
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/settings/student-visibility', async (req, res) => {
+    try {
+        await query(`CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT)`);
+        const { rows } = await query(`SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams'`);
+        const allow = rows[0] ? rows[0].value === 'true' : false;
+        res.json({ allowStudentsViewArchivedExams: allow });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/settings/student-visibility', async (req, res) => {
+    try {
+        const { allowStudentsViewArchivedExams } = req.body;
+        const valStr = allowStudentsViewArchivedExams === true || allowStudentsViewArchivedExams === 'true' ? 'true' : 'false';
+        await query(`CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT)`);
+        await query(`
+            INSERT INTO app_settings (key, value) VALUES ('allow_students_view_archived_exams', $1)
+            ON CONFLICT (key) DO UPDATE SET value = $1
+        `, [valStr]);
+        res.json({
+            message: valStr === 'true' 
+                ? 'Archived exams are now visible to students in the student portal.' 
+                : 'Archived exams are now hidden from students. Students can only see new published results.',
+            allowStudentsViewArchivedExams: valStr === 'true'
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1c. GET /api/exams/archived/list - Dedicated list of all archived exams
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/archived/list', async (req, res) => {
+    try {
+        const { rows: exams } = await query(`
+            SELECT ep.*,
+                   'archived' AS current_status,
+                   c.name AS class_name,
+                   (SELECT COUNT(DISTINCT r.student_id) FROM results r WHERE r.period_id = ep.id AND r.deleted_at IS NULL) AS student_count,
+                   (SELECT COUNT(*) FROM results r WHERE r.period_id = ep.id AND r.deleted_at IS NULL) AS result_count
+            FROM exam_periods ep
+            LEFT JOIN classes c ON c.id = ep.class_id
+            WHERE ep.deleted_at IS NULL AND ep.is_archived = true
+            ORDER BY ep.year DESC, ep.month DESC NULLS LAST, ep.id DESC
+        `);
+
+        const examIds = exams.map(e => e.id);
+        let componentsMap = {};
+        if (examIds.length > 0) {
+            const { rows: allComps } = await query(`
+                SELECT * FROM exam_components 
+                WHERE exam_id = ANY($1::int[]) AND deleted_at IS NULL
+                ORDER BY exam_id, order_num ASC, id ASC
+            `, [examIds]);
+
+            allComps.forEach(c => {
+                if (!componentsMap[c.exam_id]) componentsMap[c.exam_id] = [];
+                componentsMap[c.exam_id].push({
+                    id: c.id,
+                    name: c.name,
+                    component_key: c.component_key,
+                    max_marks: parseFloat(c.max_marks),
+                    order_num: c.order_num
+                });
+            });
+        }
+
+        exams.forEach(e => {
+            e.month_name = e.month ? MONTH_NAMES[e.month - 1] : null;
+            e.components = componentsMap[e.id] || [];
+            e.total_marks = parseFloat(e.total_marks) || 100.00;
+            e.status = 'archived';
         });
 
         res.json(exams);
@@ -745,7 +837,13 @@ router.put('/:id/release', async (req, res) => {
         const { rows: examRows } = await query(`SELECT * FROM exam_periods WHERE id = $1 AND deleted_at IS NULL`, [examId]);
         if (!examRows[0]) return res.status(404).json({ error: 'Exam not found.' });
 
-        const isPublished = (req.body.isPublished === true || req.body.isPublished === 'true' || req.body.is_published === true);
+        const isPublished = (
+            req.body.isPublished === true || 
+            req.body.isPublished === 'true' || 
+            req.body.is_published === true ||
+            req.body.release === true ||
+            req.body.release === 'true'
+        );
         const changedBy = req.body.changedBy || 'Admin';
         const reason = req.body.reason || (isPublished ? 'Exam results released to students' : 'Exam results hidden from students');
 
@@ -781,6 +879,81 @@ router.put('/:id/publish', async (req, res) => {
 router.put('/:id/unpublish', async (req, res) => {
     req.body = { ...req.body, isPublished: false };
     return router.handle(req, res);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8c. PUT /api/exams/:id/archive - Archive an exam (hides from students)
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id/archive', async (req, res) => {
+    try {
+        const examId = parseInt(req.params.id);
+        const { rows: examRows } = await query(`SELECT * FROM exam_periods WHERE id = $1 AND deleted_at IS NULL`, [examId]);
+        if (!examRows[0]) return res.status(404).json({ error: 'Exam not found.' });
+
+        const changedBy = req.body.changedBy || 'Admin';
+        const reason = req.body.reason || 'Exam moved to archive. Hidden from student view unless archived viewing is allowed.';
+
+        await query(`
+            UPDATE exam_periods 
+            SET is_archived = true, is_active = false, status = 'archived', updated_at = NOW() 
+            WHERE id = $1
+        `, [examId]);
+
+        await query(`
+            INSERT INTO exam_audit_logs (exam_id, action, old_status, new_status, changed_by, reason)
+            VALUES ($1, 'EXAM_ARCHIVED', $2, 'archived', $3, $4)
+        `, [
+            examId,
+            examRows[0].status || 'open',
+            changedBy,
+            reason
+        ]).catch(() => {});
+
+        res.json({
+            message: `Exam "${examRows[0].name}" has been archived successfully. Students will not see this exam unless archived visibility is enabled.`,
+            examId,
+            is_archived: true
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8d. PUT /api/exams/:id/unarchive - Unarchive / Restore an exam
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id/unarchive', async (req, res) => {
+    try {
+        const examId = parseInt(req.params.id);
+        const { rows: examRows } = await query(`SELECT * FROM exam_periods WHERE id = $1 AND deleted_at IS NULL`, [examId]);
+        if (!examRows[0]) return res.status(404).json({ error: 'Exam not found.' });
+
+        const changedBy = req.body.changedBy || 'Admin';
+        const reason = req.body.reason || 'Exam unarchived and restored to active cycles.';
+
+        await query(`
+            UPDATE exam_periods 
+            SET is_archived = false, is_active = true, status = 'closed', updated_at = NOW() 
+            WHERE id = $1
+        `, [examId]);
+
+        await query(`
+            INSERT INTO exam_audit_logs (exam_id, action, old_status, new_status, changed_by, reason)
+            VALUES ($1, 'EXAM_UNARCHIVED', 'archived', 'closed', $2, $3)
+        `, [
+            examId,
+            changedBy,
+            reason
+        ]).catch(() => {});
+
+        res.json({
+            message: `Exam "${examRows[0].name}" has been unarchived and restored.`,
+            examId,
+            is_archived: false
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

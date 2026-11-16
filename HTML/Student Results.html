@@ -4071,9 +4071,10 @@
 
                 periods.forEach(function(p) {
                     var label = p.name || (p.month_name ? (p.month_name + ' ' + p.year) : ('Year ' + p.year));
+                    if (p.is_archived) label += ' [Archived]';
                     var countBadge = p.my_result_count ? ' (' + p.my_result_count + ')' : '';
                     selectEl.innerHTML += '<option value="' + p.id + '">' + label + countBadge + '</option>';
-                    chipsHtml += '<button type="button" class="period-chip-btn" data-period-id="' + p.id + '"><i class="fas fa-calendar-check me-1"></i>' + label + '</button>';
+                    chipsHtml += '<button type="button" class="period-chip-btn" data-period-id="' + p.id + '"><i class="fas ' + (p.is_archived ? 'fa-archive' : 'fa-calendar-check') + ' me-1"></i>' + label + '</button>';
                 });
 
                 if (chipsEl) {
@@ -4110,6 +4111,13 @@
                         if (!res.ok) throw new Error('Could not fetch period results');
                         var periodData = await res.json();
                         hideLoading();
+                        if (periodData.message && (!periodData.results || Object.keys(periodData.results).length === 0)) {
+                            var container = document.getElementById('results-cards-container');
+                            container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-lock fa-3x mb-3 text-warning"></i><h5>' + periodData.message + '</h5></div>';
+                            document.getElementById('results-empty').classList.add('d-none');
+                            document.getElementById('results-summary').classList.add('d-none');
+                            return;
+                        }
                         var selectedPeriod = periods.find(function(p) { return String(p.id) === String(periodId); });
                         var periodName = selectedPeriod ? selectedPeriod.name : 'Selected Period';
                         renderResultsCards(periodData.results || {}, data, elpId, periodName);
@@ -4139,8 +4147,11 @@
                 var holdBanner = document.getElementById('results-hold-banner');
                 var holdReleaseText = document.getElementById('hold-release-text');
 
-                // Check if results are on hold
-                if (data.resultsOnHold) {
+                var subjects = Object.keys(results || {});
+
+                // IMPORTANT FIX: Only block results if there are NO approved results to show at all!
+                // If the student has approved results (e.g. from the newly published exam), show them!
+                if (data.resultsOnHold && subjects.length === 0) {
                     container.innerHTML = '';
                     emptyState.classList.add('d-none');
                     summaryEl.classList.add('d-none');

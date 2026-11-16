@@ -48,6 +48,7 @@
         .status-badge-locked { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .status-badge-closed { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .status-badge-draft { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-badge-archived { background: #e2e8f0; color: #475569; border: 1px solid #94a3b8; }
         
         .sum-validator-badge {
             font-size: 0.85rem;
@@ -191,10 +192,10 @@
                         <div class="summary-card" style="border-left-color: #f59e0b;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="text-muted small fw-bold mb-1">Closed / Drafts</h6>
-                                    <div class="amount text-warning" id="stat-closed-exams">0</div>
+                                    <h6 class="text-muted small fw-bold mb-1">Archived Exams</h6>
+                                    <div class="amount text-secondary" id="stat-archived-exams">0</div>
                                 </div>
-                                <div class="icon text-warning"><i class="fas fa-archive"></i></div>
+                                <div class="icon text-secondary"><i class="fas fa-archive"></i></div>
                             </div>
                         </div>
                     </div>
@@ -204,7 +205,7 @@
                 <div class="card main-table-card mb-4">
                     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                         <div class="d-flex align-items-center gap-2">
-                            <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-1"></i> Exam Cycles & Assessment Parts</h6>
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-1"></i> Active Exam Cycles & Assessment Parts</h6>
                             <span class="month-badge text-sm" id="active-month-label">All Cycles</span>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
@@ -243,11 +244,12 @@
                             <div class="d-flex align-items-center me-1">
                                 <label class="me-1 small text-muted fw-bold">Status:</label>
                                 <select class="form-select form-select-sm fw-bold" id="exam-status-filter" style="width: auto;">
-                                    <option value="all">All Statuses</option>
+                                    <option value="all">All Statuses (Active)</option>
                                     <option value="open">Open (Accepting Scores)</option>
                                     <option value="locked">Locked</option>
                                     <option value="closed">Closed</option>
                                     <option value="draft">Draft</option>
+                                    <option value="archived">Archived (In Archive Section)</option>
                                 </select>
                             </div>
 
@@ -269,6 +271,54 @@
                                     </tr>
                                 </thead>
                                 <tbody id="exams-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2b. ARCHIVED EXAMS & STUDENT VISIBILITY CONTROLS SECTION -->
+                <div class="card main-table-card mb-4" id="archived-exams-section">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-archive text-warning me-1"></i> Archived Old Exams & Student Access Control</h6>
+                            <span class="badge bg-secondary" id="archived-count-badge">0 Archived</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="form-check form-switch m-0 d-flex align-items-center gap-2 bg-white px-3 py-1 rounded-pill border shadow-sm">
+                                <input class="form-check-input" type="checkbox" role="switch" id="toggle-student-archived-view" style="cursor: pointer; width: 2.5em; height: 1.25em;">
+                                <label class="form-check-label fw-bold small text-dark" for="toggle-student-archived-view" style="cursor: pointer;">
+                                    Allow Students to View Archived Exams
+                                </label>
+                            </div>
+                            <span id="archived-visibility-badge" class="badge bg-danger py-2 px-3 fw-bold shadow-sm">
+                                <i class="fas fa-eye-slash me-1"></i> Students Only See New Published Results
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-light border py-2 px-3 mb-3 small d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <i class="fas fa-info-circle text-primary me-1"></i>
+                                <strong>Exam Archiving Rules:</strong> Archived exams are separated from active grading cycles.
+                                When <em>"Allow Students to View Archived Exams"</em> is <strong>OFF</strong>, students can <strong>only</strong> see newly published exam results, and all old archived exam results are completely hidden.
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-archived">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh Archive
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Exam Name & Code</th>
+                                        <th>Month / Academic Year</th>
+                                        <th>Assessment Components</th>
+                                        <th>Graded Records</th>
+                                        <th>Student Release Status</th>
+                                        <th class="text-end">Archive Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archived-exams-tbody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -598,6 +648,8 @@
             async function init() {
                 await loadClasses();
                 await loadExams();
+                await loadArchivedExams();
+                await loadStudentVisibilitySetting();
             }
 
             async function loadClasses() {
@@ -618,6 +670,8 @@
                 } catch(e) { console.error('Failed to load classes', e); }
             }
 
+            let allArchivedExams = [];
+
             async function loadExams() {
                 const year = document.getElementById('exam-year-filter').value;
                 const month = document.getElementById('exam-month-filter').value;
@@ -627,7 +681,12 @@
                 const p = new URLSearchParams();
                 if (year !== 'all') p.set('academic_year', year);
                 if (month !== 'all') p.set('month', month);
-                if (status !== 'all') p.set('status', status);
+                if (status === 'archived') {
+                    p.set('status', 'archived');
+                } else {
+                    p.set('archived', 'false');
+                    if (status !== 'all') p.set('status', status);
+                }
 
                 try {
                     const res = await fetch(url + p.toString());
@@ -641,16 +700,122 @@
                 }
             }
 
+            async function loadArchivedExams() {
+                try {
+                    const res = await fetch('/api/exams/archived/list');
+                    if (!res.ok) throw new Error('Failed to load archived exams');
+                    allArchivedExams = await res.json();
+                    renderArchivedTable();
+                    updateSummaryCards();
+                    const badge = document.getElementById('archived-count-badge');
+                    if (badge) badge.textContent = `${allArchivedExams.length} Archived`;
+                } catch (e) {
+                    const tbody = document.getElementById('archived-exams-tbody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No archived exams.</td></tr>`;
+                }
+            }
+
+            async function loadStudentVisibilitySetting() {
+                try {
+                    const res = await fetch('/api/exams/settings/student-visibility');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const toggle = document.getElementById('toggle-student-archived-view');
+                    const badge = document.getElementById('archived-visibility-badge');
+                    if (toggle) toggle.checked = !!data.allowStudentsViewArchivedExams;
+                    updateVisibilityBadge(!!data.allowStudentsViewArchivedExams);
+                } catch (e) {
+                    console.warn('Failed to load student visibility setting:', e);
+                }
+            }
+
+            function updateVisibilityBadge(allowed) {
+                const badge = document.getElementById('archived-visibility-badge');
+                if (!badge) return;
+                if (allowed) {
+                    badge.className = 'badge bg-success py-2 px-3 fw-bold shadow-sm';
+                    badge.innerHTML = '<i class="fas fa-eye me-1"></i> Archived Results Visible to Students';
+                } else {
+                    badge.className = 'badge bg-danger py-2 px-3 fw-bold shadow-sm';
+                    badge.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Students Only See New Published Results';
+                }
+            }
+
+            function renderArchivedTable() {
+                const tbody = document.getElementById('archived-exams-tbody');
+                if (!tbody) return;
+
+                if (!allArchivedExams || allArchivedExams.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-archive fa-2x mb-2 d-block text-secondary opacity-50"></i>
+                        No exams are currently archived. Click the <i class="fas fa-archive mx-1"></i> icon on any completed exam in the table above to archive it.
+                    </td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = allArchivedExams.map(e => {
+                    const mName = e.month ? MONTHS[e.month - 1] : 'Full Term';
+                    const compPills = (e.components || []).map(c => 
+                        `<span class="component-pill">${c.name} <span class="comp-score">(${c.max_marks})</span></span>`
+                    ).join('');
+
+                    return `
+                        <tr class="table-secondary-subtle">
+                            <td>
+                                <div class="fw-bold">${e.name}</div>
+                                <code class="small text-muted">${e.exam_code || 'EXAM-' + e.id}</code>
+                            </td>
+                            <td>
+                                <div><span class="badge bg-secondary text-white">${mName}</span></div>
+                                <small class="text-muted">AY: ${e.academic_year || 2026}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap align-items-center">${compPills}</div>
+                                <small class="text-muted fw-bold">Total: ${e.total_marks || 100} Marks</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border"><i class="fas fa-file-alt me-1 text-primary"></i>${e.result_count || 0} Records</span>
+                            </td>
+                            <td>
+                                <div>
+                                    ${e.is_published 
+                                        ? `<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fas fa-bullhorn me-1"></i>Released</span>` 
+                                        : `<span class="badge bg-secondary-subtle text-muted border"><i class="fas fa-eye-slash me-1"></i>Hidden</span>`}
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary btn-unarchive" data-id="${e.id}" title="Restore / Unarchive Exam">
+                                        <i class="fas fa-box-open me-1"></i> Restore
+                                    </button>
+                                    ${e.is_published 
+                                        ? `<button class="btn btn-outline-warning btn-release" data-id="${e.id}" data-action="unrelease" title="Hide Results from Students"><i class="fas fa-eye-slash"></i></button>`
+                                        : `<button class="btn btn-outline-success btn-release" data-id="${e.id}" data-action="release" title="Release Results to Students"><i class="fas fa-bullhorn"></i></button>`
+                                    }
+                                    <button class="btn btn-outline-secondary btn-audit" data-id="${e.id}" title="View Audit Logs">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-delete" data-id="${e.id}" title="Delete Exam">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
             function updateSummaryCards() {
-                const total = allExams.length;
+                const total = allExams.length + (allArchivedExams ? allArchivedExams.length : 0);
                 const openCount = allExams.filter(e => e.status === 'open').length;
                 const lockedCount = allExams.filter(e => e.status === 'locked').length;
-                const closedCount = allExams.filter(e => e.status === 'closed' || e.status === 'draft').length;
+                const archivedCount = allArchivedExams ? allArchivedExams.length : 0;
 
                 document.getElementById('stat-total-exams').textContent = total;
                 document.getElementById('stat-open-exams').textContent = openCount;
                 document.getElementById('stat-locked-exams').textContent = lockedCount;
-                document.getElementById('stat-closed-exams').textContent = closedCount;
+                const archEl = document.getElementById('stat-archived-exams');
+                if (archEl) archEl.textContent = archivedCount;
             }
 
             function updateActiveMonthLabel() {
@@ -719,6 +884,9 @@
                                         ? `<button class="btn btn-outline-warning btn-release" data-id="${e.id}" data-action="unrelease" title="Hide Results from Students"><i class="fas fa-eye-slash"></i></button>`
                                         : `<button class="btn btn-outline-success btn-release" data-id="${e.id}" data-action="release" title="Release Results to Students"><i class="fas fa-bullhorn"></i></button>`
                                     }
+                                    <button class="btn btn-outline-secondary btn-archive" data-id="${e.id}" title="Archive Exam (Moves to Archive & Hides from Students)">
+                                        <i class="fas fa-archive"></i>
+                                    </button>
                                     <button class="btn btn-outline-info btn-tracker" data-id="${e.id}" title="Teacher Submission Tracker">
                                         <i class="fas fa-tasks"></i>
                                     </button>
@@ -1021,7 +1189,7 @@
 
                 // 6. Delete Exam (Cascade deletion)
                 if (btn.classList.contains('btn-delete')) {
-                    const exam = allExams.find(x => x.id === id);
+                    const exam = allExams.find(x => x.id === id) || allArchivedExams.find(x => x.id === id);
                     const ok = await BedrockDialog.confirm({
                         title: 'Delete Exam',
                         message: `Delete exam <strong>"${exam ? exam.name : id}"</strong>?<br><small class="text-muted">This exam and any student marks associated with it will be deleted.</small>`,
@@ -1036,11 +1204,207 @@
                         if (!res.ok) throw new Error(data.error || 'Delete failed');
                         showAlert(data.message || 'Exam deleted successfully.', 'success');
                         await loadExams();
+                        await loadArchivedExams();
                     } catch(err) {
                         showAlert(err.message, 'danger');
                     }
                 }
+
+                // 7. Archive Exam
+                if (btn.classList.contains('btn-archive')) {
+                    const exam = allExams.find(x => x.id === id);
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Archive Exam',
+                        message: `Archive exam <strong>"${exam ? exam.name : id}"</strong>?<br><br><small class="text-warning"><i class="fas fa-eye-slash me-1"></i> This moves the exam to the Archived section. Students will NOT see this exam in their portal unless archived viewing is allowed.</small>`,
+                        confirmText: 'Archive Exam',
+                        type: 'warning',
+                        icon: 'fas fa-archive'
+                    });
+                    if (!ok) return;
+
+                    try {
+                        const res = await fetch(`/api/exams/${id}/archive`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ changedBy: 'Admin' })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to archive exam');
+                        showAlert(data.message || 'Exam archived successfully.', 'success');
+                        await loadExams();
+                        await loadArchivedExams();
+                    } catch (err) {
+                        showAlert(err.message, 'danger');
+                    }
+                }
+
+                // 8. Unarchive Exam
+                if (btn.classList.contains('btn-unarchive')) {
+                    const exam = allExams.find(x => x.id === id) || allArchivedExams.find(x => x.id === id);
+                    const ok = await BedrockDialog.confirm({
+                        title: 'Restore / Unarchive Exam',
+                        message: `Restore exam <strong>"${exam ? exam.name : id}"</strong> to active cycles?`,
+                        confirmText: 'Restore Exam',
+                        type: 'info',
+                        icon: 'fas fa-box-open'
+                    });
+                    if (!ok) return;
+
+                    try {
+                        const res = await fetch(`/api/exams/${id}/unarchive`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ changedBy: 'Admin' })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to unarchive exam');
+                        showAlert(data.message || 'Exam unarchived successfully.', 'success');
+                        await loadExams();
+                        await loadArchivedExams();
+                    } catch (err) {
+                        showAlert(err.message, 'danger');
+                    }
+                }
             });
+
+            // Action handler for Archived Exams Table
+            const archTbody = document.getElementById('archived-exams-tbody');
+            if (archTbody) {
+                archTbody.addEventListener('click', async (e) => {
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    const id = parseInt(btn.dataset.id);
+                    const exam = allArchivedExams.find(x => x.id === id);
+
+                    // Unarchive
+                    if (btn.classList.contains('btn-unarchive')) {
+                        const ok = await BedrockDialog.confirm({
+                            title: 'Restore / Unarchive Exam',
+                            message: `Restore <strong>"${exam ? exam.name : id}"</strong> to active cycles?`,
+                            confirmText: 'Restore Exam',
+                            type: 'info',
+                            icon: 'fas fa-box-open'
+                        });
+                        if (!ok) return;
+
+                        try {
+                            const res = await fetch(`/api/exams/${id}/unarchive`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ changedBy: 'Admin' })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed');
+                            showAlert(data.message || 'Exam restored.', 'success');
+                            await loadExams();
+                            await loadArchivedExams();
+                        } catch (err) {
+                            showAlert(err.message, 'danger');
+                        }
+                    }
+
+                    // Release / Hide
+                    if (btn.classList.contains('btn-release')) {
+                        const isRelease = btn.dataset.action === 'release';
+                        const ok = await BedrockDialog.confirm({
+                            title: isRelease ? 'Release Results' : 'Hide Results',
+                            message: `${isRelease ? 'Release' : 'Hide'} archived marks for <strong>"${exam ? exam.name : id}"</strong>?`,
+                            confirmText: isRelease ? 'Release' : 'Hide',
+                            type: isRelease ? 'success' : 'warning',
+                            icon: isRelease ? 'fas fa-bullhorn' : 'fas fa-eye-slash'
+                        });
+                        if (!ok) return;
+
+                        try {
+                            const res = await fetch(`/api/exams/${id}/release`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ isPublished: isRelease, changedBy: 'Admin' })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed');
+                            showAlert(data.message, 'success');
+                            await loadArchivedExams();
+                        } catch (err) {
+                            showAlert(err.message, 'danger');
+                        }
+                    }
+
+                    // Audit Logs
+                    if (btn.classList.contains('btn-audit')) {
+                        try {
+                            const res = await fetch(`/api/exams/${id}/audit-logs`);
+                            const logs = await res.json();
+                            const tbody = document.getElementById('audit-table-body');
+                            if (logs.length === 0) {
+                                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No audit records found.</td></tr>`;
+                            } else {
+                                tbody.innerHTML = logs.map(l => `
+                                    <tr>
+                                        <td><small>${new Date(l.created_at).toLocaleString()}</small></td>
+                                        <td><span class="badge bg-primary-subtle text-dark">${l.action}</span></td>
+                                        <td><code>${l.old_status || '—'}</code> &rarr; <code>${l.new_status || '—'}</code></td>
+                                        <td><strong>${l.changed_by}</strong></td>
+                                        <td><small>${l.reason || '—'}</small></td>
+                                    </tr>
+                                `).join('');
+                            }
+                            auditModal.show();
+                        } catch(err) {
+                            showAlert('Failed to load audit logs: ' + err.message, 'danger');
+                        }
+                    }
+
+                    // Delete
+                    if (btn.classList.contains('btn-delete')) {
+                        const ok = await BedrockDialog.confirm({
+                            title: 'Delete Exam',
+                            message: `Permanently delete archived exam <strong>"${exam ? exam.name : id}"</strong>?`,
+                            confirmText: 'Delete Exam',
+                            type: 'danger',
+                            icon: 'fas fa-trash-alt'
+                        });
+                        if (!ok) return;
+                        try {
+                            const res = await fetch(`/api/exams/${id}`, { method: 'DELETE' });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Delete failed');
+                            showAlert(data.message || 'Exam deleted.', 'success');
+                            await loadArchivedExams();
+                        } catch(err) {
+                            showAlert(err.message, 'danger');
+                        }
+                    }
+                });
+            }
+
+            // Student Visibility Switch for Archived Exams
+            const visToggle = document.getElementById('toggle-student-archived-view');
+            if (visToggle) {
+                visToggle.addEventListener('change', async (e) => {
+                    const allowed = e.target.checked;
+                    try {
+                        const res = await fetch('/api/exams/settings/student-visibility', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ allowStudentsViewArchivedExams: allowed })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to update setting');
+                        updateVisibilityBadge(allowed);
+                        showAlert(data.message, allowed ? 'info' : 'warning');
+                    } catch (err) {
+                        e.target.checked = !allowed;
+                        updateVisibilityBadge(!allowed);
+                        showAlert(err.message, 'danger');
+                    }
+                });
+            }
+
+            const btnRefreshArchived = document.getElementById('btn-refresh-archived');
+            if (btnRefreshArchived) {
+                btnRefreshArchived.addEventListener('click', () => loadArchivedExams());
+            }
 
             // Reopen Form Submit
             document.getElementById('reopenForm').addEventListener('submit', async (e) => {

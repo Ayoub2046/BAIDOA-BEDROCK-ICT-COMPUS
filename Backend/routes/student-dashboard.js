@@ -44,39 +44,69 @@ router.get('/:studentId', async (req, res) => {
         if (!student) return res.status(404).json({ error: 'Student not found' });
         const studentId = student.id;
 
-        // 2. Results (only approved) - grouped by subject with score breakdowns
+        // 2. Settings: Check if archived exams are allowed to be viewed by students
+        let allowArchived = false;
+        try {
+            const { rows: stRows } = await query(
+                `SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams'`
+            );
+            if (stRows[0] && stRows[0].value === 'true') {
+                allowArchived = true;
+            }
+        } catch (e) {}
+
+        // 3. Results (only approved) - grouped by subject with score breakdowns
         let results = {};
         let resultsOnHold = false;
         let releaseAt = null;
-        try {
-            // Check if student has any results on hold
-            const { rows: holdRows } = await query(
-                `SELECT release_at FROM results WHERE student_id = $1 AND approval_status = 'on_hold' LIMIT 1`,
-                [studentId]
-            );
-            if (holdRows.length > 0) {
-                resultsOnHold = true;
-                releaseAt = holdRows[0].release_at || null;
-            }
-        } catch (e) { /* column may not exist yet */ }
-
         let monthlyExamResults = {};
+
         try {
+            // If allowArchived is false, completely exclude archived exam results from student view
+            const archiveFilter = allowArchived
+                ? `(ep.deleted_at IS NULL AND ep.is_published = true)`
+                : `(ep.deleted_at IS NULL AND ep.is_published = true AND (ep.is_archived = false OR ep.is_archived IS NULL))`;
+
             const { rows: resultRows } = await query(
                 `SELECT r.id, r.subject, r.score, r.exam_type, r.max_score, r.remarks, r.period_id,
                         r.component_id, r.component_name,
-                        ep.id as exam_id, ep.name as period_name, ep.month, ep.year, ep.exam_code, ep.total_marks
+                        ep.id as exam_id, ep.name as period_name, ep.month, ep.year, ep.exam_code, ep.total_marks, ep.is_archived
                  FROM results r
                  LEFT JOIN exam_periods ep ON r.period_id = ep.id
                  WHERE r.student_id = $1 
                    AND r.approval_status = 'approved' 
                    AND r.deleted_at IS NULL
-                   AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
+                   AND (r.period_id IS NULL OR ${archiveFilter})
                  ORDER BY ep.year DESC, ep.month DESC NULLS LAST, r.subject ASC, r.id ASC`,
                 [studentId]
             );
 
+            // Check if student has results on hold (scoped to published non-archived exams)
+            try {
+                let holdSql = `
+                    SELECT r.release_at, r.period_id 
+                    FROM results r
+                    LEFT JOIN exam_periods ep ON r.period_id = ep.id
+                    WHERE r.student_id = $1 
+                      AND r.approval_status = 'on_hold' 
+                      AND r.deleted_at IS NULL
+                `;
+                if (!allowArchived) {
+                    holdSql += ` AND (ep.id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true AND (ep.is_archived = false OR ep.is_archived IS NULL)))`;
+                }
+                holdSql += ` LIMIT 1`;
+                const { rows: holdRows } = await query(holdSql, [studentId]);
+
+                // IMPORTANT FIX: A hold on an old exam or partial hold must NEVER block
+                // a student who has approved results in their active published exam!
+                if (holdRows.length > 0 && resultRows.length === 0) {
+                    resultsOnHold = true;
+                    releaseAt = holdRows[0].release_at || null;
+                }
+            } catch (e) { /* column may not exist yet */ }
+
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const distinctPeriods = new Set(resultRows.map(r => r.period_id).filter(Boolean));
 
             resultRows.forEach(r => {
                 const exId = r.period_id || 0;
@@ -125,12 +155,14 @@ router.get('/:studentId', async (req, res) => {
                 monthlyExamResults[exId].subjects[r.subject].total += score;
                 monthlyExamResults[exId].subjects[r.subject].maxTotal += maxScore;
 
-                // Legacy grouped subject mapping
+                // Grouped subject mapping
                 let displaySubject = r.subject || 'Unknown Subject';
-                if (r.period_name) {
-                    displaySubject += ` (${r.period_name})`;
-                } else if (r.month && r.year) {
-                    displaySubject += ` (${months[r.month-1]} ${r.year})`;
+                if (distinctPeriods.size > 1) {
+                    if (r.period_name) {
+                        displaySubject += ` (${r.period_name})`;
+                    } else if (r.month && r.year) {
+                        displaySubject += ` (${months[r.month-1]} ${r.year})`;
+                    }
                 }
                 if (!results[displaySubject]) {
                     results[displaySubject] = { scores: {}, total: 0, maxTotal: 0 };
@@ -354,7 +386,7 @@ router.get('/:studentId', async (req, res) => {
                       AND s.deleted_at IS NULL
                       AND r.approval_status = 'approved'
                       AND r.deleted_at IS NULL
-                      AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
+                      AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true ${!allowArchived ? 'AND (ep.is_archived = false OR ep.is_archived IS NULL)' : ''}))
                     GROUP BY s.id, s.name, s.image, s.grade, s.gpa
                     HAVING COUNT(r.id) > 0
                     ORDER BY total_score DESC, avg_score DESC
@@ -384,10 +416,10 @@ router.get('/:studentId', async (req, res) => {
         try {
             const { rows: periodRows } = await query(`
                 SELECT ep.id, ep.name, ep.year, ep.month, ep.period_type, ep.academic_year,
-                       ep.is_active, ep.is_archived,
+                       ep.is_active, ep.is_archived, ep.is_locked, ep.is_published,
                        (SELECT COUNT(*) FROM results r WHERE r.period_id = ep.id AND r.student_id = $1 AND r.deleted_at IS NULL AND r.approval_status = 'approved') AS my_result_count
                 FROM exam_periods ep
-                WHERE ep.deleted_at IS NULL AND ep.is_published = true
+                WHERE ep.deleted_at IS NULL AND ep.is_published = true ${!allowArchived ? 'AND (ep.is_archived = false OR ep.is_archived IS NULL)' : ''}
                 ORDER BY ep.year DESC, ep.month ASC NULLS LAST
             `, [studentId]);
             const MONTHS_ARR = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -467,7 +499,8 @@ router.get('/:studentId', async (req, res) => {
             announcements,
             examPeriods,
             certificates,
-            books
+            books,
+            allowStudentsViewArchivedExams: allowArchived
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -478,6 +511,14 @@ router.get('/:studentId', async (req, res) => {
 router.get('/:studentId/results-filter', async (req, res) => {
     const studentId = parseInt(req.params.studentId);
     if (isNaN(studentId)) return res.status(400).json({ error: 'Invalid student ID' });
+
+    let allowArchived = false;
+    try {
+        const { rows: stRows } = await query(
+            `SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams'`
+        );
+        if (stRows[0] && stRows[0].value === 'true') allowArchived = true;
+    } catch (e) {}
 
     const { academic_year, exam_type, month, period_id, subject } = req.query;
     try {
@@ -491,7 +532,7 @@ router.get('/:studentId/results-filter', async (req, res) => {
             WHERE r.student_id = $1 
               AND r.deleted_at IS NULL 
               AND r.approval_status = 'approved'
-              AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true))
+              AND (r.period_id IS NULL OR (ep.deleted_at IS NULL AND ep.is_published = true ${!allowArchived ? 'AND (ep.is_archived = false OR ep.is_archived IS NULL)' : ''}))
         `;
         const params = [studentId];
         let idx = 2;
@@ -547,11 +588,23 @@ router.get('/:studentId/period/:periodId', async (req, res) => {
     const periodId = parseInt(req.params.periodId);
     if (isNaN(studentId) || isNaN(periodId)) return res.status(400).json({ error: 'Invalid IDs' });
     try {
+        let allowArchived = false;
+        try {
+            const { rows: stRows } = await query(
+                `SELECT value FROM app_settings WHERE key = 'allow_students_view_archived_exams'`
+            );
+            if (stRows[0] && stRows[0].value === 'true') allowArchived = true;
+        } catch (e) {}
+
         const { rows: periodCheck } = await query(`
-            SELECT id, name, is_published FROM exam_periods WHERE id = $1 AND deleted_at IS NULL
+            SELECT id, name, is_published, is_archived FROM exam_periods WHERE id = $1 AND deleted_at IS NULL
         `, [periodId]);
         if (!periodCheck[0] || !periodCheck[0].is_published) {
             return res.json({ results: {}, rows: [], components: [], message: 'Results for this exam period have not been released yet.' });
+        }
+
+        if (periodCheck[0].is_archived && !allowArchived) {
+            return res.json({ results: {}, rows: [], components: [], message: 'Archived exam results are currently hidden by administration.' });
         }
 
         const { rows } = await query(`
