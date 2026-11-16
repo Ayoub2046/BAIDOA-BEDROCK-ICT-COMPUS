@@ -3966,22 +3966,33 @@
                     return;
                 }
 
-                try {
-                    var url = '/api/results/class-leaders/' + classId + (examType ? '?examType=' + encodeURIComponent(examType) : '');
-                    var res = await fetch(url);
-                    var json = await res.json();
-                    var leaders = json.leaders || [];
+                var leaders = [];
+                // FAST-PATH: Use pre-aggregated class leaders from dashboard payload without making another mobile fetch
+                if (!examType && data.classLeaders && data.classLeaders.length > 0) {
+                    leaders = data.classLeaders;
+                } else {
+                    try {
+                        var url = '/api/results/class-leaders/' + classId + (examType ? '?examType=' + encodeURIComponent(examType) : '');
+                        var res = await fetch(url);
+                        var json = await res.json();
+                        leaders = json.leaders || [];
 
-                    if (!json.isPublished && leaders.length === 0) {
-                        podiumEl.innerHTML = '';
-                        if (unreleasedEl) unreleasedEl.classList.remove('d-none');
-                        if (badgeEl) {
-                            badgeEl.className = 'badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold';
-                            badgeEl.innerHTML = '<i class="fas fa-clock me-1"></i> Awaiting Publication';
+                        if (!json.isPublished && leaders.length === 0) {
+                            podiumEl.innerHTML = '';
+                            if (unreleasedEl) unreleasedEl.classList.remove('d-none');
+                            if (badgeEl) {
+                                badgeEl.className = 'badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold';
+                                badgeEl.innerHTML = '<i class="fas fa-clock me-1"></i> Awaiting Publication';
+                            }
+                            return;
                         }
+                    } catch (e) {
+                        podiumEl.innerHTML = '<div class="col-12 text-center text-muted py-2">Could not load honor roll.</div>';
                         return;
                     }
+                }
 
+                try {
                     if (unreleasedEl) unreleasedEl.classList.add('d-none');
                     if (badgeEl) {
                         badgeEl.className = 'badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold';
@@ -4105,12 +4116,18 @@
                         return;
                     }
 
+                    var selectedPeriod = periods.find(function(p) { return String(p.id) === String(periodId); });
+                    var periodName = selectedPeriod ? selectedPeriod.name : 'Selected Period';
+
+                    // FAST-PATH: Render immediately from in-memory preloaded data (instant response on phones)
+                    if (data.monthlyExamResults && data.monthlyExamResults[periodId] && data.monthlyExamResults[periodId].subjects) {
+                        renderResultsCards(data.monthlyExamResults[periodId].subjects, data, elpId, periodName);
+                    }
+
                     try {
-                        showLoading();
                         var res = await fetch(API_BASE + '/' + data.student.id + '/period/' + periodId);
                         if (!res.ok) throw new Error('Could not fetch period results');
                         var periodData = await res.json();
-                        hideLoading();
                         if (periodData.message && (!periodData.results || Object.keys(periodData.results).length === 0)) {
                             var container = document.getElementById('results-cards-container');
                             container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-lock fa-3x mb-3 text-warning"></i><h5>' + periodData.message + '</h5></div>';
@@ -4118,11 +4135,8 @@
                             document.getElementById('results-summary').classList.add('d-none');
                             return;
                         }
-                        var selectedPeriod = periods.find(function(p) { return String(p.id) === String(periodId); });
-                        var periodName = selectedPeriod ? selectedPeriod.name : 'Selected Period';
                         renderResultsCards(periodData.results || {}, data, elpId, periodName);
                     } catch(e) {
-                        hideLoading();
                         console.error('Error loading period results:', e);
                     }
                 }

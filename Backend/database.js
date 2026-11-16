@@ -8,14 +8,16 @@ const { Pool } = require('pg');
 
 const dbUrl = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
 
+const isServerless = !!process.env.VERCEL;
+
 const poolConfig = {
     ssl: { rejectUnauthorized: false },
-    max: 10,
-    min: 0,                          // MUST BE 0 on serverless so pool doesn't block container freeze/exit
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 15000,  // 15s connection timeout
-    statement_timeout: 25000,
-    allowExitOnIdle: true
+    max: 25,                         // Expanded connection limit to handle concurrent student traffic
+    min: isServerless ? 0 : 2,       // Keep 2 warm connections open to eliminate cold TLS handshake delays
+    idleTimeoutMillis: 60000,        // 60s idle timeout
+    connectionTimeoutMillis: 10000,  // 10s connection timeout
+    statement_timeout: 20000,
+    allowExitOnIdle: isServerless
 };
 
 if (dbUrl) {
