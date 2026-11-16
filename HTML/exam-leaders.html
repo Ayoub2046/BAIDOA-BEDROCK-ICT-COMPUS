@@ -1033,6 +1033,14 @@
                         Browse every class's top three podium winners matching the official institution design
                     </div>
                 </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn-download-champions" id="btn-download-all-classes-zip" onclick="downloadAllClassPodiums('zip')" title="Download all class podium cards packaged as a ZIP file">
+                        <i class="fas fa-file-zipper"></i> <span>Download All Classes (ZIP)</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill fw-bold px-3 d-inline-flex align-items-center gap-1" id="btn-download-all-classes-pngs" onclick="downloadAllClassPodiums('png')" title="Download all class podiums directly as individual PNG images" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);font-size:0.82rem;">
+                        <i class="fas fa-images text-warning"></i> <span>All Class PNGs</span>
+                    </button>
+                </div>
             </div>
             <div class="class-roll-wrapper" id="class-honor-rolls-wrapper">
                 <!-- Populated dynamically: one podium card per class -->
@@ -1544,9 +1552,212 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Rasterize a class podium using html2canvas
+    async function renderClassPodiumToCanvas(podiumEl, classId) {
+        if (typeof html2canvas === 'undefined') {
+            throw new Error('html2canvas library is still loading. Please reload the page.');
+        }
+
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const options = {
+            scale: 2.5, // Crisp high-definition output
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: (clonedDoc) => {
+                const clonedPodium = clonedDoc.getElementById(`class-podium-${classId}`);
+                if (clonedPodium) {
+                    // Hide any download buttons in cloned output
+                    clonedPodium.querySelectorAll('.btn-dl-class-single').forEach(btn => btn.style.display = 'none');
+
+                    // Fix dimensions for an ultra-clean landscape certificate card
+                    clonedPodium.style.width = '1050px';
+                    clonedPodium.style.maxWidth = '1050px';
+                    clonedPodium.style.margin = '0 auto';
+                    clonedPodium.style.boxShadow = 'none';
+                    clonedPodium.style.borderRadius = '18px';
+                    clonedPodium.style.overflow = 'hidden';
+
+                    // Ensure stage layout is cleanly flex-row
+                    const stage = clonedPodium.querySelector('.podium-stage-container');
+                    if (stage) {
+                        stage.style.display = 'flex';
+                        stage.style.flexDirection = 'row';
+                        stage.style.alignItems = 'flex-end';
+                        stage.style.justifyContent = 'center';
+                        stage.style.gap = '20px';
+                        stage.style.padding = '3rem 1.8rem 2.2rem';
+                        stage.style.background = 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)';
+                    }
+
+                    // Ensure 3 columns are evenly sized
+                    const cols = clonedPodium.querySelectorAll('.podium-col');
+                    cols.forEach(col => {
+                        col.style.width = '290px';
+                        col.style.maxWidth = '290px';
+                        col.style.flex = 'none';
+                    });
+
+                    // Remove CSS transform transitions
+                    clonedPodium.querySelectorAll('.podium-card-box').forEach(box => {
+                        box.style.transform = 'none';
+                        box.style.transition = 'none';
+                    });
+
+                    const crowns = clonedPodium.querySelectorAll('.podium-crown-floating');
+                    crowns.forEach(c => c.style.animation = 'none');
+                }
+            }
+        };
+
+        try {
+            return await html2canvas(podiumEl, options);
+        } catch (firstErr) {
+            console.warn('Initial html2canvas render encountered an issue, retrying with fallback...', firstErr);
+            options.allowTaint = true;
+            options.scale = 2;
+            return await html2canvas(podiumEl, options);
+        }
+    }
+
+    // Download an individual class's podium card
+    async function downloadSingleClassPodium(classId, className) {
+        const podiumEl = document.getElementById(`class-podium-${classId}`);
+        if (!podiumEl) return;
+
+        const btn = document.getElementById(`btn-dl-class-${classId}`);
+        const originalBtnHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Preparing...';
+        }
+
+        const examTitle = (document.getElementById('banner-exam-title')?.textContent || 'Exam')
+            .replace(/—/g, '-')
+            .replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        showDownloadToast('Rendering Class Leaders', `${className} Top 3 Podium...`, true);
+
+        try {
+            const canvas = await renderClassPodiumToCanvas(podiumEl, classId);
+            const cleanClass = String(className).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const filename = `Top3_Leaders_${cleanClass}_${examTitle}.png`;
+
+            const imageUri = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = imageUri;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            showDownloadToast('Class Podium Downloaded!', `${className} Top 3 Leaders card saved successfully.`, false, true);
+
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check text-success me-1"></i> Downloaded!';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Error downloading class podium:', err);
+            showDownloadToast('Download Failed', err.message || 'Error creating image', false, false);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+    }
+
+    // Download all class podiums (ZIP archive or sequential PNGs)
+    async function downloadAllClassPodiums(mode = 'zip') {
+        const podiums = document.querySelectorAll('#class-honor-rolls-wrapper .podium-outer-wrapper');
+        if (!podiums.length) {
+            alert('No class honor rolls are currently displayed to download.');
+            return;
+        }
+
+        const btnZip = document.getElementById('btn-download-all-classes-zip');
+        const btnPngs = document.getElementById('btn-download-all-classes-pngs');
+        if (btnZip) btnZip.disabled = true;
+        if (btnPngs) btnPngs.disabled = true;
+
+        const total = podiums.length;
+        const examTitle = (document.getElementById('banner-exam-title')?.textContent || 'Exam')
+            .replace(/—/g, '-')
+            .replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        showDownloadToast(`Preparing ${total} Classes`, `Rendering class podiums for download...`, true);
+
+        try {
+            const hasZip = (mode === 'zip' && typeof JSZip !== 'undefined');
+            let zip = null;
+            let folder = null;
+            if (hasZip) {
+                zip = new JSZip();
+                folder = zip.folder(`Class_Leaders_${examTitle}`);
+            }
+
+            for (let i = 0; i < total; i++) {
+                const podium = podiums[i];
+                const classId = podium.getAttribute('data-class-id') || i;
+                const className = podium.getAttribute('data-class-name') || `Class_${i + 1}`;
+
+                showDownloadToast(`Rendering Class (${i + 1}/${total})`, `${className} Top 3 Podium...`, true);
+
+                const canvas = await renderClassPodiumToCanvas(podium, classId);
+                const cleanClass = className.replace(/[^a-zA-Z0-9_-]/g, '_');
+                const filename = `${String(i + 1).padStart(2, '0')}_Top3_Leaders_${cleanClass}_${examTitle}.png`;
+
+                if (hasZip) {
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    folder.file(filename, blob);
+                } else {
+                    const imageUri = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = imageUri;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    await new Promise(r => setTimeout(r, 400));
+                }
+            }
+
+            if (hasZip) {
+                showDownloadToast(`Packaging ZIP File`, `Compressing ${total} class podiums into ZIP...`, true);
+                const zipContent = await zip.generateAsync({ type: 'blob' });
+                const zipUrl = URL.createObjectURL(zipContent);
+                const link = document.createElement('a');
+                link.download = `Baidoa_Bedrock_Class_Leaders_${examTitle}.zip`;
+                link.href = zipUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(zipUrl), 6000);
+            }
+
+            showDownloadToast(`All Done!`, `Successfully downloaded all ${total} class leader podiums.`, false, true);
+
+        } catch (err) {
+            console.error('Error downloading class podiums:', err);
+            showDownloadToast('Download Error', err.message || 'Could not complete download', false, false);
+        } finally {
+            if (btnZip) btnZip.disabled = false;
+            if (btnPngs) btnPngs.disabled = false;
+        }
+    }
+
     // Expose functions globally for onclick attributes
     window.downloadSingleChampionCard = downloadSingleChampionCard;
     window.downloadAllChampionCards = downloadAllChampionCards;
+    window.downloadSingleClassPodium = downloadSingleClassPodium;
+    window.downloadAllClassPodiums = downloadAllClassPodiums;
 
     // Load and render all leaderboards
     async function loadLeaderboards() {
@@ -1627,9 +1838,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Section 3: Class Honor Rolls
             const rollsWrapper = document.getElementById('class-honor-rolls-wrapper');
-            if (data.classHonorRolls && data.classHonorRolls.length > 0) {
+            const btnClassesZip = document.getElementById('btn-download-all-classes-zip');
+            const btnClassesPngs = document.getElementById('btn-download-all-classes-pngs');
+            const hasClasses = data.classHonorRolls && data.classHonorRolls.length > 0;
+            if (btnClassesZip) btnClassesZip.disabled = !hasClasses;
+            if (btnClassesPngs) btnClassesPngs.disabled = !hasClasses;
+
+            if (hasClasses) {
                 rollsWrapper.innerHTML = data.classHonorRolls.map(cls => `
-                    <div class="podium-outer-wrapper mb-4" style="border-radius:18px;border:1px solid var(--card-border);overflow:hidden;">
+                    <div class="podium-outer-wrapper mb-4" id="class-podium-${cls.classId}" data-class-id="${cls.classId}" data-class-name="${cls.className}" style="border-radius:18px;border:1px solid var(--card-border);overflow:hidden;background:#ffffff;">
                         <div class="section-header-bar" style="border-radius:0;">
                             <div>
                                 <h5 class="section-header-title">
@@ -1639,9 +1856,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     Top performers in <strong>${cls.className}</strong> for <strong>${periodName}</strong> (${cls.participatingCount} candidates ranked)
                                 </div>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
-                                <i class="fas fa-check-circle me-1"></i> Officially Published
-                            </span>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                                    <i class="fas fa-check-circle me-1"></i> Officially Published
+                                </span>
+                                <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 d-inline-flex align-items-center gap-1 btn-dl-class-single"
+                                        id="btn-dl-class-${cls.classId}"
+                                        data-html2canvas-ignore="true"
+                                        onclick="downloadSingleClassPodium(${cls.classId}, '${cls.className}')"
+                                        style="background:#f59e0b;color:#0a2540;border:none;font-size:0.82rem;padding:6px 14px;cursor:pointer;transition:all 0.2s;"
+                                        onmouseover="this.style.background='#d97706';this.style.color='#ffffff'"
+                                        onmouseout="this.style.background='#f59e0b';this.style.color='#0a2540'"
+                                        title="Download ${cls.className} Top 3 Leaders card as PNG image">
+                                    <i class="fas fa-download"></i> <span>Download Card</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="podium-stage-container">
                             ${renderPodium(cls.top3, false)}
