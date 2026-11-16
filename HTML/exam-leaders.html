@@ -1589,11 +1589,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 badgePub.innerHTML = '<i class="fas fa-clock me-1"></i> Unreleased Draft';
             }
 
-            // Summary metrics
-            const champsList = data.overallSchoolChampions || data.schoolwideTop3 || data.classChampions || [];
+            // Summary metrics — strictly one champion per class (top 1 per class)
+            const rawChampsList = data.overallSchoolChampions || data.schoolwideTop3 || data.classChampions || [];
+            const seenClassKeys = new Set();
+            const champsList = [];
+            for (const c of rawChampsList) {
+                const cKey = String(c.classId || c.class_id || c.className || c.class_name);
+                if (!seenClassKeys.has(cKey)) {
+                    seenClassKeys.add(cKey);
+                    champsList.push({
+                        ...c,
+                        overallRank: champsList.length + 1,
+                        championRank: champsList.length + 1,
+                        rank: champsList.length + 1
+                    });
+                }
+            }
+
             document.getElementById('metric-total-classes').textContent = data.summary.totalClassesParticipating || 0;
             document.getElementById('metric-class-champions').textContent = champsList.length;
-            document.getElementById('metric-distinct-students').textContent = data.summary.distinctFirstPlaceStudents || champsList.length;
+            document.getElementById('metric-distinct-students').textContent = champsList.length;
             document.getElementById('metric-eligible-students').textContent = data.summary.totalEligibleStudents || 0;
             document.getElementById('badge-champions-count').textContent = `${champsList.length} Class Champions`;
             const btnZip = document.getElementById('btn-download-all-zip');

@@ -253,6 +253,7 @@ router.get('/leaderboards', async (req, res) => {
                    COALESCE(s.classid, 0) AS class_id,
                    COALESCE(c.name, 'Unassigned') AS class_name,
                    ('BB' || LPAD((260000 + s.id)::TEXT, 6, '0')) AS bb_id,
+                   COALESCE(NULLIF(s.attendance, '')::NUMERIC, 0) AS attendance,
                    COALESCE(SUM(r.score), 0) AS total_score,
                    COALESCE(SUM(COALESCE(r.max_score, 100)), 0) AS total_max,
                    ROUND((COALESCE(SUM(r.score), 0) / NULLIF(SUM(COALESCE(r.max_score, 100)), 0)) * 100, 1) AS percentage,
@@ -262,9 +263,9 @@ router.get('/leaderboards', async (req, res) => {
             LEFT JOIN classes c ON c.id = s.classid
             JOIN results r ON r.student_id = s.id
             WHERE ${whereClauses.join(' AND ')}
-            GROUP BY s.id, s.name, s.image, s.grade, s.gpa, s.classid, c.name
+            GROUP BY s.id, s.name, s.image, s.grade, s.gpa, s.classid, c.name, s.attendance
             HAVING COUNT(r.id) > 0
-            ORDER BY total_score DESC, percentage DESC, s.name ASC
+            ORDER BY total_score DESC, percentage DESC, COALESCE(NULLIF(s.attendance, '')::NUMERIC, 0) DESC, s.name ASC
         `;
 
         const { rows: allRankedStudents } = await query(sql, params);
@@ -321,13 +322,13 @@ router.get('/leaderboards', async (req, res) => {
                 percentage: pct,
                 grade: cleanGrade,
                 gpa: st.gpa,
+                attendance: parseFloat(st.attendance) || 0,
                 componentCount: parseInt(st.subject_count) || 0,
                 isApproved: st.is_all_approved
             };
         });
 
         // 1. Overall School Champions (Top 3 across entire school)
-        // Handle ties gracefully: if tie for 1st or 2nd, include tied positions
         let overallSchoolTop3 = [];
         if (formattedStudents.length > 0) {
             let currentRank = 1;
@@ -358,32 +359,20 @@ router.get('/leaderboards', async (req, res) => {
             const studentsInClass = formattedStudents.filter(s => s.classId === cls.id);
             if (studentsInClass.length === 0) continue;
 
-            // Rank within class with transparent tie handling
-            const rankedClassStudents = [];
-            let classRank = 1;
-            for (let i = 0; i < studentsInClass.length; i++) {
-                if (i > 0 && studentsInClass[i].totalScore < studentsInClass[i - 1].totalScore) {
-                    classRank = i + 1;
-                }
-                rankedClassStudents.push({
-                    ...studentsInClass[i],
-                    classRank
-                });
-            }
+            // Strict unique ranking within class: every student has a distinct position (no two students share the same position)
+            const rankedClassStudents = studentsInClass.map((s, idx) => ({
+                ...s,
+                classRank: idx + 1,
+                rank: idx + 1,
+                class_rank: idx + 1
+            }));
 
             // Top 3 in this class
-            const classTop3 = rankedClassStudents
-                .filter(s => s.classRank <= 3)
-                .map(s => ({
-                    ...s,
-                    rank: s.classRank,
-                    classRank: s.classRank,
-                    class_rank: s.classRank
-                }));
+            const classTop3 = rankedClassStudents.slice(0, 3);
 
-            // First-place champions for this class
-            const firstPlace = rankedClassStudents.filter(s => s.classRank === 1);
-            firstPlace.forEach(champ => {
+            // Sole Top 1 Champion for this class (strictly 1 champion per class)
+            if (rankedClassStudents.length > 0) {
+                const champ = rankedClassStudents[0];
                 classChampions.push({
                     ...champ,
                     rank: 1,
@@ -393,7 +382,7 @@ router.get('/leaderboards', async (req, res) => {
                     academicYear: periodInfo ? periodInfo.academic_year : '2026'
                 });
                 championStudentIds.add(champ.studentId);
-            });
+            }
 
             classHonorRolls.push({
                 classId: cls.id,
@@ -404,9 +393,19 @@ router.get('/leaderboards', async (req, res) => {
             });
         }
 
-        // Sort all class 1st-place champions by score descending to form the Overall School Champions
-        const overallSchoolChampions = [...classChampions].sort((a, b) => {
-            return (parseFloat(b.totalScore) - parseFloat(a.totalScore)) || (parseFloat(b.percentage) - parseFloat(a.percentage));
+        // Strictly one champion per class, sorted by score descending to form the Overall School Champions
+        const uniqueChampionsMap = new Map();
+        for (const champ of classChampions) {
+            if (!uniqueChampionsMap.has(champ.classId)) {
+                uniqueChampionsMap.set(champ.classId, champ);
+            }
+        }
+        const distinctClassChampions = Array.from(uniqueChampionsMap.values());
+
+        const overallSchoolChampions = distinctClassChampions.sort((a, b) => {
+            return (parseFloat(b.totalScore) - parseFloat(a.totalScore)) ||
+                   (parseFloat(b.percentage) - parseFloat(a.percentage)) ||
+                   (parseFloat(b.attendance || 0) - parseFloat(a.attendance || 0));
         }).map((c, idx) => ({
             ...c,
             overallRank: idx + 1,
@@ -420,7 +419,7 @@ router.get('/leaderboards', async (req, res) => {
             totalClassesParticipating: classHonorRolls.length,
             classesWithFinalizedRankings: classHonorRolls.filter(c => c.top3.length > 0).length,
             totalFirstPlaceAwards: overallSchoolChampions.length,
-            distinctFirstPlaceStudents: championStudentIds.size,
+            distinctFirstPlaceStudents: overallSchoolChampions.length,
             totalEligibleStudents: formattedStudents.length,
             isOfficiallyPublished: periodInfo ? (periodInfo.is_published === true) : true,
             examName: periodInfo ? periodInfo.name : 'All Exams',
